@@ -207,7 +207,7 @@ impl MethodProgram {
                     let lo = operand(bytes, at, pc + 1)?;
                     pc += 2;
                     Op::Invoke(u16::from_be_bytes([hi, lo]))
-                },
+                }
                 _ => return Err(error(at, PrepareErrorKind::UnsupportedOpcode(opcode))),
             };
             if matches!(op, Op::Load(i) | Op::Store(i) | Op::Increment(i, _) if i >= max_locals) {
@@ -229,7 +229,6 @@ impl MethodProgram {
         if instructions.is_empty() {
             return Err(error(0, PrepareErrorKind::MissingReturn));
         }
-
 
         Ok(Self {
             instructions,
@@ -369,7 +368,6 @@ impl MethodProgram {
             }
         }
 
-
         Ok(())
     }
 }
@@ -420,13 +418,15 @@ impl IntProgram {
         Self::verify(code, arguments)
     }
 
-
     // Retain the original single-method admission path, including rejection of
     // invokestatic, so its callers and tests do not silently gain new semantics.
     fn verify(code: &Code<'_>, arguments: usize) -> Result<Self, PrepareError> {
         let method = MethodProgram::decode(code, arguments, false)?;
         method.validate(std::slice::from_ref(&method))?;
-        Ok(Self { methods: vec![method], entry: 0 })
+        Ok(Self {
+            methods: vec![method],
+            entry: 0,
+        })
     }
 
     /// Closed experimental proof: a class without <clinit>, with same-class
@@ -437,8 +437,15 @@ impl IntProgram {
         name: &[u8],
         descriptor: &[u8],
     ) -> Result<Self, PrepareError> {
-        if class.methods.iter().any(|member| class.utf8_bytes(member.name_index) == Some(b"<clinit>".as_slice())) {
-            return Err(error(0, PrepareErrorKind::UnsupportedMethod("class initialization unsupported")));
+        if class
+            .methods
+            .iter()
+            .any(|member| class.utf8_bytes(member.name_index) == Some(b"<clinit>".as_slice()))
+        {
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("class initialization unsupported"),
+            ));
         }
         let mut entry_member = None;
         for (index, member) in class.methods.iter().enumerate() {
@@ -450,7 +457,8 @@ impl IntProgram {
                 }
             }
         }
-        let entry_member = entry_member.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
+        let entry_member =
+            entry_member.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
         let mut member_to_id = vec![None; class.methods.len()];
         member_to_id[entry_member] = Some(0usize);
         let mut pending = VecDeque::from([entry_member]);
@@ -463,31 +471,49 @@ impl IntProgram {
             let code = member.code.as_ref().expect("validated Code presence");
             let mut method = MethodProgram::decode(code, arguments, true)?;
             for instruction in &mut method.instructions {
-                let Op::Invoke(cp_index) = instruction.op else { continue };
+                let Op::Invoke(cp_index) = instruction.op else {
+                    continue;
+                };
                 let at = instruction.pc;
                 let (class_index, name_and_type_index) =
                     match class.constant_pool.get(cp_index as usize) {
-                        Some(Constant::Methodref { class_index, name_and_type_index }) =>
-                            (*class_index, *name_and_type_index),
+                        Some(Constant::Methodref {
+                            class_index,
+                            name_and_type_index,
+                        }) => (*class_index, *name_and_type_index),
                         _ => return Err(error(at, PrepareErrorKind::InvalidMethodReference)),
                     };
                 let Some(Constant::Class { name_index }) =
-                    class.constant_pool.get(class_index as usize) else {
+                    class.constant_pool.get(class_index as usize)
+                else {
                     return Err(error(at, PrepareErrorKind::InvalidMethodReference));
                 };
                 if class.utf8_bytes(*name_index) != class.class_name_bytes() {
-                    return Err(error(at, PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported")));
+                    return Err(error(
+                        at,
+                        PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported"),
+                    ));
                 }
-                let Some(Constant::NameAndType { name_index, descriptor_index }) =
-                    class.constant_pool.get(name_and_type_index as usize) else {
+                let Some(Constant::NameAndType {
+                    name_index,
+                    descriptor_index,
+                }) = class.constant_pool.get(name_and_type_index as usize)
+                else {
                     return Err(error(at, PrepareErrorKind::InvalidMethodReference));
                 };
-                let method_name = class.utf8_bytes(*name_index)
+                let method_name = class
+                    .utf8_bytes(*name_index)
                     .ok_or_else(|| error(at, PrepareErrorKind::InvalidMethodReference))?;
-                let signature = class.utf8_bytes(*descriptor_index)
+                let signature = class
+                    .utf8_bytes(*descriptor_index)
                     .ok_or_else(|| error(at, PrepareErrorKind::InvalidMethodReference))?;
                 if method_name == b"<init>" || method_name == b"<clinit>" {
-                    return Err(error(at, PrepareErrorKind::UnsupportedMethod("special method invocation unsupported")));
+                    return Err(error(
+                        at,
+                        PrepareErrorKind::UnsupportedMethod(
+                            "special method invocation unsupported",
+                        ),
+                    ));
                 }
                 let mut resolved = None;
                 for (index, candidate) in class.methods.iter().enumerate() {
@@ -499,13 +525,17 @@ impl IntProgram {
                         }
                     }
                 }
-                let resolved = resolved.ok_or_else(|| error(at, PrepareErrorKind::UnresolvedMethod))?;
+                let resolved =
+                    resolved.ok_or_else(|| error(at, PrepareErrorKind::UnresolvedMethod))?;
                 // Callee eligibility and its Code are checked when dequeued.
                 let next_id = if let Some(existing) = member_to_id[resolved] {
                     existing
                 } else {
                     if compiled.len() >= MAX_METHODS {
-                        return Err(error(at, PrepareErrorKind::UnsupportedMethod("method count limit")));
+                        return Err(error(
+                            at,
+                            PrepareErrorKind::UnsupportedMethod("method count limit"),
+                        ));
                     }
                     let id = compiled.len();
                     member_to_id[resolved] = Some(id);
@@ -518,8 +548,10 @@ impl IntProgram {
             compiled[method_id] = Some(method);
         }
 
-        let methods: Vec<MethodProgram> = compiled.into_iter()
-            .map(|method| method.expect("queued methods decoded")).collect();
+        let methods: Vec<MethodProgram> = compiled
+            .into_iter()
+            .map(|method| method.expect("queued methods decoded"))
+            .collect();
         for method in &methods {
             method.validate(&methods)?;
         }
@@ -531,21 +563,35 @@ impl IntProgram {
     }
 }
 
-fn supported_method_arguments(class: &ClassFile<'_>, member: &Member<'_>) -> Result<usize, PrepareError> {
+fn supported_method_arguments(
+    class: &ClassFile<'_>,
+    member: &Member<'_>,
+) -> Result<usize, PrepareError> {
     let arguments = match class.utf8_bytes(member.descriptor_index) {
         Some(signature) if signature == b"()I" => 0,
         Some(signature) if signature == b"(I)I" => 1,
-        _ => return Err(error(0, PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"))),
+        _ => {
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"),
+            ))
+        }
     };
-    if member.access_flags & 0x0008 == 0
-        || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
-    {
-        return Err(error(0, PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method")));
+    if member.access_flags & 0x0008 == 0 || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0 {
+        return Err(error(
+            0,
+            PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method"),
+        ));
     }
-    let code = member.code.as_ref()
+    let code = member
+        .code
+        .as_ref()
         .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
     if !code.exceptions.is_empty() || !code.attributes.is_empty() {
-        return Err(error(0, PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported")));
+        return Err(error(
+            0,
+            PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported"),
+        ));
     }
     Ok(arguments)
 }
@@ -564,16 +610,29 @@ impl IntFrame {
         if let Some(value) = argument {
             locals[0] = Some(value);
         }
-        Self { method, position: 0, stack: Vec::new(), locals }
+        Self {
+            method,
+            position: 0,
+            stack: Vec::new(),
+            locals,
+        }
     }
 
-    pub fn method_id(&self) -> usize { self.method }
-    pub fn operand_stack(&self) -> &[i32] { &self.stack }
-    pub fn locals(&self) -> &[Option<i32>] { &self.locals }
+    pub fn method_id(&self) -> usize {
+        self.method
+    }
+    pub fn operand_stack(&self) -> &[i32] {
+        &self.stack
+    }
+    pub fn locals(&self) -> &[Option<i32>] {
+        &self.locals
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ExecutionError { CallDepthExceeded }
+pub enum ExecutionError {
+    CallDepthExceeded,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IntMachine {
@@ -594,48 +653,76 @@ pub enum Step {
 
 impl IntMachine {
     pub fn new(program: IntProgram) -> Self {
-        assert_eq!(program.methods[program.entry].arguments, 0, "use with_int_arg for (I)I");
+        assert_eq!(
+            program.methods[program.entry].arguments, 0,
+            "use with_int_arg for (I)I"
+        );
         Self::create(program, None)
     }
 
     pub fn with_int_arg(program: IntProgram, value: i32) -> Self {
-        assert_eq!(program.methods[program.entry].arguments, 1, "use new for ()I");
+        assert_eq!(
+            program.methods[program.entry].arguments, 1,
+            "use new for ()I"
+        );
         Self::create(program, Some(value))
     }
 
     fn create(program: IntProgram, argument: Option<i32>) -> Self {
         let frame = IntFrame::new(program.entry, &program.methods[program.entry], argument);
-        Self { program, frames: vec![frame], result: None, failure: None }
+        Self {
+            program,
+            frames: vec![frame],
+            result: None,
+            failure: None,
+        }
     }
 
-    pub fn frames(&self) -> &[IntFrame] { &self.frames }
+    pub fn frames(&self) -> &[IntFrame] {
+        &self.frames
+    }
     pub fn frame_pc(&self, depth: usize) -> Option<usize> {
         let frame = self.frames.get(depth)?;
         let method = &self.program.methods[frame.method];
-        Some(method.instructions.get(frame.position)
-            .map_or(method.code_len, |instruction| instruction.pc))
+        Some(
+            method
+                .instructions
+                .get(frame.position)
+                .map_or(method.code_len, |instruction| instruction.pc),
+        )
     }
     pub fn pc(&self) -> usize {
         self.frame_pc(self.frames.len().saturating_sub(1))
             .unwrap_or_else(|| self.program.methods[self.program.entry].code_len)
     }
     pub fn operand_stack(&self) -> &[i32] {
-        self.frames.last().map_or(&[], |frame| frame.operand_stack())
+        self.frames
+            .last()
+            .map_or(&[], |frame| frame.operand_stack())
     }
     pub fn locals(&self) -> &[Option<i32>] {
         self.frames.last().map_or(&[], |frame| frame.locals())
     }
-    pub fn result(&self) -> Option<i32> { self.result }
-    pub fn failure(&self) -> Option<ExecutionError> { self.failure }
+    pub fn result(&self) -> Option<i32> {
+        self.result
+    }
+    pub fn failure(&self) -> Option<ExecutionError> {
+        self.failure
+    }
 
     /// Exactly one guest opcode, including call or return, is one step. No
     /// native Rust recursion is used for nested Java calls.
     pub fn step(&mut self) -> Step {
-        if let Some(value) = self.result { return Step::AlreadyReturned(value); }
-        if let Some(err) = self.failure { return Step::AlreadyFailed(err); }
+        if let Some(value) = self.result {
+            return Step::AlreadyReturned(value);
+        }
+        if let Some(err) = self.failure {
+            return Step::AlreadyFailed(err);
+        }
         let current = self.frames.len() - 1;
         let method_id = self.frames[current].method;
-        let instruction = self.program.methods[method_id].instructions[self.frames[current].position].clone();
+        let instruction =
+            self.program.methods[method_id].instructions[self.frames[current].position].clone();
         if let Op::Call(target) = instruction.op {
             if self.frames.len() >= MAX_FRAMES {
                 self.failure = Some(ExecutionError::CallDepthExceeded);
@@ -643,13 +730,20 @@ impl IntMachine {
             }
             let callee = &self.program.methods[target];
             let arg = if callee.arguments == 1 {
-                Some(*self.frames[current].stack.last().expect("validated invocation argument"))
+                Some(
+                    *self.frames[current]
+                        .stack
+                        .last()
+                        .expect("validated invocation argument"),
+                )
             } else {
                 None
             };
             // State transition is committed only after the depth preflight.
             self.frames[current].position += 1;
-            if callee.arguments == 1 { self.frames[current].stack.pop(); }
+            if callee.arguments == 1 {
+                self.frames[current].stack.pop();
+            }
             self.frames.push(IntFrame::new(target, callee, arg));
             return Step::Advanced { next_pc: self.pc() };
         }
@@ -667,8 +761,12 @@ impl IntMachine {
         frame.position += 1;
         match instruction.op {
             Op::Push(value) => frame.stack.push(value),
-            Op::Load(local) => frame.stack.push(frame.locals[local].expect("validated local read")),
-            Op::Store(local) => frame.locals[local] = Some(frame.stack.pop().expect("validated store")),
+            Op::Load(local) => frame
+                .stack
+                .push(frame.locals[local].expect("validated local read")),
+            Op::Store(local) => {
+                frame.locals[local] = Some(frame.stack.pop().expect("validated store"))
+            }
             Op::Increment(local, amount) => {
                 let value = frame.locals[local].expect("validated increment");
                 frame.locals[local] = Some(value.wrapping_add(amount));
@@ -686,10 +784,14 @@ impl IntMachine {
             Op::CompareBranch(condition, target) => {
                 let rhs = frame.stack.pop().expect("validated RHS");
                 let lhs = frame.stack.pop().expect("validated LHS");
-                if condition.test(lhs, rhs) { frame.position = target; }
+                if condition.test(lhs, rhs) {
+                    frame.position = target;
+                }
             }
             Op::Goto(target) => frame.position = target,
-            Op::Return | Op::Call(_) | Op::Invoke(_) => unreachable!("handled or rejected before execution"),
+            Op::Return | Op::Call(_) | Op::Invoke(_) => {
+                unreachable!("handled or rejected before execution")
+            }
         }
         debug_assert!(frame.stack.len() <= self.program.methods[frame.method].max_stack);
         Step::Advanced { next_pc: self.pc() }
@@ -698,8 +800,12 @@ impl IntMachine {
     /// Guest instruction budget spans every nested call. Failure is terminal
     /// and separately inspectable; budget exhaustion leaves frames resumable.
     pub fn run(&mut self, budget: usize) -> Option<i32> {
-        if self.result.is_some() { return self.result; }
-        if self.failure.is_some() { return None; }
+        if self.result.is_some() {
+            return self.result;
+        }
+        if self.failure.is_some() {
+            return None;
+        }
         for _ in 0..budget.min(MAX_RUN_STEPS) {
             match self.step() {
                 Step::Returned(value) | Step::AlreadyReturned(value) => return Some(value),
