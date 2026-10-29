@@ -169,7 +169,7 @@ fn uninitialized_locals_and_incompatible_control_flow_are_rejected() {
 
     // At pc=9, the taken edge carries zero stack entries, but the
     // fallthrough edge carries one; neither may be executed.
-    let inconsistent = [0x03, 0x03, 0x9f, 0x00, 0x07, 0x04, 0xa7, 0x00, 0x03, 0xac];
+    let inconsistent = [0x03, 0x03, 0x9f, 0x00, 0x07, 0x04, 0xa7, 0x00, 0x03, 0x03, 0xac];
     assert_eq!(
         changed_loop_code(&inconsistent, 2, 1)
             .unwrap_err()
