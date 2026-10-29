@@ -381,12 +381,16 @@ fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() 
     // A statically typed callee needs one int argument, but none is on stack.
     let mut missing_arg = parse_class(NESTED).unwrap();
     let no_argument = [0xb8, 0x00, 0x12, 0xac]; // adjust(I)I -> increment(I)I
-    let callee = missing_arg.methods.iter_mut()
-        .find(|m| m.name_index == 14 && m.descriptor_index == 11).unwrap();
+    let callee = missing_arg
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .unwrap();
     callee.code.as_mut().unwrap().instructions = &no_argument;
     assert_eq!(
         IntProgram::prepare_with_calls(&missing_arg, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::StackUnderflow
     );
 
@@ -395,17 +399,22 @@ fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() 
     initializer.constant_pool[14] = Constant::Utf8(b"<clinit>");
     assert_eq!(
         IntProgram::prepare_with_calls(&initializer, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::UnsupportedMethod("class initialization unsupported")
     );
 
     let mut nonstatic = parse_class(NESTED).unwrap();
-    let target = nonstatic.methods.iter_mut()
-        .find(|m| m.name_index == 14 && m.descriptor_index == 11).unwrap();
+    let target = nonstatic
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .unwrap();
     target.access_flags &= !0x0008;
     assert_eq!(
         IntProgram::prepare_with_calls(&nonstatic, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method")
     );
 
