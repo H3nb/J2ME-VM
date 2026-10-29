@@ -25,7 +25,7 @@ passed format, Clippy and **22 tests**. Coordinator reviewed both PRs, but
 no second independent review session reviewed the coordinator's own
 integration decisions.
 
-W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/40880712729) and W7 post-merge [CI #40881324313](https://github.com/H3nb/J2ME-VM/actions/runs/40881324313) succeeded. W7's final merged state passed format, Clippy and **29 Rust tests**. Original integration used coordinator **self-review**. The subsequent separate Luna xHigh audit is now recorded in [Issue #24](https://github.com/H3nb/J2ME-VM/issues/24); it found a preparation resource issue tracked in [#28](https://github.com/H3nb/J2ME-VM/issues/28), with a proposed fix in [PR #29](https://github.com/H3nb/J2ME-VM/pull/29), not yet merged.
+W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/40880712729) and W7 post-merge [CI #40881324313](https://github.com/H3nb/J2ME-VM/actions/runs/40881324313) succeeded. W7's final merged state passed format, Clippy and **29 Rust tests**. Original integration used coordinator **self-review**. The subsequent separate Luna xHigh audit is recorded in [Issue #24](https://github.com/H3nb/J2ME-VM/issues/24). Its preparation resource finding [#28](https://github.com/H3nb/J2ME-VM/issues/28) was corrected by [PR #29](https://github.com/H3nb/J2ME-VM/pull/29), squash `9a77276d829e1b12464eb2a44e2718729b5941c0`.
 
 ## Canonical tasks, boundaries and next action
 
@@ -44,13 +44,17 @@ W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/408
 ## Current coordinator handoff
 
 Hendra assigned coordinator chat `01a187f4-7a2b-7383-ad54-4302bc79d1ff`
-continued maintenance/development and Luna xHigh helpers. No competing active
+the goal of a tested CLDC/MIDP runtime, focused commits and Luna xHigh helpers.
+He explicitly authorized squash merges after review and successful relevant CI.
+No competing active
 assignment or open PR existed at dispatch. Three read-only workers reported
 through the coordinator; only the coordinator wrote/published shared files.
 
-- **Baseline main:** `37e32cd179223378fa6f271fd48fc9b33622a394`, clean and equal
-  to the observed remote. [Exact-head CI #40883600344](https://github.com/H3nb/J2ME-VM/actions/runs/40883600344)
-  passed. Local Windows MSVC, Rust/Cargo 1.99.1: fmt, Clippy and 29 tests passed.
+- **Observed main:** `9a77276d829e1b12464eb2a44e2718729b5941c0`, clean and equal
+  to the remote after #29. [Post-merge CI #40897667351](https://github.com/H3nb/J2ME-VM/actions/runs/40897667351)
+  passed. Research/audit started at `37e32cd179223378fa6f271fd48fc9b33622a394`;
+  local Windows MSVC, Rust/Cargo 1.99.1 checks passed on both the original
+  29-test baseline and the 30-test fix head.
 - **Audit #24 completed:** confirmed repeated full-method-table scans during
   preparation. [PR #29](https://github.com/H3nb/J2ME-VM/pull/29), head
   `bbca3ee4f68ab80d7884511d3846337bcbc7ef1e`, replaces them with one temporary
@@ -58,8 +62,8 @@ through the coordinator; only the coordinator wrote/published shared files.
   5,926 ms before / 51 ms after; the single-call control costs <1 ms / 13 ms.
   The separate auditor reviewed the entire exact-head diff, reproduced the
   input hashes and ran fmt/Clippy/30 tests. [Head CI #40894710139](https://github.com/H3nb/J2ME-VM/actions/runs/40894710139)
-  passed. **Review, not integrated**; #28 remains open. No general speed or
-  memory-use claim follows.
+  passed. **Integrated** as `9a77276d829e1b12464eb2a44e2718729b5941c0`;
+  #28 is closed. No general speed or memory-use claim follows.
 - **W8 #25 / W9 #26 research:** [reference/exception prerequisites](wp02-reference-exception-research.md)
   and [original source-only fixture evidence](../tests/fixtures/reference-exception-w9.md)
   are prepared for review. Coordinator independently rebuilt the diagnostic
@@ -73,9 +77,9 @@ through the coordinator; only the coordinator wrote/published shared files.
   [licensing and provenance](licensing-and-provenance.md). Research does not
   settle those terms or establish certification.
 
-**Next action:** review/integrate the focused #29 fix only within merge authority,
-then reconcile this handoff with actual main/CI. Complete review of W8/W9 evidence
-and resolve the affected rights/specification gaps before a bounded bootstrap
+**Next action:** finish W8/W9 evidence integration against the #29 baseline,
+then reconcile this handoff with actual main/CI. Resolve the affected
+rights/specification gaps before a bounded bootstrap
 class/type/initialization contract and reference implementation. Preserve the
 future caller call-site PC requirement for exception propagation. G2 is still
 partial; G3 snapshot remains a later gate. Do not start a speculative heap,
