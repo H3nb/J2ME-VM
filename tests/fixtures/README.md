@@ -76,3 +76,35 @@ That compiler is unavailable in this session. Before admitting any generated
 binary distribution rights, record new SHA-256 values in the manifest, and
 resolve the W1 CLDC preverification/`StackMap` acceptance boundary. **No new
 fixture was executed by `j2me-vm` or verified for CLDC.**
+
+### Verified Java 1.4 (48.0) compiler output for W2 sources
+
+The coordinator independently built the *already committed, unchanged* W2
+Java sources with **ECJ 3.26.0** from the private J2ME Dev Kit (on OpenJDK
+21.0.12.1). Source files were checked byte-for-byte against their GitHub Git
+blob SHA before compilation. Neither ECJ, the SDK bundle, nor any Java ME API
+implementation is included in the repository.
+
+```sh
+java -jar ecj-3.26.0.jar -source 1.4 -target 1.4 -g:none \
+  -d tests/fixtures/compiled \
+  tests/fixtures/java/LocalArithmetic.java \
+  tests/fixtures/java/BranchLoop.java
+javap -classpath tests/fixtures/compiled -v -c LocalArithmetic BranchLoop
+sha256sum tests/fixtures/compiled/{LocalArithmetic,BranchLoop}.class
+```
+
+| Binary | Version | Size | SHA-256 |
+| --- | --- | ---: | --- |
+| `compiled/LocalArithmetic.class` | 48.0 | 189 bytes | `01595ac71eb2b433c650548aef6e199b2416cf0961d876cb88847f1ceef78e30` |
+| `compiled/BranchLoop.class` | 48.0 | 201 bytes | `75492454cf4457f8b700b4874ea9c63235da345dfeb9c79364ad89f9b9abe827` |
+
+The binaries contain only classes generated from the project's GPLv3-only
+sources; they are suitable as **G1 structural parser fixtures** and candidate
+inputs for future explicitly bounded G2 experiments. **Not CLDC-preverified:**
+neither method's control-flow safety nor legacy `StackMap` admission is proved.
+The existing experimental `IntProgram` does not support these `evaluate(I)I`
+methods and is **not** claimed to execute them.
+
+The previous `javac --release 8` hashes above remain diagnostic-only and
+must not be mistaken for these committed 48.0 binaries.

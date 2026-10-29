@@ -13,6 +13,32 @@
       "sha256": "2b86770edc7dcb28515c361627b73030873ed2291c7123671b6d1bf461a73a49",
       "expected": "answer()I contains bipush 42 followed by ireturn",
       "specification": "JVMS Second Edition §§4.1,4.4,4.6,4.7; CLDC 1.1 legacy class files"
+    },
+    {
+      "path": "compiled/LocalArithmetic.class",
+      "source": "java/LocalArithmetic.java",
+      "license": "GPL-3.0-only",
+      "authoring": "Original WP02-W2 source fixture",
+      "compiler": "ECJ 3.26.0",
+      "command": "java -jar ecj-3.26.0.jar -source 1.4 -target 1.4 -g:none -d tests/fixtures/compiled tests/fixtures/java/LocalArithmetic.java",
+      "class_file_version": "48.0",
+      "preverified": false,
+      "sha256": "01595ac71eb2b433c650548aef6e199b2416cf0961d876cb88847f1ceef78e30",
+      "expected": "evaluate(I)I; signed 32-bit arithmetic and local variables; see README test vectors",
+      "specification": "JVMS Second Edition §§3.6,4.1,4.7, and integer bytecodes; no CLDC StackMap claim"
+    },
+    {
+      "path": "compiled/BranchLoop.class",
+      "source": "java/BranchLoop.java",
+      "license": "GPL-3.0-only",
+      "authoring": "Original WP02-W2 source fixture",
+      "compiler": "ECJ 3.26.0",
+      "command": "java -jar ecj-3.26.0.jar -source 1.4 -target 1.4 -g:none -d tests/fixtures/compiled tests/fixtures/java/BranchLoop.java",
+      "class_file_version": "48.0",
+      "preverified": false,
+      "sha256": "75492454cf4457f8b700b4874ea9c63235da345dfeb9c79364ad89f9b9abe827",
+      "expected": "evaluate(I)I; forward and backward branches/loop, signed comparisons; see README test vectors",
+      "specification": "JVMS Second Edition §§3.6,4.1,4.7 and conditional/unconditional branches; no CLDC StackMap claim"
     }
   ]
 }
