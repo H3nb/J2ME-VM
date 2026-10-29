@@ -9,6 +9,8 @@ use crate::classfile::{ClassFile, Code};
 const MAX_CODE: usize = 4096;
 const MAX_STACK: usize = 64;
 const MAX_LOCALS: usize = 64;
+// Host policy: one run call cannot monopolize the caller indefinitely.
+const MAX_RUN_STEPS: usize = 65_536;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PrepareError {
@@ -492,13 +494,13 @@ impl IntMachine {
         Step::Advanced { next_pc: self.pc() }
     }
 
-    /// Each call consumes at most `budget` guest instructions; exhausted
-    /// budget preserves the entire frame for a subsequent call or inspection.
+    /// Each call consumes at most `budget.min(MAX_RUN_STEPS)` guest instructions;
+    /// exhausted budget preserves the frame for a subsequent call.
     pub fn run(&mut self, budget: usize) -> Option<i32> {
         if self.result.is_some() {
             return self.result;
         }
-        for _ in 0..budget {
+        for _ in 0..budget.min(MAX_RUN_STEPS) {
             if let Step::Returned(value) = self.step() {
                 return Some(value);
             }
