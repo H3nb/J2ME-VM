@@ -1,12 +1,15 @@
 # WP02: bounded integer execution proof
 
-**Status:** [PR #3](https://github.com/H3nb/J2ME-VM/pull/3) and
-[PR #16](https://github.com/H3nb/J2ME-VM/pull/16) integrated; **partial G2
+**Status:** [PR #3](https://github.com/H3nb/J2ME-VM/pull/3),
+[PR #16](https://github.com/H3nb/J2ME-VM/pull/16), and bounded invocation
+[PR #23](https://github.com/H3nb/J2ME-VM/pull/23) integrated; **partial G2
 proof only**. The relevant technical baseline is the
 [JVMS Second Edition](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html)
 (§§3.6, 4.7.3, 4.9 and chapter 6 instruction definitions).
 Version-specific CLDC `StackMap` verification, linking and resolution are
 **not** implemented; see [N01 evidence grades](specification-map.md).
+
+The first sections below describe the **legacy single-method** `IntProgram::prepare` path. W7's invocation-aware `prepare_with_calls` and its additional supported opcode, frame, and admission rules are specified separately in the final section. Statements below that exclude invocation apply only to the legacy path.
 
 ## Entry and supported method shape
 
@@ -84,10 +87,12 @@ or a cross-process restore.
 
 N01 still requires original final JSR 139 editions and legally reviewed
 implementation terms before CLDC-admission assertions can be finalized.
-Full G2 additionally needs the chosen class/descriptor format constraints,
+Full G2 additionally needs broader class/descriptor constraints,
 general type verification where applicable, class loading and symbolic
-resolution, calls/return frames, exception propagation, debugging stops and
-non-`int` state. G3 separately requires a real **process A exits →
+resolution beyond W7's same-class proof, object identity and typed references,
+exception propagation, debugging stops and non-`int` state. W7 has already
+proven **bounded** nested calls and return frames; that is not equivalent to
+general invocation support. G3 separately requires a real **process A exits →
 process B restores** proof. This execution prototype does not justify
 a MIDP compatibility, Java certification or JL-Mod Plus integration claim.
 
