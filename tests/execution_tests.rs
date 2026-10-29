@@ -202,3 +202,40 @@ fn iinc_wraps_java_signed_int_instead_of_panicking() {
     assert_eq!(vm.locals(), &[Some(i32::MIN)]);
     assert_eq!(vm.run(2), Some(i32::MIN));
 }
+
+#[test]
+fn all_signed_int_comparisons_take_only_their_defined_edge() {
+    // iload_0; iconst_0; if_icmp<cond> +5; iconst_0; ireturn;
+    // iconst_1; ireturn. Both paths have valid terminal states.
+    for (opcode, truthy, falsy) in [
+        (0x9f, 0, -1), // eq
+        (0xa0, -1, 0), // ne
+        (0xa1, -1, 0), // lt
+        (0xa2, 0, -1), // ge
+        (0xa3, 1, 0),  // gt
+        (0xa4, -1, 1), // le
+    ] {
+        let bytes = [0x1a, 0x03, opcode, 0x00, 0x05, 0x03, 0xac, 0x04, 0xac];
+        let program = changed_loop_code(&bytes, 2, 1).unwrap();
+        let mut taken = IntMachine::with_int_arg(program.clone(), truthy);
+        assert_eq!(taken.run(2), None);
+        assert_eq!(taken.step(), Step::Advanced { next_pc: 7 });
+        assert_eq!(taken.run(2), Some(1));
+
+        let mut not_taken = IntMachine::with_int_arg(program, falsy);
+        assert_eq!(not_taken.run(2), None);
+        assert_eq!(not_taken.step(), Step::Advanced { next_pc: 5 });
+        assert_eq!(not_taken.run(2), Some(0));
+    }
+}
+
+#[test]
+fn a_branch_fallthrough_cannot_escape_the_method() {
+    // The taken edge loops to pc=0; the other edge would fall beyond code.
+    assert_eq!(
+        changed_loop_code(&[0x03, 0x03, 0x9f, 0xff, 0xfe], 2, 1)
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::MissingReturn
+    );
+}
