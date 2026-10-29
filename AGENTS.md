@@ -79,6 +79,8 @@ Follow [testing.md](docs/testing.md). Each test must protect a normative behavio
 
 ## 7. Git, review, documentation and handoff
 
+- For multiple sessions, follow [parallel development](docs/parallel-development.md): one recorded owner per task, separate branches/workspaces, explicit contract dependencies, and one integrator at a time. Verify the current assignment before writing or publishing; a chat, GitHub login or stale status file is not a lock. Existing user assignments take precedence; do not invent new approval steps for authorized work.
+- Apply [engineering quality](docs/engineering-quality.md) to the combined result, not just each patch. AI output and prior reviews are hypotheses until checked against primary evidence. No speculative abstractions, accumulated workarounds, hidden failures, weakened tests or unsupported completion claims. Keep necessary safety checks and avoid unrelated cleanup.
 - Work in focused feature/experiment branches; keep `main` reviewable. **Do not create an initial commit, publish, merge, or alter JL-Mod Plus without explicit authority.** Local non-destructive checks are allowed.
 - Scope changes to the request; if unrelated debt appears, report evidence and impact without unsolicited refactoring. Preserve user work and attribution. No historical code porting.
 - Update the *owning* contract when behavior or a decision changes. Use ADRs for consequential, durable architectural choices; keep experiments and evidence in the validation plan or a dedicated report, not a growing activity log in `AGENTS.md`.
