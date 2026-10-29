@@ -71,3 +71,66 @@ The scope and executable entry preconditions are owned by
   not a CLDC 1.1 / 1.1.1 verifier. The fixture predates preverification,
   lacks legacy CLDC StackMap, and cannot establish a conformant class loader.
   N01 remains open for full CLDC execution admission and linking semantics.
+
+## WP02-N01: historical CLDC verifier and linking evidence (2026-10-29)
+
+**Scope and result:** This is research, not a VM conformance claim or an accepted
+verifier design. The final CLDC 1.1 (2003) and CLDC 1.1.1 (2007) *complete
+normative specification PDFs* were not directly obtained in this review.
+Accordingly, N01 is **partially answered, not closed**. In particular, the
+proposed 1.1.1 linking clause must not be silently promoted to final normative
+wording. Do not use CLDC 8, modern `StackMapTable`, or the current experimental
+`src/execution.rs` subset as a substitute for this evidence.
+
+### Sources, edition and evidence grade
+
+| ID / grade | Source, edition / section | What it actually establishes |
+| --- | --- | --- |
+| N01-A / **direct primary** | [JVMS Second Edition, Oracle-hosted Chapter 5](https://docs.oracle.com/javase/specs/jvms/se6/html/ConstantPool.doc.html), §§5.3.5, 5.4.1–5.4.3 and 5.5 | The inherited base distinction between class-file loading/format errors, verification, preparation, symbolic resolution and initialization. CLDC amendments take precedence. The Oracle-hosted HTML is an edition-aware reading point, not evidence that a later JVMS applies. |
+| N01-B / **official release metadata, not full clauses** | [JSR 139 Final Release](https://www.jcp.org/aboutJava/communityprocess/final/jsr139/) (2003); [JSR 139 Maintenance Release](https://jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html) (2007); [JSR status](https://www.jcp.org/en/jsr/detail?id=139) | Establishes separate 1.1 final and 1.1.1 maintenance artifacts. The maintenance page distinguishes evaluation/app-use access from implementation access; the final text and relevant grant were **not** accepted/downloaded or adjudicated in this task. |
+| N01-C / **official accepted-review record; draft wording** | [JSR 139 change index](https://www.jcp.org/aboutJava/communityprocess/maintenance/jsr139/139ChangeLog.html) (updated 28 Nov 2007), Maintenance Review 1 approved 28 Aug 2007; [linked CHANGE_LOG.txt](https://jcp.org/aboutJava/communityprocess/maintenance/jsr139/CHANGE_LOG.txt), lines concerning proposed §§5.4 and 5.3.4 | Official index establishes approval of the review. The linked file **still begins “Proposed Change Log for CLDC 1.1.1”**; it proposes deferring observable resolution-related `LinkageError` until an executed instruction uses the reference, even if the implementation resolves eagerly. Exact *final* 1.1.1 §§5.4/5.3.4 wording remains unverified. |
+| N01-D / **later primary-authored, edition mismatch** | [Oracle-hosted CLDC Byte Code Typechecker Specification](https://docs.oracle.com/javame/8.0/api/cldc/api/Appendix1-verifier.pdf), dated **13 Apr 2012**, §§1.2, 2, 2.1 and 3; [Oracle CLDC 8 typechecker overview](https://docs.oracle.com/javame/8.0/api/cldc/api/doc-files/CLDCtypechecker.html) | Documents legacy `StackMap` format and errors, implicit empty maps, type safety checks, and off-device preverification followed by runtime verification. Its history explicitly records a **2012 correction for `goto_w`**. Neither this corrected appendix nor CLDC 8's support rules prove the exact 2003/2007 text unchanged. |
+| N01-E / **mirrored/indexed excerpt only** | [March 2003 CLDC 1.1 Sun-authored PDF, academic mirror](https://vsis-www.informatik.uni-hamburg.de/oldServer/teaching/ws-05.06/dbms/materialien/j2me/CLDCSpecification1.1.pdf) (retrieval returned HTTP 403; search-index contents only) | Index places class-file verification and off-device/runtime stack maps at §§5.2–5.2.1; format/loading at §§5.3–5.3.4. It is **not** proof that the full PDF contents were inspected or that particular detailed rules are final. |
+
+### Clause-to-observable-behavior matrix
+
+The stage below means the *earliest applicable semantic boundary*, not a
+promise of an exact instruction/time before the full CLDC revision is verified.
+Tests are proposed examples, **not** existing W2 fixtures or executed tests.
+
+| Input / example | Boundary and expected observable result | Evidence and limitation |
+| --- | --- | --- |
+| Bad class-file magic/invalid top-level binary structure; unsupported class version | **Loading/format admission**, rather than successful parse or execution: `ClassFormatError` for invalid format; `UnsupportedClassVersionError` for an unsupported version. | JVMS Second Edition §5.3.5 (N01-A). The currently recorded CLDC 1.1 version 45.x–48.0 boundary is in the G1 trace above (§5.3.1); confirm exact historical minor-version wording against accessible JSR 139 final before widening admission. |
+| Well-formed `Code` without a `StackMap` attribute, e.g. a straight-line static `int` return | **Runtime verification** is still mandatory. Missing attribute is **not automatically** `ClassFormatError`: the later typechecker §2.1 models it as an implicit *zero-entry* map. It verifies only if the method needs no additional maps and otherwise satisfies type rules. | N01-D, not yet verified against the exact 2003/2007 appendix; do **not** generalize to all non-preverified methods. |
+| Conditional branch to another block or nontrivial exception handler with absent/inconsistent map frame | **Verification before executing the admitted method/class** must establish valid types at control-flow joins/handlers. The legacy typechecker may fail, yielding `VerifyError`. A branch target being in range does not establish type safety. | N01-D §§2.1, 3 and CLDC 8 typechecker description. Confirm historic frame-placement and error details before W2 fixture expectations become normative. |
+| Duplicate or structurally malformed legacy `StackMap` in a method's `Code` attribute | **Attribute parsing/format**: the corrected typechecker §2.1 specifies `ClassFormatError` for malformed/duplicate `StackMap`; invalid *type relationships* instead lead to verification failure (`VerifyError`, §3). | N01-D, **historical revision comparison pending**. `StackMap` is a subattribute of `Code`, **not** `StackMapTable`. |
+| `jsr`, `jsr_w`, `ret`, or `wide ret` within guest method | The legacy CLDC preverification pipeline **inlines subroutines off-device** before in-device verification. Do not simply treat parser acceptance as execution safety or require a VM to perform preverification itself. | Oracle's later typechecker overview (N01-D); exact final 1.1/1.1.1 rejection/error wording remains unverified. |
+| Valid class refers from a nonexecuted method to an **absent optional class**; only a separate safe path runs | **Resolution versus loading/verification** must remain distinct. The change proposed for CLDC **1.1.1** disallows a resolution-caused `LinkageError` becoming observable *before an instruction uses that symbolic reference*, including in an eager resolver. A guarded `new`/`invokestatic`/field use is a suggested future observable test, not evidence that all missing dependencies may be ignored. | N01-C plus JVMS Second Edition §§5.4.1–5.4.3 (N01-A). **2007 final wording not verified; do not enforce as finalized 1.1.1 contract yet or retroactively ascribe it to 1.1.** |
+| Class has a missing or invalid **direct superclass**; class has an invalid own bytecode; a method merely mentions a missing class in a constant pool entry | **Different failure categories:** superclass resolution is part of loading (§5.3.5); type-unsafety is verification (§5.4.1); a symbolic reference used by an instruction triggers resolution (§5.4.3). The presence of an unused symbol alone does not prove that the referring class can safely run; mandatory dependency/verification checks still apply. | N01-A for inherited distinction; CLDC 1.1.1 final changes require independent cross-check. |
+| Valid `getstatic` or `invokestatic` reaching a reference after successful verification | **Resolve, then initialize when required**, rather than executing class initializer merely because the class file was parsed. | JVMS Second Edition §§5.4.3 and 5.5 (N01-A), subject to applicable CLDC exceptions. |
+
+### Hand-off boundary for WP02 and W2
+
+- **Confirmed from inspected primary text:** JVMS Second Edition separates
+  structural loading, verifier failure, symbolic resolution and initialization.
+  Oracle's later *CLDC Byte Code Typechecker* specifies an optional legacy
+  `StackMap` (implicit empty map), format-versus-type errors, and runtime type
+  checking. This appendix is **not** proof of historical text identity.
+- **Confirmed only as an approved maintenance item, not the final clause text:**
+  the 2007 JCP review index and linked draft describe a stricter observable
+  resolution-error timing rule (including eager linking). The exact final
+  maintenance artifact remains the blocking source for declaring N01 closed.
+- **Required before affected implementation or definitive W2 fixture assertions:**
+  obtain the complete 2003 final CLDC 1.1 and 2007 final CLDC 1.1.1 documents
+  under appropriately reviewed terms; compare §§5.2.1, 5.3.1, 5.3.4, the
+  appended verifier revision and proposed new §5.4 **word for word privately**
+  (do not commit specification text); log any actual deltas with precise
+  clause/page locators. Separately resolve implementation-use conditions.
+  The 2012 `goto_w` corrigendum is not automatically a 2007 change.
+- **No shared-contract or runtime change is authorized by this report.** The
+  coordinator owns decisions about how to sequence any new tests or behavior
+  changes. W2 may create original fixtures, but expectations dependent on the
+  unresolved clauses should remain explicitly provisional.
+
+No repository runtime, test fixture, CI, or emulator implementation was read or
+modified as part of this research increment.
