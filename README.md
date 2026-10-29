@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — G1 class-file structural reader implemented.** The crate can parse a bounded subset of CLDC-era class-file structures; it does **not** verify or execute bytecode. There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 parser merged; WP02 arithmetic-only stepping proof under review.** G1 reads bounded CLDC-era class structures. WP02 experimentally checks and executes one restricted static int-return method; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -28,6 +28,7 @@ targets, not capabilities already implemented.
 - [`docs/architecture.md`](docs/architecture.md): current technical hypotheses and state ownership.
 - [`docs/validation-plan.md`](docs/validation-plan.md): gates with concrete success/failure evidence.
 - [`src/classfile.rs`](src/classfile.rs): G1 bounded, borrowed class-file reader (versions 45.x–48.0), not a verifier.
+- [`src/execution.rs`](src/execution.rs): WP02 narrow validated integer method with per-invocation stepping; see [scope/limitations](docs/wp02-execution-contract.md).
 - [`docs/testing.md`](docs/testing.md): original guest fixture policy, public CI and private compatibility corpus.
 - [`docs/adr/`](docs/adr/): accepted architectural decisions.
 
@@ -42,7 +43,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-These validate the Rust crate and current G1 structural parser tests, **not** a functional VM or CLDC compatibility. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
+These validate the Rust crate and the exercised parser/experimental execution tests, **not** complete JVM/CLDC compatibility or recovery. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
 
 ## Clean-room and licensing
 

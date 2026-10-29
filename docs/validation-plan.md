@@ -81,3 +81,13 @@ No branch or code modification in JL-Mod Plus until G3 has been independently re
 ## G1 execution record
 
 A separate `feature/g1-classfile-parser` branch adds an original compiler-produced 48.0 class-file fixture, a byte reader, typed constant-pool references, Code attribute structure reading, and format rejection tests. It intentionally leaves verifier semantics for the next reviewed scope. The temporary Rust runner validated formatting, Clippy and **7 passing G1 tests** ([workflow run](https://github.com/H3nb/J2ME-VM/actions/runs/40800353347)). This is evidence for the bounded structural reader, **not** class-file semantic verification or CLDC conformance. The permanent workflow must also pass on the reviewed final commit; a pre-merge review then added normative `Code` cardinality tests and exact constant-pool reference error offsets. The 16 MiB input cap is a host security policy, not a claim about the JVM specification. Source/fixture provenance is documented in `tests/fixtures/README.md`.
+
+## WP02 proof boundary (partial G2, not a passed gate)
+
+A narrowly validated original Java 1.4 static, no-argument int method may be
+stepped by a VM-owned invocation state under [the WP02 contract](wp02-execution-contract.md).
+This is *not* a general verifier, linked runtime, full G2, or snapshot.
+Before G2 can pass, extend the verified subset with branches, locals,
+calls/returns, exception paths, bytecode inspection/stops and applicable CLDC
+preverification rules with original regression fixtures. Require fresh CI
+evidence on the implementation PR before accepting even this partial proof.
