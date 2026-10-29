@@ -29,13 +29,13 @@ A **VM core snapshot is not a complete game save state**: display, audio, I/O, h
 With a current stable Rust toolchain, rustfmt and clippy installed:
 
 ```sh
-cargo generate-lockfile # only before committing the initial lockfile
+cargo generate-lockfile # only when deliberately updating dependency resolution
 cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-These are **scaffold checks**, not proof that a VM exists. The crate does not currently depend on external packages. Generate and commit `Cargo.lock` before the initial commit; the CI deliberately requires it. See [development guidance](docs/development.md).
+These are **scaffold checks**, not proof that a VM exists. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
 
 ## Clean-room and licensing
 

@@ -13,7 +13,7 @@ cargo test --locked
 
 Commit the Cargo-generated lockfile. `--locked` makes checks fail when the lockfile is missing or stale. The single permanent workflow at `.github/workflows/rust.yml` runs on main pushes, pull requests and manual dispatch. It uses an Ubuntu runner, read-only permissions, rustfmt and clippy.
 
-The repository was bootstrapped using a **temporary GitHub Actions workflow** to generate a genuine Cargo lockfile because the scaffold environment lacked Rust. The temporary workflow is not a project fixture or long-term build dependency; remove it after validation and lockfile incorporation.
+The initial `Cargo.lock` was generated and validated with a temporary GitHub Actions bootstrap workflow because the scaffold environment lacked Rust. That workflow was removed after successful validation and lockfile incorporation; the permanent Rust workflow owns ongoing validation.
 
 ### CI evidence boundary
 
@@ -25,13 +25,13 @@ Public CI deliberately needs no JDK, proprietary JAR, Java ME SDK or access to C
 
 Review source and transitive licenses before introducing crates. Add automated dependency advisory/license checks when real dependencies warrant them, and add cross-platform, benchmark or fuzz CI only when protecting distinct implementation risks.
 
-## Before the project bootstrap commit
+## Before material changes and releases
 
 1. Review [AGENTS.md](../AGENTS.md), the [documentation map](README.md), and relevant ADRs.
 2. Check license metadata, ownership/visibility and full GPL-3.0-only text. Treat JSR implementation rights and trademark claims as separate open legal questions.
 3. Exclude third-party emulator code, proprietary API JARs, SDK samples, TCK, secrets and generated binaries without provenance.
 4. Generate `Cargo.lock` with real Cargo and validate it; review effective changes.
-5. Only commit after explicit owner authorization.
+5. Commit within the authorized scope; do not publish releases, distribute third-party materials, or merge unrelated work without authorization.
 
 ## Change review and handoff
 

@@ -1,0 +1,41 @@
+# Scaffold checks; passing does not establish Java ME conformance or snapshot correctness.
+name: Rust validation
+
+'on':
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Record toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lint all targets
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Run unit, integration and documentation tests
+        run: cargo test --locked
