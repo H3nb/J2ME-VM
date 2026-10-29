@@ -150,6 +150,31 @@ open for final version-specific verifier/admission and resolution timing.**
 W4's independent execution subset must not inherit these hypotheses as a
 CLDC conformance guarantee.
 
+### Official acquisition and terms routes (2026-10-29)
+
+The [2003 final page](https://jcp.org/aboutJava/communityprocess/final/jsr139/)
+and [2007 maintenance page](https://jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html)
+identify the following official Oracle acquisition routes. Their license pages
+were read without accepting a download agreement; no specification archive was
+downloaded or redistributed in this increment.
+
+| Edition / route | Direct official evidence | Boundary |
+| --- | --- | --- |
+| CLDC 1.1 final | [Download landing](https://download.oracle.com/otndocs/jcp/7247-j2me_cldc-1.1-fr-spec-oth-JSpec/), [associated terms](https://download.oracle.com/otndocs/jcp/7247-j2me_cldc-1.1-fr-spec-oth-JSpec/7247-j2me_cldc-1.1-fr-spec-oth-JSpec-license.html) identify Version 1.1 / FCS / January 2003 | Authenticated acquisition and terms metadata, not inspection of the final technical clauses. |
+| CLDC 1.1.1 evaluation | [Download landing](https://download.oracle.com/otndocs/jcp/cldc-1.1.1-mrel-eval-oth-JSpec/), [evaluation terms](https://download.oracle.com/otndocs/jcp/cldc-1.1.1-mrel-eval-oth-JSpec/cldc-1.1.1-mrel-eval-oth-JSpec-license.html) | Internal evaluation/application access must not be equated with implementation permission. |
+| CLDC 1.1.1 implementation | [Download landing](https://download.oracle.com/otndocs/jcp/cldc-1.1.1-mrel-oth-JSpec/), [implementation terms](https://download.oracle.com/otndocs/jcp/cldc-1.1.1-mrel-oth-JSpec/cldc-1.1.1-mrel-oth-JSpec-license.html) identify the November 2007 maintenance edition | The implementation grant has functionality, namespace and testing conditions; applicability to this partial research VM remains unestablished. |
+
+A secondary API mirror reviewed during this increment identifies itself as
+CLDC 1.1.1 / 2007 and corroborates associated terms. It is not the complete final
+VM specification and does not replace primary-source authentication. No private
+storage location or inventory is needed for this evidence.
+
+This narrows the acquisition-route uncertainty only. The final verifier/linking
+clauses and applicable use basis remain open in
+[#12](https://github.com/H3nb/J2ME-VM/issues/12) and
+[#30](https://github.com/H3nb/J2ME-VM/issues/30). Do not accept a gated agreement,
+infer final clause wording, or claim rights clearance from public availability.
+
 ### Clause-to-observable-behavior matrix
 
 The stage below means the *earliest applicable semantic boundary*, not a
