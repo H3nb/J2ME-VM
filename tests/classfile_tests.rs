@@ -207,3 +207,28 @@ fn code_attribute_cardinality_and_method_flags_follow_jvms() {
         );
     }
 }
+
+#[test]
+fn original_wp02_source_fixtures_parse_as_java_1_4_class_files() {
+    for (bytes, name) in [
+        (
+            &include_bytes!("fixtures/compiled/LocalArithmetic.class")[..],
+            &b"LocalArithmetic"[..],
+        ),
+        (
+            &include_bytes!("fixtures/compiled/BranchLoop.class")[..],
+            &b"BranchLoop"[..],
+        ),
+    ] {
+        let class = parse_class(bytes).expect("original ECJ-produced Java 1.4 class");
+        assert_eq!((class.major_version, class.minor_version), (48, 0));
+        assert_eq!(class.class_name_bytes(), Some(name));
+        let method = class
+            .methods
+            .iter()
+            .find(|m| class.utf8_bytes(m.name_index) == Some(&b"evaluate"[..]))
+            .expect("authored Java method exists");
+        assert_eq!(class.utf8_bytes(method.descriptor_index), Some(&b"(I)I"[..]));
+        assert!(method.code.as_ref().is_some_and(|code| !code.instructions.is_empty()));
+    }
+}
