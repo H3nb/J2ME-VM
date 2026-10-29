@@ -26,6 +26,7 @@ pub enum ParseErrorKind {
     InvalidModifiedUtf8,
     InvalidReference { index: u16, expected: &'static str },
     InvalidCodeLength,
+    InvalidCodeAttribute(&'static str),
     InvalidExceptionRange,
     TrailingBytes,
 }
@@ -96,8 +97,7 @@ pub struct Member<'a> {
     pub name_index: u16,
     pub descriptor_index: u16,
     pub attributes: Vec<Attribute<'a>>,
-    /// First Code attribute of a method, if present. Duplicate Code attributes
-    /// are a verifier-level concern and are not accepted as executable yet.
+    /// The method's unique Code attribute (absent for native/abstract methods).
     pub code: Option<Code<'a>>,
 }
 
@@ -476,19 +476,38 @@ fn parse_members<'a>(
         )?;
         let attributes = parse_attributes(r, pool)?;
         let mut code = None;
-        if methods {
-            for attr in &attributes {
-                let name = match pool.get(attr.name_index as usize) {
-                    Some(Constant::Utf8(s)) => *s,
-                    _ => unreachable!("attribute name verified"),
+        // JVMS 2nd ed. §4.7.3: exactly one Code attribute for a concrete
+        // method; none for an abstract/native method or a field.
+        let has_no_body = access_flags & (0x0100 | 0x0400) != 0; // native | abstract
+        for attr in &attributes {
+            let name = match pool.get(attr.name_index as usize) {
+                Some(Constant::Utf8(s)) => *s,
+                _ => unreachable!("attribute name verified"),
+            };
+            if name == b"Code" {
+                let reason = if !methods {
+                    Some("Code attribute on field")
+                } else if has_no_body {
+                    Some("Code attribute on native/abstract method")
+                } else if code.is_some() {
+                    Some("duplicate Code attribute")
+                } else {
+                    None
                 };
-                if name == b"Code" {
-                    let parsed = parse_code(attr, pool)?;
-                    if code.is_none() {
-                        code = Some(parsed);
-                    }
+                if let Some(reason) = reason {
+                    return Err(ParseError {
+                        offset: attr.info_offset - 6,
+                        kind: ParseErrorKind::InvalidCodeAttribute(reason),
+                    });
                 }
+                code = Some(parse_code(attr, pool)?);
             }
+        }
+        if methods && !has_no_body && code.is_none() {
+            return Err(ParseError {
+                offset: name_at,
+                kind: ParseErrorKind::InvalidCodeAttribute("concrete method missing Code"),
+            });
         }
         items.push(Member {
             access_flags,

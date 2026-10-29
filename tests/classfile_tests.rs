@@ -160,3 +160,48 @@ fn rejects_oversize_and_corrupt_code_length() {
         ParseErrorKind::InvalidCodeLength
     );
 }
+
+#[test]
+fn code_attribute_cardinality_and_method_flags_follow_jvms() {
+    let class = parse_class(COMPILED).unwrap();
+    let answer = class
+        .methods
+        .iter()
+        .find(|m| class.utf8_bytes(m.name_index) == Some(&b"answer"[..]))
+        .unwrap();
+    assert_eq!(answer.attributes.len(), 1);
+    let attr = &answer.attributes[0];
+    let start = attr.info_offset - 6; // attribute header: name (u2), length (u4)
+    let end = attr.info_offset + attr.info.len();
+    let count_at = start - 2; // method attributes_count directly precedes first attribute
+    let flags_at = count_at - 6; // access_flags, name_index, descriptor_index
+
+    // A second well-formed Code body must not silently replace or shadow the first.
+    let mut duplicate = COMPILED.to_vec();
+    duplicate.splice(end..end, COMPILED[start..end].iter().copied());
+    duplicate[count_at..count_at + 2].copy_from_slice(&2u16.to_be_bytes());
+    assert_eq!(
+        parse_class(&duplicate).unwrap_err().kind,
+        ParseErrorKind::InvalidCodeAttribute("duplicate Code attribute")
+    );
+
+    // A concrete method without Code has an invalid method_info structure.
+    let mut missing = COMPILED.to_vec();
+    missing.drain(start..end);
+    missing[count_at..count_at + 2].copy_from_slice(&0u16.to_be_bytes());
+    assert_eq!(
+        parse_class(&missing).unwrap_err().kind,
+        ParseErrorKind::InvalidCodeAttribute("concrete method missing Code")
+    );
+
+    for forbidden_flag in [0x0100u16, 0x0400u16] {
+        let mut flagged = COMPILED.to_vec();
+        let mut flags = u16::from_be_bytes([flagged[flags_at], flagged[flags_at + 1]]);
+        flags |= forbidden_flag;
+        flagged[flags_at..flags_at + 2].copy_from_slice(&flags.to_be_bytes());
+        assert_eq!(
+            parse_class(&flagged).unwrap_err().kind,
+            ParseErrorKind::InvalidCodeAttribute("Code attribute on native/abstract method")
+        );
+    }
+}
