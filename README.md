@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — architecture/scaffold only.** There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 class-file structural reader under review.** The crate can parse a bounded subset of CLDC-era class-file structures; it does **not** verify or execute bytecode. There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -21,6 +21,7 @@ A **VM core snapshot is not a complete game save state**: display, audio, I/O, h
 - [`docs/README.md`](docs/README.md): documentation map; use it to locate the owning architecture, standards, testing, validation and licensing policy.
 - [`docs/architecture.md`](docs/architecture.md): current technical hypotheses and state ownership.
 - [`docs/validation-plan.md`](docs/validation-plan.md): gates with concrete success/failure evidence.
+- [`src/classfile.rs`](src/classfile.rs): G1 bounded, borrowed class-file reader (versions 45.x–48.0), not a verifier.
 - [`docs/testing.md`](docs/testing.md): original guest fixture policy, public CI and private compatibility corpus.
 - [`docs/adr/`](docs/adr/): accepted architectural decisions.
 
@@ -35,7 +36,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-These are **scaffold checks**, not proof that a VM exists. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
+These validate the Rust crate and current G1 structural parser tests, **not** a functional VM or CLDC compatibility. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
 
 ## Clean-room and licensing
 

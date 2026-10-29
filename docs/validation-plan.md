@@ -36,3 +36,7 @@ Capture exact commands, toolchain versions, fixture provenance, observed outputs
 ## Integration rule
 
 No branch or code modification in JL-Mod Plus until G3 has been independently reproduced and the relevant architecture/maintenance costs reviewed. Android integration is a separate decision after proof of feasibility.
+
+## G1 execution record
+
+A separate `feature/g1-classfile-parser` branch adds an original compiler-produced 48.0 class-file fixture, a byte reader, typed constant-pool references, Code attribute structure reading, and format rejection tests. It intentionally leaves verifier semantics for the next reviewed scope. The temporary Rust runner validated formatting, Clippy and **7 passing G1 tests** ([workflow run](https://github.com/H3nb/J2ME-VM/actions/runs/40800353347)). This is evidence for the bounded structural reader, **not** class-file semantic verification or CLDC conformance. The permanent workflow must also pass on the reviewed final commit; a pre-merge review then added normative `Code` cardinality tests and exact constant-pool reference error offsets. The 16 MiB input cap is a host security policy, not a claim about the JVM specification. Source/fixture provenance is documented in `tests/fixtures/README.md`.
