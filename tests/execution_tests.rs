@@ -396,7 +396,8 @@ fn method_visibility_exclusion_applies_to_entry_and_reachable_callees() {
         PrepareErrorKind::InvalidMethodAccessFlags
     );
 
-    // Private static and reserved flags must not be blanket-rejected.
+    // Private static, final, strictfp and reserved flags must not be
+    // blanket-rejected by the narrow admission checks.
     let mut allowed = parse_class(NESTED).unwrap();
     allowed.access_flags |= 0x8000;
     let adjust = allowed
@@ -404,7 +405,7 @@ fn method_visibility_exclusion_applies_to_entry_and_reachable_callees() {
         .iter_mut()
         .find(|m| m.name_index == 14 && m.descriptor_index == 11)
         .expect("original private static adjust(I)I");
-    adjust.access_flags |= 0x8000;
+    adjust.access_flags |= 0x8000 | 0x0010 | 0x0800;
     let program = IntProgram::prepare_with_calls(&allowed, b"evaluate", b"(I)I").unwrap();
     assert_eq!(IntMachine::with_int_arg(program, 4).run(200), Some(15));
 }
