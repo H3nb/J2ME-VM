@@ -2,7 +2,7 @@
 //! Bounded integer-only execution proof, not a CLDC verifier or class loader.
 //! JVMS Second Edition §§3.6, 4.7.3, 4.9 and chapter 6 instruction contracts.
 
-use std::collections::VecDeque;
+use std::collections::{BTreeMap, VecDeque};
 
 use crate::classfile::{ClassFile, Code, Constant, Member};
 
@@ -431,17 +431,27 @@ impl IntProgram {
                 PrepareErrorKind::UnsupportedMethod("class initialization unsupported"),
             ));
         }
-        let mut entry_member = None;
+        // Build this temporary index once: hostile classes may contain many
+        // unused methods and repeated calls. None retains duplicate ambiguity
+        // without rejecting unrelated declarations outside the selected proof.
+        let mut members_by_signature = BTreeMap::new();
         for (index, member) in class.methods.iter().enumerate() {
-            if class.utf8_bytes(member.name_index) == Some(name)
-                && class.utf8_bytes(member.descriptor_index) == Some(descriptor)
-                && entry_member.replace(index).is_some()
-            {
-                return Err(error(0, PrepareErrorKind::AmbiguousMethod));
-            }
+            let (Some(method_name), Some(signature)) = (
+                class.utf8_bytes(member.name_index),
+                class.utf8_bytes(member.descriptor_index),
+            ) else {
+                continue;
+            };
+            members_by_signature
+                .entry((method_name, signature))
+                .and_modify(|member| *member = None)
+                .or_insert(Some(index));
         }
-        let entry_member =
-            entry_member.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
+        let entry_member = match members_by_signature.get(&(name, descriptor)) {
+            Some(Some(index)) => *index,
+            Some(None) => return Err(error(0, PrepareErrorKind::AmbiguousMethod)),
+            None => return Err(error(0, PrepareErrorKind::MethodNotFound)),
+        };
         let mut member_to_id = vec![None; class.methods.len()];
         member_to_id[entry_member] = Some(0usize);
         let mut pending = VecDeque::from([entry_member]);
@@ -498,17 +508,11 @@ impl IntProgram {
                         ),
                     ));
                 }
-                let mut resolved = None;
-                for (index, candidate) in class.methods.iter().enumerate() {
-                    if class.utf8_bytes(candidate.name_index) == Some(method_name)
-                        && class.utf8_bytes(candidate.descriptor_index) == Some(signature)
-                        && resolved.replace(index).is_some()
-                    {
-                        return Err(error(at, PrepareErrorKind::AmbiguousMethod));
-                    }
-                }
-                let resolved =
-                    resolved.ok_or_else(|| error(at, PrepareErrorKind::UnresolvedMethod))?;
+                let resolved = match members_by_signature.get(&(method_name, signature)) {
+                    Some(Some(index)) => *index,
+                    Some(None) => return Err(error(at, PrepareErrorKind::AmbiguousMethod)),
+                    None => return Err(error(at, PrepareErrorKind::UnresolvedMethod)),
+                };
                 // Callee eligibility and its Code are checked when dequeued.
                 let next_id = if let Some(existing) = member_to_id[resolved] {
                     existing

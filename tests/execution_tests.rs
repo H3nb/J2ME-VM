@@ -298,6 +298,55 @@ fn original_nested_invocations_select_descriptors_and_preserve_callers() {
 }
 
 #[test]
+fn indexed_call_lookup_preserves_target_ambiguity_and_ignores_unused_duplicates() {
+    let class = parse_class(NESTED).unwrap();
+    let entry = class
+        .methods
+        .iter()
+        .find(|member| class.utf8_bytes(member.name_index) == Some(b"evaluate".as_slice()))
+        .unwrap()
+        .clone();
+    let callee = class
+        .methods
+        .iter()
+        .find(|member| {
+            class.utf8_bytes(member.name_index) == Some(b"adjust".as_slice())
+                && class.utf8_bytes(member.descriptor_index) == Some(b"(I)I".as_slice())
+        })
+        .unwrap()
+        .clone();
+    let unused = class
+        .methods
+        .iter()
+        .find(|member| class.utf8_bytes(member.name_index) == Some(b"<init>".as_slice()))
+        .unwrap()
+        .clone();
+
+    let mut duplicate_entry = class.clone();
+    duplicate_entry.methods.push(entry);
+    assert_eq!(
+        IntProgram::prepare_with_calls(&duplicate_entry, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::AmbiguousMethod
+    );
+
+    let mut duplicate_callee = class.clone();
+    duplicate_callee.methods.extend([callee.clone(), callee]);
+    let error =
+        IntProgram::prepare_with_calls(&duplicate_callee, b"evaluate", b"(I)I").unwrap_err();
+    assert_eq!(error.kind, PrepareErrorKind::AmbiguousMethod);
+    assert_eq!(error.pc, 1); // First invokestatic, rather than the entry PC.
+
+    // Whole-class duplicate validation is outside this closed execution proof.
+    // Indexing unused declarations must not silently broaden its admission rules.
+    let mut unused_duplicates = class;
+    unused_duplicates.methods.extend([unused.clone(), unused]);
+    let program = IntProgram::prepare_with_calls(&unused_duplicates, b"evaluate", b"(I)I").unwrap();
+    assert_eq!(IntMachine::with_int_arg(program, 4).run(200), Some(15));
+}
+
+#[test]
 fn recursive_frames_budget_and_call_depth_are_vm_owned() {
     let class = parse_class(RECURSIVE).unwrap();
     let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
