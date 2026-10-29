@@ -437,7 +437,7 @@ impl IntProgram {
         name: &[u8],
         descriptor: &[u8],
     ) -> Result<Self, PrepareError> {
-        if class.methods.iter().any(|member| class.utf8_bytes(member.name_index) == Some(b"<clinit>")) {
+        if class.methods.iter().any(|member| class.utf8_bytes(member.name_index) == Some(b"<clinit>".as_slice())) {
             return Err(error(0, PrepareErrorKind::UnsupportedMethod("class initialization unsupported")));
         }
         let mut entry_member = None;
@@ -533,8 +533,8 @@ impl IntProgram {
 
 fn supported_method_arguments(class: &ClassFile<'_>, member: &Member<'_>) -> Result<usize, PrepareError> {
     let arguments = match class.utf8_bytes(member.descriptor_index) {
-        Some(b"()I") => 0,
-        Some(b"(I)I") => 1,
+        Some(signature) if signature == b"()I" => 0,
+        Some(signature) if signature == b"(I)I" => 1,
         _ => return Err(error(0, PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"))),
     };
     if member.access_flags & 0x0008 == 0
