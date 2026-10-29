@@ -138,9 +138,7 @@ fn corrupt_branch_offsets_are_rejected_before_machine_creation() {
     out_of_range[5] = 0x7f;
     out_of_range[6] = 0xff;
     assert_eq!(
-        changed_loop_code(&out_of_range, 2, 3)
-            .unwrap_err()
-            .kind,
+        changed_loop_code(&out_of_range, 2, 3).unwrap_err().kind,
         PrepareErrorKind::InvalidBranchTarget
     );
 }
@@ -149,9 +147,7 @@ fn corrupt_branch_offsets_are_rejected_before_machine_creation() {
 fn uninitialized_locals_and_incompatible_control_flow_are_rejected() {
     // Method is (I)I: argument occupies local 0, local 1 is unassigned.
     assert_eq!(
-        changed_loop_code(&[0x1b, 0xac], 1, 2)
-            .unwrap_err()
-            .kind,
+        changed_loop_code(&[0x1b, 0xac], 1, 2).unwrap_err().kind,
         PrepareErrorKind::UninitializedLocal
     );
     assert_eq!(
@@ -161,19 +157,17 @@ fn uninitialized_locals_and_incompatible_control_flow_are_rejected() {
         PrepareErrorKind::UninitializedLocal
     );
     assert_eq!(
-        changed_loop_code(&[0x1b, 0xac], 1, 1)
-            .unwrap_err()
-            .kind,
+        changed_loop_code(&[0x1b, 0xac], 1, 1).unwrap_err().kind,
         PrepareErrorKind::InvalidLocal
     );
 
     // At pc=9, the taken edge carries zero stack entries, but the
     // fallthrough edge carries one; neither may be executed.
-    let inconsistent = [0x03, 0x03, 0x9f, 0x00, 0x07, 0x04, 0xa7, 0x00, 0x03, 0x03, 0xac];
+    let inconsistent = [
+        0x03, 0x03, 0x9f, 0x00, 0x07, 0x04, 0xa7, 0x00, 0x03, 0x03, 0xac,
+    ];
     assert_eq!(
-        changed_loop_code(&inconsistent, 2, 1)
-            .unwrap_err()
-            .kind,
+        changed_loop_code(&inconsistent, 2, 1).unwrap_err().kind,
         PrepareErrorKind::InconsistentStackJoin
     );
 
@@ -188,9 +182,7 @@ fn uninitialized_locals_and_incompatible_control_flow_are_rejected() {
         PrepareErrorKind::UninitializedLocal
     );
     assert_eq!(
-        changed_loop_code(&[0xa7, 0], 1, 1)
-            .unwrap_err()
-            .kind,
+        changed_loop_code(&[0xa7, 0], 1, 1).unwrap_err().kind,
         PrepareErrorKind::TruncatedOperand
     );
     assert_eq!(
@@ -204,8 +196,7 @@ fn uninitialized_locals_and_incompatible_control_flow_are_rejected() {
 #[test]
 fn iinc_wraps_java_signed_int_instead_of_panicking() {
     // iinc #0, +1; iload_0; ireturn
-    let program =
-        changed_loop_code(&[0x84, 0x00, 0x01, 0x1a, 0xac], 1, 1).unwrap();
+    let program = changed_loop_code(&[0x84, 0x00, 0x01, 0x1a, 0xac], 1, 1).unwrap();
     let mut vm = IntMachine::with_int_arg(program, i32::MAX);
     assert_eq!(vm.step(), Step::Advanced { next_pc: 3 });
     assert_eq!(vm.locals(), &[Some(i32::MIN)]);
