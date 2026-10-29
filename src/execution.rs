@@ -58,10 +58,10 @@ impl IntProgram {
     pub fn prepare(class: &ClassFile<'_>, name: &[u8]) -> Result<Self, PrepareError> {
         let mut selected = None;
         for member in &class.methods {
-            if class.utf8_bytes(member.name_index) == Some(name) {
-                if selected.replace(member).is_some() {
-                    return Err(error(0, PrepareErrorKind::AmbiguousMethod));
-                }
+            if class.utf8_bytes(member.name_index) == Some(name)
+                && selected.replace(member).is_some()
+            {
+                return Err(error(0, PrepareErrorKind::AmbiguousMethod));
             }
         }
         let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
