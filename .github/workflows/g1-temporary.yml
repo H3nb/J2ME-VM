@@ -1,0 +1,33 @@
+name: G1 format and validation (temporary)
+'on':
+  push:
+    branches: [feature/g1-classfile-parser]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  format-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format changed Rust sources
+        run: |
+          cargo fmt --all
+          git diff --check
+      - name: Check Rust implementation
+        run: |
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+      - name: Commit rustfmt output when checks pass
+        run: |
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/classfile.rs src/lib.rs tests/classfile_tests.rs
+            git commit -m 'Apply rustfmt to G1 parser and tests'
+            git push origin HEAD:feature/g1-classfile-parser
+          fi
