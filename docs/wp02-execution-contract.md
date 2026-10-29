@@ -1,73 +1,92 @@
-# WP02: bounded arithmetic execution proof
+# WP02: bounded integer execution proof
 
-**Status:** Accepted limited research proof via PR #3; partial evidence for G2
-only. Normative references: [JVMS Second Edition §3.6 and §3.11](https://docs.oracle.com/javase/specs/jvms/se6/html/Overview.doc.html),
-[§4.7.3/§4.9](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html),
-[opcode listing](https://docs.oracle.com/javase/specs/jvms/se6/html/Mnemonics.doc.html).
-CLDC 1.1/1.1.1 applicability and StackMap obligations remain governed by JSR 139,
-not modern Java SE verification.
+**Status:** [PR #3](https://github.com/H3nb/J2ME-VM/pull/3) and
+[PR #16](https://github.com/H3nb/J2ME-VM/pull/16) integrated; **partial G2
+proof only**. The relevant technical baseline is the
+[JVMS Second Edition](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html)
+(§§3.6, 4.7.3, 4.9 and chapter 6 instruction definitions).
+Version-specific CLDC `StackMap` verification, linking and resolution are
+**not** implemented; see [N01 evidence grades](specification-map.md).
 
-## A deliberately narrow entry point
+## Entry and supported method shape
 
-Input is a structurally parsed G1 `ClassFile`. The prototype selects exactly
-one method with a specific name and requires **static, concrete,
-unsynchronized, exact `()I` descriptor**. It accepts no locals,
-exception handlers or nested Code attributes; a 4096-byte code/64-slot stack
-limit is a project resource budget. It rejects absent/ambiguous names and
-unsupported method shapes. It neither loads, links nor initializes the class;
-all other methods are outside this proof.
+`ClassFile::parse_class` structurally reads version 45.x–48.0 and exposes
+method `Code`. `IntProgram::prepare` independently checks the **selected
+method**, not the whole class or loader dependencies. Exactly one method
+matching the name is required; only static, concrete, unsynchronized
+`()I` or `(I)I` methods are admitted. `IntMachine::new` invokes the
+no-argument method; `IntMachine::with_int_arg` supplies the one integer
+argument. Calling the wrong host constructor is a programming error that
+panics, not a guest verifier error.
 
-Supported bytecodes only:
+The supported method may have no exception handlers or nested `Code`
+attributes. Project resource policies cap the method at **4096 code bytes,
+64 operand slots and 64 local slots**. No class loading, class/field
+resolution, initialization, object allocation or instance methods occur.
 
-| Bytecode | Meaning | Acceptance rule |
-| --- | --- | --- |
-| `iconst_m1`–`iconst_5` | Push signed int constant | Stack does not exceed declared max |
-| `bipush`, `sipush` | Sign-extended 8-/16-bit immediate | All operand bytes present |
-| `iadd`, `isub` | Pop 2 ints, push result | Prior stack depth ≥ 2; wrap as Java 32-bit int |
-| `ireturn` | Return exactly 1 int | Stack depth exactly 1; final instruction |
+| Bytecode | Supported behavior |
+| --- | --- |
+| `iconst_m1`–`iconst_5`, `bipush`, `sipush` | Push an `int` (signed immediate sign-extension) |
+| `iload`, `iload_0`–`iload_3` | Read a definitely initialized in-range integer local |
+| `istore`, `istore_0`–`istore_3` | Store an `int` into an in-range local |
+| `iinc` | Add signed 8-bit immediate to initialized integer local, wrapping as Java `int` |
+| `iadd`, `isub` | Signed 32-bit arithmetic with two's-complement wraparound |
+| `if_icmpeq`, `if_icmpne`, `if_icmplt`, `if_icmpge`, `if_icmpgt`, `if_icmple` | Pop two `int` values; evaluate signed comparison; branch relative to opcode PC |
+| `goto` | Branch relative to opcode PC |
+| `ireturn` | Return one `int` |
 
-Every instruction of the method is decoded and the straight-line stack depth
-checked **before a machine can be created**. Unsupported opcode, truncation,
-underflow, overflow, missing return, or bytes after return fail closed with an
-offset. No branch target, dataflow join or local-variable type rule is claimed:
-those instructions are intentionally rejected instead of partially verified.
+No `wide`, switch, floating-point, reference, invocation, monitor,
+exception or dynamic-linking instructions are supported. All unsupported
+opcodes fail before a machine is created; CLDC `StackMap` and modern
+`StackMapTable` are **not interchangeable**.
 
-The validator creates an owned `IntProgram`; `IntMachine` owns its program,
-operand stack, next instruction position and result. Stepping exposes the
-bytecode PC and read-only operand stack. No native stack continuation, process
-global class table, JIT or host resources are involved. This is a **single
-invocation proof**, not yet a class loader, separate Java thread, general
-debugger or snapshot API. An instruction position may be mapped to PC in the
-verified program; no Rust pointer becomes a durable reference.
+## Method admission and explicit state
 
-## Distinct validation and execution guarantees
+The proof decodes the entire instruction stream, validates operand widths
+and local bounds, and records instruction boundaries. Branch targets must
+point **inside Code, at an opcode boundary**, not into an operand.
+A worklist traverses reachable control flow, validates operand-stack
+underflow/overflow and equal depths at merges, intersects definitely
+initialized local facts on joins (including back edges), rejects invalid
+fall-through and unreachable instructions, and requires a reachable
+`ireturn`. These are **subset-specific** structural/type checks, not
+general JVMS or CLDC verification.
 
-G1 parsing is not a `VerifiedClass`; the returned `IntProgram` is not a CLDC
-certification token. The Java 1.4 fixture was not preverified and its enclosing
-class may contain methods not checked for execution. No public API should
-present this proof as acceptance of arbitrary guest classes or MIDlets.
+`IntProgram` owns the validated decoded instructions and their bytecode
+PCs. Each `IntMachine` owns its own program, current instruction index,
+`Vec<i32>` operand stack, `Vec<Option<i32>>` local slots and result.
+Read-only accessors expose the next PC, stack and locals. `step()` consumes
+one guest instruction; `run(budget)` executes at most
+`min(budget, 65_536)` instructions per call. Exhausting this budget returns
+`None` and leaves the frame resumable; there is **no lifetime-wide
+execution cap**, process-independent checkpoint format or snapshot API.
 
-The first vertical test parses the original `MinimalClass.class` from G1,
-checks only `answer()I`, steps `bipush 42; ireturn`, inspects PC/stack and
-returns 42. Focused tests reject forbidden bytecode and incomplete operands,
-exercise signed integer arithmetic and independent instances. A green CI
-demonstrates only these cases.
+## Empirical evidence and limitations
 
-## Required next contract extension
+Original self-authored ECJ 3.26.0 Java 1.4 (**class 48.0**) fixtures are
+recorded with SHA-256 in [fixture provenance](../tests/fixtures/README.md).
+`MinimalClass.answer()I` returns 42;
+`LocalArithmetic.evaluate(I)I` exercises locals and signed overflow;
+`BranchLoop.evaluate(I)I` covers conditional and backward branches.
+Positive and negative regression cases cover corrupt targets, invalid
+stack/local state, all six signed comparison branches, step PC, independent
+frames, bounded loops and resume.
 
-1. Resolve affected N01 final CLDC preverification/StackMap clauses before
-   claiming conformant execution admission. Do not treat `StackMapTable`
-   as interchangeable with legacy `StackMap`.
-2. Add exact descriptor and method/class structural constraints, locals and
-   definite assignment, variable-length instruction decoding and validated
-   branch target boundaries with dataflow joins. Reject unsupported paths.
-3. Add explicit VM-owned call frames and error propagation as calls and
-   exceptions arrive. Class resolution and initialization remain distinct;
-   do not move observable resolution failure earlier than normative rules.
-4. Extend instruction stepping to bounded inspection/stops and only then
-   design serialization around logical PC, code identity and owned state.
+[Final W4 PR CI](https://github.com/H3nb/J2ME-VM/actions/runs/40816652770),
+[W3+W4 combined-tree CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817525937)
+and [post-merge main CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817648432)
+each succeeded. The resulting main Git tree exactly matches the validated
+combined candidate; **22 Rust tests pass**. These tests do not include a
+CLDC TCK, preverified class, external VM oracle comparison of CLDC behavior,
+or a cross-process restore.
 
-**Exit:** A reviewer confirms source provenance and effective diff; permanent
-GitHub CI actually checks formatting, Clippy, positive/negative test cases
-and confirms there are no new dependencies or third-party fixtures. Do not
-mark the full G2 gate passed on this milestone.
+## Further gates
+
+N01 still requires original final JSR 139 editions and legally reviewed
+implementation terms before CLDC-admission assertions can be finalized.
+Full G2 additionally needs the chosen class/descriptor format constraints,
+general type verification where applicable, class loading and symbolic
+resolution, calls/return frames, exception propagation, debugging stops and
+non-`int` state. G3 separately requires a real **process A exits →
+process B restores** proof. This execution prototype does not justify
+a MIDP compatibility, Java certification or JL-Mod Plus integration claim.
