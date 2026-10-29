@@ -8,7 +8,7 @@ owns the runtime prerequisites, not this fixture note.
 
 ## Provenance and independently expected results
 
-Both sources were authored for this project by the W9 Luna xHigh worker and
+Both sources were authored for this project under task W9 and
 reviewed by the coordinator. They are GPL-3.0-only; no SDK sample, runtime source,
 API stub, game, TCK or third-party VM test was copied. The coordinator required
 the explicit null check after finding that comparisons against two other objects

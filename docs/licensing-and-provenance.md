@@ -32,7 +32,7 @@ third-party VM implementation. Authored Java classes can enter the public tests
 when their source and any compiler-generated class/JAR bytes have documented
 rights and provenance. An official SDK API JAR is ordinarily only a local
 compile reference: do not place its classes into published fixtures. The
-Library `/J2ME Dev Kit/` bundle is not redistributable by default and its
+Private offline SDK/toolkit material is not redistributable by default and its
 runtime implementation source must not guide this clean-room VM.
 
 Commercial JARs, vendor sample code, JSR reference implementations and TCKs

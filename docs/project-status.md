@@ -25,7 +25,7 @@ passed format, Clippy and **22 tests**. Coordinator reviewed both PRs, but
 no second independent review session reviewed the coordinator's own
 integration decisions.
 
-W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/40880712729) and W7 post-merge [CI #40881324313](https://github.com/H3nb/J2ME-VM/actions/runs/40881324313) succeeded. W7's final merged state passed format, Clippy and **29 Rust tests**. Original integration used coordinator **self-review**. The subsequent separate Luna xHigh audit is recorded in [Issue #24](https://github.com/H3nb/J2ME-VM/issues/24). Its preparation resource finding [#28](https://github.com/H3nb/J2ME-VM/issues/28) was corrected by [PR #29](https://github.com/H3nb/J2ME-VM/pull/29), squash `9a77276d829e1b12464eb2a44e2718729b5941c0`.
+W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/40880712729) and W7 post-merge [CI #40881324313](https://github.com/H3nb/J2ME-VM/actions/runs/40881324313) succeeded. W7's final merged state passed format, Clippy and **29 Rust tests**. Original integration used coordinator **self-review**. The subsequent separate independent audit is recorded in [Issue #24](https://github.com/H3nb/J2ME-VM/issues/24). Its preparation resource finding [#28](https://github.com/H3nb/J2ME-VM/issues/28) was corrected by [PR #29](https://github.com/H3nb/J2ME-VM/pull/29), squash `9a77276d829e1b12464eb2a44e2718729b5941c0`.
 
 ## Canonical tasks, boundaries and next action
 
@@ -43,11 +43,10 @@ W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/408
 
 ## Current coordinator handoff
 
-Hendra assigned coordinator chat `01a187f4-7a2b-7383-ad54-4302bc79d1ff`
-the goal of a tested CLDC/MIDP runtime, focused commits and Luna xHigh helpers.
-He explicitly authorized squash merges after review and successful relevant CI.
-No competing active
-assignment or open PR existed at dispatch. Three read-only workers reported
+The active goal is a tested CLDC/MIDP runtime with focused commits and independent
+review. The maintainer authorized squash merges after review and successful
+relevant CI. No competing active assignment or open PR existed at dispatch.
+Three read-only workers reported
 through the coordinator; only the coordinator wrote/published shared files.
 
 - **Observed main:** `9a77276d829e1b12464eb2a44e2718729b5941c0`, clean and equal

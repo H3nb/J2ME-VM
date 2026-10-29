@@ -7,8 +7,8 @@ They enable parallel work within authorization, not automatic delegation or merg
 
 ## Roles and shared records
 
-Hendra opens sessions and sets product priorities. One named coordinator at a
-time prepares ready assignments, resolves overlaps and sequences integration.
+The maintainer opens sessions and sets product priorities. One named coordinator
+at a time prepares ready assignments, resolves overlaps and sequences integration.
 Each task has one current writer; a reviewer checks primary evidence independently
 of the implementation claims. The coordinator may implement a separate task but
 must label their review of their own work as self-review. Another session or
@@ -19,7 +19,7 @@ existing PR may serve as the assignment for a small, already authorized change;
 do not require a duplicate Issue or retroactively block existing work. The
 coordinator records a direct user assignment rather than asking for it again.
 Reference these records from the current increment's handoff; do not create
-competing task lists in chat, Library, project status and new registry files.
+competing task lists in private tools, project status and new registry files.
 
 | Record | Authority / owner |
 | --- | --- |
@@ -30,10 +30,12 @@ competing task lists in chat, Library, project status and new registry files.
 | Actual merge, branch head and CI outcome | Live GitHub refs/results; verify dated summaries against them |
 
 Separate sessions have no guaranteed shared memory or automatic notification.
-GitHub records are shared evidence, not automatic synchronization. Hendra relays
-task links, blockers and changed assignments when a session needs to act; agents
+GitHub records are shared evidence, not automatic synchronization. The maintainer
+relays task links, blockers and changed assignments when a session needs to act; agents
 reread the relevant records at the checkpoints below. Never claim another session
-was notified without evidence. Distinguish session IDs from a shared GitHub login.
+was notified without evidence. Use distinct public task labels; a shared GitHub
+login does not identify an active writer. Keep private session identifiers out of
+public records.
 
 ## Assignment and readiness
 
@@ -42,8 +44,8 @@ The coordinator publishes a bounded assignment before concurrent writing:
 ```text
 Task ID and canonical URL:
 Goal / work package / observable result:
-Current writer session ID; coordinator; reviewer or review still unassigned:
-Designated integrator session ID, or unassigned until integration:
+Current writer public task label/role; coordinator; reviewer or review still unassigned:
+Designated integrator public task label/role, or unassigned until integration:
 Authorized actions and source of user direction (implementation / publication / merge):
 Target branch and starting commit SHA; task branch:
 Contract revision (commit + document/section); dependency task/PR links:
@@ -100,7 +102,8 @@ only after its accepted changes land. A finished chat or green CI is insufficien
   and migration needed. The coordinator identifies which work must pause and
   records the accepted revision. Workers reread it before continuing affected
   work. Do not bridge incompatible assumptions with silent fallbacks or duplicate
-  models. Unaffected work may continue; material product changes remain Hendra's.
+  models. Unaffected work may continue; material product changes remain the
+  maintainer's.
 
 Start with a coordinator and two bounded worker tasks. Increase concurrency only
 when review capacity and independent ready work justify it. Measure time to an
@@ -111,10 +114,10 @@ not launch more. The coordinator role must remain transferable through records.
 ## Handoff, interruption and reassignment
 
 At a useful stopping point, leave the following in the canonical Issue/PR (within
-authorized publication scope), then give Hendra the link:
+authorized publication scope), then give the maintainer the link:
 
 ```text
-Task/session ID; status:
+Public task label; status:
 Baseline SHA; branch; current head SHA; PR:
 Implemented or researched result and its limits:
 Contract changes / affected tasks, or none:
@@ -147,8 +150,8 @@ writing if replaced. The same explicit transfer applies to the coordinator.
    Separate successful branch checks do not prove compatible integration. Record
    what tree/commit was exercised, including a CI merge candidate if applicable;
    never substitute an old successful run for the current candidate.
-4. One integrator merges at a time, within Hendra's authorization. Use an expected
-   PR head guard where available. Recheck the target immediately before merging;
+4. One integrator merges at a time, within the maintainer's authorization. Use an
+   expected PR head guard where available. Recheck the target immediately before merging;
    if it changed, reassess the candidate. A rejected update requires rereading refs,
    not a blind retry or force push. GitHub settings may enforce stronger guards;
    this document does not claim they are configured.
@@ -164,10 +167,10 @@ self-review and residual risk honestly; do not fabricate another reviewer or add
 an approval loop where existing authorization suffices. CI/skip policy remains
 owned by [development.md](development.md); do not weaken checks to speed integration.
 
-## Session launch prompts for Hendra
+## Session launch prompts for the maintainer
 
-The coordinator fills in URLs/IDs before handing over these prompts. Hendra only
-needs to open the sessions, paste the prompts and relay completion/blocker links.
+The coordinator fills in public task references before handing over these prompts.
+The maintainer opens sessions, pastes the prompts and relays completion/blocker links.
 
 **Coordinator:**
 
@@ -179,7 +182,7 @@ needs to open the sessions, paste the prompts and relay completion/blocker links
 
 **Worker:**
 
-> Work as session [ID] on [canonical task URL] in H3nb/J2ME-VM. Verify ownership,
+> Work as [public task label] on [canonical task URL] in H3nb/J2ME-VM. Verify ownership,
 > current refs and the linked contract before writing. Use the assigned branch
 > and separate workspace. Complete the bounded task, relevant checks and PR
 > within the assignment's authorization. Do not take other tasks, change shared
@@ -195,6 +198,6 @@ needs to open the sessions, paste the prompts and relay completion/blocker links
 
 **Replacement:**
 
-> You replace session [old ID] as [new ID] for [task URL], as recorded by the
-> coordinator. Verify that transfer and the latest handoff/refs. Preserve and
+> You replace [old public task label] as [new public task label] for [task URL],
+> as recorded by the coordinator. Verify that transfer and the latest handoff/refs. Preserve and
 > continue existing work rather than restarting it; follow the worker procedure.
