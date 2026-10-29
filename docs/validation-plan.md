@@ -36,3 +36,7 @@ Capture exact commands, toolchain versions, fixture provenance, observed outputs
 ## Integration rule
 
 No branch or code modification in JL-Mod Plus until G3 has been independently reproduced and the relevant architecture/maintenance costs reviewed. Android integration is a separate decision after proof of feasibility.
+
+## G1 execution record
+
+A separate `feature/g1-classfile-parser` branch adds an original compiler-produced 48.0 class-file fixture, a byte reader, typed constant-pool references, Code attribute structure reading, and format rejection tests. It intentionally leaves verifier semantics for the next reviewed scope. **Do not mark this gate complete before GitHub Actions has actually executed the new tests successfully.** The 16 MiB input cap is a host security policy, not a claim about the JVM specification. Source/fixture provenance is documented in `tests/fixtures/README.md`.

@@ -24,3 +24,12 @@
 - Confirm referenced JVMS edition and map each supported bytecode, class format and verifier requirement before claiming CLDC-level conformance.
 - Resolve Java specification implementation/TCK licensing and permitted branding before any public claim of standards compatibility.
 - Create a clause-to-test matrix incrementally while implementing; an empty matrix is not evidence of correctness.
+
+## G1 parser traceability (implementation scope, not verification)
+
+- **JVMS Second Edition chapter 4 / [Oracle-hosted class format](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html) §§4.1, 4.4, 4.5, 4.6, 4.7:** big-endian header, constant pool indices and two-slot Long/Double, members, bounded attributes, Code layout and modified UTF-8.
+- **JSR 139 CLDC 1.1 §5.3.1:** class-file range 45.x through 48.0 for G1. Older minor-version 45.x and major 46–48 minor 0 are accepted; newer tag variants remain unsupported. The fixture is an original ECJ-produced class file 48.0; see [`tests/fixtures/README.md`](../tests/fixtures/README.md).
+- **Deliberately deferred:** complete format and name/descriptor constraints, attribute cardinality and allowed locations, bytecode instruction decoding and validation, symbolic resolution, and CLDC 1.1 `StackMap` verifier (§5.2.1 and Appendix 1). Structural parsing success must never enable guest execution by itself.
+- **Host resource policy:** input size capped at 16 MiB, independent of normative class-file limits. Errors carry an offset. Parser borrows attribute/constant bytes and does not normalize guest strings with lossy UTF-8 conversion.
+
+Any work extending verification must independently check exact JSR 139 normative clauses and applicable terms before claiming compliance.
