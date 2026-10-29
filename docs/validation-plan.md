@@ -84,10 +84,13 @@ A separate `feature/g1-classfile-parser` branch adds an original compiler-produc
 
 ## WP02 proof boundary (partial G2, not a passed gate)
 
-A narrowly validated original Java 1.4 static, no-argument int method may be
-stepped by a VM-owned invocation state under [the WP02 contract](wp02-execution-contract.md).
-This is *not* a general verifier, linked runtime, full G2, or snapshot.
-Before G2 can pass, extend the verified subset with branches, locals,
-calls/returns, exception paths, bytecode inspection/stops and applicable CLDC
-preverification rules with original regression fixtures. Require fresh CI
-evidence on the implementation PR before accepting even this partial proof.
+The accepted bounded proof now steps original Java 1.4 static `()I` and
+`(I)I` methods with integer locals, signed branching and backward loops under
+[the WP02 contract](wp02-execution-contract.md). The method is decoded and
+subset-validated before creating a machine. [W4 head CI](https://github.com/H3nb/J2ME-VM/actions/runs/40816652770),
+[combined-tree CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817525937) and
+[main CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817648432) passed
+with 22 Rust tests; **G2 is not passed**. Before G2 acceptance, provide
+remaining general type/CLDC verifier contracts, loading/linking, calls and
+return frames, exception paths, debugger stops and specification-correct
+error timing with independently derived test evidence. No snapshot exists.

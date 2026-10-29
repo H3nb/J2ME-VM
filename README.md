@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — G1 parser merged; WP02 arithmetic-only stepping proof merged (partial G2).** G1 reads bounded CLDC-era class structures. WP02 experimentally checks and executes one restricted static int-return method; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 parser and WP02 int locals/branching execution proof merged (partial G2).** G1 reads bounded CLDC-era class structures. WP02 validates and steps a restricted static `()I` / `(I)I` integer subset, including local variables and branching; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -16,7 +16,7 @@ A **VM core snapshot is not a complete game save state**: display, audio, I/O, h
 
 ## Scope and structure
 
-Development follows the proposed [staged project plan](docs/project-plan.md):
+Development follows the adopted [staged project plan](docs/project-plan.md):
 define the next increment, reduce its main risks, and accept executable evidence
 before expanding scope. Read [project status](docs/project-status.md) to resume
 existing work without duplicating open PRs. Architecture and gates describe
