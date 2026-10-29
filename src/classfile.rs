@@ -361,7 +361,9 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
     for (index, c) in pool.iter().enumerate() {
         let at = offsets[index];
         match c {
-            Constant::Class { name_index } => check_ref(&pool, *name_index, "Utf8", is_utf8, at + 1)?,
+            Constant::Class { name_index } => {
+                check_ref(&pool, *name_index, "Utf8", is_utf8, at + 1)?
+            }
             Constant::String { string_index } => {
                 check_ref(&pool, *string_index, "Utf8", is_utf8, at + 1)?
             }
