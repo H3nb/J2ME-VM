@@ -1,0 +1,36 @@
+# Temporary one-branch source formatter and verifier. Remove after use.
+name: WP02 format and test (temporary)
+'on':
+  push:
+    branches: [feature/wp02-int-execution-slice]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        run: |
+          cargo fmt --all
+          git diff --check
+      - name: Validate
+        run: |
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+      - name: Persist formatter-only changes
+        run: |
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add src/execution.rs src/lib.rs tests/execution_tests.rs
+            git commit -m 'Apply rustfmt to WP02 execution proof'
+            git push origin HEAD:feature/wp02-int-execution-slice
+          fi
