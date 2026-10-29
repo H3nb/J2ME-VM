@@ -385,36 +385,8 @@ impl IntProgram {
             }
         }
         let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
-        let arguments = match class.utf8_bytes(member.descriptor_index) {
-            Some(signature) if signature == b"()I" => 0,
-            Some(signature) if signature == b"(I)I" => 1,
-            _ => {
-                return Err(error(
-                    0,
-                    PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"),
-                ));
-            }
-        };
-        if member.access_flags & 0x0008 == 0
-            || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
-        {
-            return Err(error(
-                0,
-                PrepareErrorKind::UnsupportedMethod(
-                    "requires static unsynchronized concrete method",
-                ),
-            ));
-        }
-        let code = member
-            .code
-            .as_ref()
-            .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
-        if !code.exceptions.is_empty() || !code.attributes.is_empty() {
-            return Err(error(
-                0,
-                PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported"),
-            ));
-        }
+        let arguments = supported_method_arguments(class, member)?;
+        let code = member.code.as_ref().expect("validated Code presence");
         Self::verify(code, arguments)
     }
 
