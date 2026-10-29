@@ -344,6 +344,17 @@ fn special_method_entry_is_rejected_before_building_a_machine() {
         );
     }
 
+    // The transitive Methodref target must also be an ordinary method.
+    // CP #20 is both increment(I)I's method name and its Methodref name.
+    let mut invalid_callee = parse_class(NESTED).unwrap();
+    invalid_callee.constant_pool[20] = Constant::Utf8(b"<invalid>");
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_callee, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("special method invocation unsupported")
+    );
+
     // A user-supplied special name must never select a normal method.
     let class = parse_class(NESTED).unwrap();
     assert_eq!(
