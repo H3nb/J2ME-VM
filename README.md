@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — G1 parser and WP02 int locals/branching execution proof merged (partial G2).** G1 reads bounded CLDC-era class structures. WP02 validates and steps a restricted static `()I` / `(I)I` integer subset, including local variables and branching; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 and bounded WP02 static invocation proof integrated (partial G2).** G1 reads bounded CLDC-era class structures. WP02 validates and steps a restricted integer `()I` / `(I)I` subset with locals, branching, nested/recursive same-class `invokestatic`, and explicit VM-owned call frames. It is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, object heap, exception propagation, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -28,7 +28,7 @@ targets, not capabilities already implemented.
 - [`docs/architecture.md`](docs/architecture.md): current technical hypotheses and state ownership.
 - [`docs/validation-plan.md`](docs/validation-plan.md): gates with concrete success/failure evidence.
 - [`src/classfile.rs`](src/classfile.rs): G1 bounded, borrowed class-file reader (versions 45.x–48.0), not a verifier.
-- [`src/execution.rs`](src/execution.rs): WP02 narrow validated integer method with per-invocation stepping; see [scope/limitations](docs/wp02-execution-contract.md).
+- [`src/execution.rs`](src/execution.rs): WP02 bounded integer execution with VM-owned nested frames, same-class static calls, stepping and budgets; see [scope/limitations](docs/wp02-execution-contract.md).
 - [`docs/testing.md`](docs/testing.md): original guest fixture policy, public CI and private compatibility corpus.
 - [`docs/adr/`](docs/adr/): accepted architectural decisions.
 
