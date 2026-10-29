@@ -10,6 +10,9 @@ Build an independent Java ME runtime that can run original JARs and give its
 host controlled execution, inspection, and reliable recovery of supported
 sessions. It may later power JL-Mod Plus or a separate Android application.
 Neither host is selected yet. Preserve the existing JL-Mod Plus engine.
+Prioritize declared MIDP 1.0–2.1 compatibility while designing for later MIDP
+3.0 on CLDC. The [profile study](profile-evolution.md) identifies differences,
+normative gaps and bounded experiments; it is not a MIDP 3 implementation claim.
 
 The first useful outcome is a desktop research runtime that executes an
 original guest program, exposes its state, and restores it in a fresh process
@@ -17,7 +20,7 @@ after the original process exits. The first user-facing pilot is an original
 offline MIDlet with input, mutable graphics and RMS whose session can be
 restored and rewound within an explicitly supported profile.
 
-Broad game compatibility, production Android delivery and JIT are subsequent
+Broad game compatibility, full MIDP 3.0, production Android delivery and JIT are subsequent
 outcomes, not prerequisites for demonstrating that first useful result.
 No document, test count or green scaffold job is a substitute for that result.
 
@@ -68,6 +71,7 @@ that any feature exists. Technical gate definitions live only in
 | R09 | Preserve a path to JIT without weakening semantics | Design review of safepoints, roots and reconstructable state now; execution equivalence and performance evidence before admitting JIT | G2 design, G7 decision |
 | R10 | Be embeddable without Android owning guest state | Headless tests have no Android dependency; future host can pause/stop/recreate resources via the defined boundary | G3H, G6, G7 |
 | R11 | Maintain a reproducible, independent implementation | Normative clause and fixture provenance; public tests without private SDK/game access; bounded hostile input; clean-room and dependency policy | Every relevant increment |
+| R12 | Preserve legacy runtime contracts while enabling later MIDP 3 contexts | Profile/revision selection, per-context mutable state, correct linkage failure timing, lifecycle separation and explicit recovery scope; study E01–E07 as applicable | G2/G3H design and tests, G5/G6, G6C |
 
 Priority is deliberate: R01-R04 and basic R08 are the first feasibility slice;
 R05-R07 turn core recovery into session recovery. R09 is an architectural
@@ -80,9 +84,11 @@ follow measured compatibility demand, not an exhaustive API checklist.
 
 - Rust, host-neutral library, initially one crate; GPL-3.0-only and the existing
   clean-room rules remain in force. No borrowed emulator/runtime internals.
-- CLDC 1.1 investigation baseline, then MIDP 2.0; identify exact revisions and
-  normative clauses before implementing behavior. A modern JVM is not authority
-  over CLDC. See [specification-map.md](specification-map.md).
+- CLDC 1.1 is the initial execution investigation baseline; compare 1.1.1
+  before freezing verification/linking decisions. Deliver MIDP 1.0/2.0/2.1
+  with version-specific evidence; JSR 271 informs future constraints. Do not
+  conflate configuration, profile, optional packages or vendor quirks. A modern
+  JVM is not authority over CLDC. See [specification-map.md](specification-map.md).
 - Original public fixtures; private compatibility assets stay outside the repo
   and public CI under [testing.md](testing.md).
 - Explicit state and host boundaries, structured failure, safe Rust core,
@@ -119,46 +125,45 @@ rule, not permission to spawn agents or start unrelated work.
 | Package | Concrete output | Depends on / completion boundary |
 | --- | --- | --- |
 | WP00 — planning baseline | This plan, owned architecture contracts, gates and resumable status | Current scope reconciled with existing PRs; no implementation gate claimed |
-| WP01 — input boundary | Review existing G1 parser PR; resolve applicable class/verification clauses and limitations | Preserve PR #1 work; G1 evidence reviewed at exact head |
-| WP02 — executable subset | Prepared instruction/verification contract, original guest fixture, owned frames and minimal inspect/step support | WP01; G2; every executed instruction path is validated for the declared subset |
+| WP01 — input boundary | G1 parser work landed via PR #1; retain its provenance and bounded scope | Merged evidence recorded in status; parsing still does not establish execution safety |
+| WP02 — executable subset | Resolve affected profile-study N01 clauses; instruction/verification contract, owned frames, context boundaries and inspect/step support | WP01; G2 with E01 and applicable E02; every executed instruction path is validated for the declared subset |
 | WP03 — core recovery | Nontrivial calls, heap/statics, versioned bounded snapshot and two-process harness | WP02; G3, including atomic invalid restore |
 | WP04 — host feasibility | Synthetic resumable request, completion event and explicitly unsupported resource | WP03; G3H before substantial runtime/API breadth |
 | WP05 — virtual concurrency | Scheduler, monitor, blocked-thread and virtual-time behavior | WP04; G4; no blanket CLDC concurrency claim |
 | WP06 — runtime services | Necessary CLDC services and host lifecycle/resource contracts | WP05; G5; expand selected functions only |
 | WP07 — offline MIDlet pilot | Original JAR/JAD, lifecycle/input, simple mutable graphics and RMS restore | WP06; G6; no broad game compatibility claim |
 | WP08 — rewind pilot | Measured rolling checkpoints/replay and session-storage branching | WP07; G6R |
-| WP09 — product decision | Compatibility/performance evidence and Android host/integration options | WP08; G7; shipping/JIT require their own bounded plan |
+| WP08C — legacy stabilization | Versioned MIDP 1.0/2.0/2.1 behavior/capability matrix, original fixtures, representative lawful workloads and regressions | WP08; G6C; no MIDP 3 compatibility claim inferred |
+| WP09 — product decision | Compatibility/performance evidence and Android host/integration options | WP08C; G7; MIDP 3 delivery, shipping and JIT require their own bounded plans |
 
 Dependencies refer to acceptance evidence; a package may contain several
 reviewable PRs. A partial PR may merge without declaring its entire gate passed.
 Necessary runtime primitives may be built earlier to enable a gate; these are
 not permission to grow the whole CLDC library ahead of proof.
 
-### Prepared next increment: WP01 review and input boundary
+### Prepared next increment: WP02 contract and minimal execution
 
-- **Input baseline:** refresh PR #1 and its target; use the exact heads rather
-  than the dated hashes in project status. Scope is the effective parser/fixture
-  diff plus its contracts and CI, not an unsolicited verifier or interpreter.
-- **Behavior to establish:** the documented structural subset is parsed within
-  declared limits; malformed, truncated and unsupported input fails with a
-  useful error; successful parsing does not authorize execution.
-- **Review questions:** version/minor rules, constant-pool tag/index types and
-  long/double slots, modified UTF-8, count/length arithmetic, bounded attributes
-  and Code structure, borrowed-input lifetime, fixture bytes and provenance.
-  Separate constraints intentionally deferred to verification from defects in
-  the structural contract. Verify the exact clauses in the specification map;
-  do not accept the PR's interpretation as primary authority.
-- **Evidence:** full effective diff review, current `fmt`/`clippy`/tests results
-  at that head, original valid fixture plus distinct negative boundary cases.
-  Reuse meaningful tests; add a case only for a real uncovered failure mode.
-- **Completion:** findings disposition, precise G1 scope/limitations and next
-  WP02 contract recorded. Review/CI failure returns to the same package. Merge
-  remains subject to existing authorization; no new successor branch/project
-  is a substitute for fixing the existing work.
-- **Bound:** one review of the complete current diff, then focused follow-up
-  on changed or unresolved findings. A missing specification/toolchain result
-  is recorded as a blocker, not guessed or retried indefinitely. This is a
-  review scope bound, not an invented delivery-time estimate.
+- **Baseline:** verify current main and retain the merged G1 parser. This is not
+  a reason to repeat its full review or reopen PR #1 absent new evidence.
+- **First output:** a clause-backed behavior table for a bounded executable
+  subset: accepted class forms, decode/type/control-flow checks, calls/returns,
+  exception propagation and the minimum objects needed for G3. Specify exactly
+  which cases remain unsupported; structural parse success is insufficient.
+- **Before freezing ownership/resolution:** close affected N01 questions from
+  the profile study, distinguish resolution from verification, and specify
+  class state/heap/frame ownership. N02 remains a runtime mapping question, not
+  a requirement to build an AMS before the interpreter.
+- **Proof:** original fixtures protect observable semantics, bounded step/inspect
+  and meaningful rejection paths. E01 checks independent instances as soon as
+  mutable state exists; E02 checks the selected normative resolution rule when
+  linking exists. Do not create placeholder tests for unimplemented APIs.
+- **Bound:** one explicit supported subset and one runnable vertical slice;
+  no full class library, profile switch framework, LIBlet loader or JIT. Unclear
+  clauses block dependent behavior only. Record unresolved evidence rather
+  than repeatedly guessing or expanding scope.
+- **Completion:** G2 evidence and scope, self/independent review identity,
+  snapshot-ready ownership rationale and the exact G3 next step. This planning
+  package prepares the work; it does not claim the interpreter or G2 exists.
 
 ## 6. Risks and unresolved decisions
 
@@ -178,6 +183,7 @@ risk; record closure or residual risk in the gate evidence.
 | K08 / medium-high | Vendor quirks consume unbounded compatibility effort | Limit pilot profile; classify each mismatch, add explicit evidenced profile behavior only | Runtime contributor + product owner |
 | K09 / high | Agent/session discontinuity causes duplicate work, silent scope drift or restart | Exact-head status, one next package, owned documents and change-control rule below | Every contributor |
 | K10 / medium-high | JIT later cannot reconstruct roots/state or respect scheduling | G2 architecture review; future JIT admission proves GC roots, safepoints and equivalence | Core contributor + reviewer |
+| K11 / high | MIDP 3 assumptions leak into legacy behavior, or shared state makes recovery inconsistent | Profile-study N01–N05 deadlines and E01–E07; preserve legacy regressions through G6C and later evolution | Core/runtime contributor + reviewer |
 
 Open choices intentionally remain open: GC algorithm, handle representation,
 snapshot encoding/compression, renderer/audio backend, JIT backend, minimum

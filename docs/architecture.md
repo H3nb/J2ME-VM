@@ -28,7 +28,7 @@ A host adapter must not mutate VM internals through arbitrary shared pointers. T
 
 ## 3. Early target and exclusions
 
-- Target **CLDC 1.1 semantics** as an investigation baseline, with MIDP 2.0 as a later profile; CLDC 1.0 behavior must be evaluated separately (e.g., floating-point restrictions).
+- Target **CLDC 1.1 semantics** initially; investigate 1.1.1 before freezing affected core behavior. Deliver MIDP 1.0–2.1 compatibility before full MIDP 3.0. CLDC 1.0 behavior still requires a separate contract. See [profile evolution](profile-evolution.md) for sources, gaps and deadlines.
 - Prove class-file parsing and a **small, explicit opcode subset** first. Do **not** assert support for all Java SE class-file versions. Select accepted versions from CLDC requirements and real fixtures, then reject unsupported versions transparently.
 - Verify class-file structure, instructions, constant-pool indexes, code boundaries, and stack/local types before execution. CLDC has its own verification/preverification model; supporting Java SE bytecode validation alone is insufficient.
 - Start single-threaded to prove restore, then expand to virtual threads and monitor semantics. Do not market single-thread success as full CLDC threading support.
@@ -232,3 +232,51 @@ the explicit wire schema; never dump Rust layout. Snapshot migration and stable
 embedding ABI are later commitments, with a tested supported-version matrix.
 Integrity checks detect corruption but do not make untrusted snapshots safe:
 all bounds, references and allocation budgets still require validation.
+
+## 14. Profile-aware contexts and recovery scope
+
+The [profile study](profile-evolution.md) records source findings, gaps and
+experiments; [ADR-0005](adr/0005-legacy-midp-first-with-profile-aware-contexts.md)
+records the direction. The following are proposed project contracts, not a
+claim of complete MIDP 3 conformance.
+
+- Distinguish suite identity, MIDlet instance, execution context, guest thread
+  and host process. A context owns mutable loaded-class state, initialization,
+  statics, heap and execution state. The runtime maps MIDlets to contexts under
+  its selected specification contract. Do not hard-code either shared-suite
+  or per-MIDlet isolation for all versions. Immutable code may be reused only
+  if context-local Java identity, statics and initialization remain correct.
+- Core instances must not depend on a process-global active game/class table.
+  Object/class/thread references carry or structurally enforce their ownership
+  boundary. This need not mean adding a runtime context ID to every value or
+  creating a general abstraction framework. Physical heap/process layout is
+  still an implementation choice.
+- Keep declared JAD requirements separate from selected runtime semantics,
+  actual capability availability and evidenced vendor quirks. Validate their
+  relationship at admission; persist the selected contract and code identities.
+  Exposing a newer class must not silently replace legacy lifecycle or error
+  behavior. Legacy-on-MIDP-3 compatibility is a separate claim requiring its
+  own final normative mapping and evidence.
+- Decode/verify independently of symbolic resolution and initialization.
+  Optimization must not move observable failures earlier than the selected
+  contract allows. In particular, settle profile-study N01 before deciding how
+  missing optional classes affect loading and a guarded use. Invalid structural
+  input is still rejected; this is not a permission to skip verification.
+- AMS lifecycle, display foreground, thread blocking and VM stop/checkpoint
+  are independent states. VM control pause does not fabricate a MIDlet callback.
+  Lifecycle hooks and exceptional transitions follow the selected profile.
+- Host operations retain caller ownership and timeline identity through async
+  completion. Authorization applies before an external effect and must be
+  reconciled with current host policy on restore; a snapshot must not silently
+  grant permissions the host no longer allows. Exact profile-specific security
+  checks remain required before the relevant APIs are admitted.
+- A recovery unit includes all supported coupled logical state: relevant
+  contexts, messages/completions, storage versions and resources. Initially
+  support isolated sessions. Before shared effects are enabled, prove a coherent
+  grouped/replay boundary or refuse recovery for that coupling. Do not repair
+  one session by silently rolling back another live session's data.
+
+Before G6C, close applicable legacy behavior gaps and demonstrate the declared
+scope. Before a later MIDP 3 implementation increment, close its final
+concurrency, compatibility, binding and security questions. Preserve the
+legacy regression corpus while extending the same core and repository.

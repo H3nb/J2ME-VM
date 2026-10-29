@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — architecture/scaffold only.** There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 class-file structural reader implemented.** The crate can parse a bounded subset of CLDC-era class-file structures; it does **not** verify or execute bytecode. There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -10,7 +10,7 @@
 2. Implement a small bytecode interpreter with VM-owned frames and observable specification-correct results.
 3. Prove a bounded, versioned snapshot can reconstruct VM-owned heap, PC, frames and class state in a **new process**, with the old process terminated.
 4. Extend proof to virtual threads, monitors, timers, and explicit host callbacks without guessing at unsnapshotable resources.
-5. Evaluate CLDC 1.1 → MIDP 2.0 in phases, then consider whether integration into JL-Mod Plus is viable.
+5. Deliver declared MIDP 1.0–2.1 compatibility in phases, keeping foundations suitable for later MIDP 3.0 on CLDC; evaluate Android hosting after evidence. See the [profile evolution study](docs/profile-evolution.md).
 
 A **VM core snapshot is not a complete game save state**: display, audio, I/O, host resources, and external time must be reconciled separately. Failure of the proof is an acceptable research outcome; we will not paper it over with compatibility patches or overbuilt frameworks.
 
@@ -27,6 +27,7 @@ targets, not capabilities already implemented.
 - [`docs/README.md`](docs/README.md): documentation map; use it to locate the owning architecture, standards, testing, validation and licensing policy.
 - [`docs/architecture.md`](docs/architecture.md): current technical hypotheses and state ownership.
 - [`docs/validation-plan.md`](docs/validation-plan.md): gates with concrete success/failure evidence.
+- [`src/classfile.rs`](src/classfile.rs): G1 bounded, borrowed class-file reader (versions 45.x–48.0), not a verifier.
 - [`docs/testing.md`](docs/testing.md): original guest fixture policy, public CI and private compatibility corpus.
 - [`docs/adr/`](docs/adr/): accepted architectural decisions.
 
@@ -41,7 +42,7 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-These are **scaffold checks**, not proof that a VM exists. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
+These validate the Rust crate and current G1 structural parser tests, **not** a functional VM or CLDC compatibility. The crate does not currently depend on external packages. `Cargo.lock` is committed for reproducibility; CI deliberately requires it. See [development guidance](docs/development.md).
 
 ## Clean-room and licensing
 

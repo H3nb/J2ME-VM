@@ -9,7 +9,7 @@ Build an **independent, host-neutral Java ME virtual machine in Rust** to invest
 Use this authority order when deciding behavior:
 
 1. Explicit user requirements and this repository's license, clean-room, and security constraints.
-2. Applicable **version-specific primary specifications** (CLDC 1.1 / JSR 139, MIDP 2.0 / JSR 118, and the JVMS edition they reference), subject to legal access and use terms. CLDC-specific amendments prevail for the CLDC target.
+2. Applicable **version-specific primary specifications** (the selected CLDC revision / JSR 139, MIDP 1.0 / JSR 37 or 2.0–2.1 / JSR 118, and the JVMS edition they reference; consult JSR 271 for the future MIDP 3.0 contract), subject to legal access and use terms. CLDC-specific amendments prevail for the CLDC target.
 3. Accepted, current [architecture decisions](docs/adr/) and the maintained behavior contract in [architecture.md](docs/architecture.md).
 4. Current source, executable tests, and reproducible observations as **implementation evidence**, not as authority over the intended contract.
 5. Prior commits, proposals, notes, and agent output as nonbinding history.

@@ -7,6 +7,7 @@ This index selects an **owning document** rather than introducing duplicate poli
 | Purpose, non-goals, status, getting started | [`README.md`](../README.md) |
 | Mission, requirements, staged commitment, work packages, risks and change control | [`project-plan.md`](project-plan.md) |
 | Current baseline, open work, evidence pointers and next action | [`project-status.md`](project-status.md) |
+| MIDP version differences, evidence limits and evolution experiments | [`profile-evolution.md`](profile-evolution.md) and [ADR-0005](adr/0005-legacy-midp-first-with-profile-aware-contexts.md) |
 | VM/host ownership, execution model, snapshot semantics and open design questions | [`architecture.md`](architecture.md) |
 | Milestones, evidence, stop criteria | [`validation-plan.md`](validation-plan.md) |
 | Java ME / JVMS editions, source selection, clause-level traceability | [`specification-map.md`](specification-map.md) |
