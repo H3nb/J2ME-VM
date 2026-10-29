@@ -1,45 +1,56 @@
 # Project status and next action
 
-**Observed:** 2026-10-29 (Asia/Makassar). Always recheck GitHub refs,
-canonical Issues and Actions; this is a dated handoff.
+**Observed:** 2026-10-29 (Asia/Makassar). This is the coordinator's dated
+handoff, not a substitute for checking current remote refs, assignment Issues
+and GitHub Actions. Scope and quality rules remain owned by
+[project-plan.md](project-plan.md), [parallel-development.md](parallel-development.md)
+and [engineering-quality.md](engineering-quality.md).
 
-## Integrated baseline
+## Integrated code and evidence
 
-- Main after [PR #3](https://github.com/H3nb/J2ME-VM/pull/3):
-  `528d826f8ffb08f044acf75e72f82d2edf4745b9`.
-- [Main Rust CI](https://github.com/H3nb/J2ME-VM/actions/runs/40811751715)
-  passed fmt, Clippy and **13 tests** at that SHA.
-- PR #1 merged the bounded G1 parser; PR #2 merged the staged plan and
-  profile-aware architecture. PR #3 merged only a small, checked integer
-  method execution proof and the conditional `[skip ci]` policy.
-- PR #3 was **self-reviewed** by its author/coordinator; independent
-  architecture sign-off remains absent. G2 is **not passed**. There is no
-  conformant CLDC StackMap verifier, class loader, branches/calls/exceptions,
-  heap, MIDP, snapshot, rewind or Android integration.
-
-## Active WP02 and multi-session assignments
-
-Hendra opens worker sessions; this session is **coordinator and designated
-integrator**. Follow [parallel-development.md](parallel-development.md).
-No worker session is known to have started yet.
-
-| Worker slot | Canonical assignment / state | Ownership |
+| Increment | Actual outcome | Evidence and limits |
 | --- | --- | --- |
-| **W1** | [Issue #5](https://github.com/H3nb/J2ME-VM/issues/5): Ready; awaiting Hendra to open session | CLDC 1.1/1.1.1 N01 normative evidence; own standards docs only |
-| **W2** | [Issue #6](https://github.com/H3nb/J2ME-VM/issues/6): Ready; awaiting Hendra to open session | Original Java locals/branch fixtures, metadata only; no runtime code |
-| **Coordinator** | In progress; integration/assignment authority within user authorization | Common status, wiring, conflict resolution, independent-review requests, serialized merge |
+| [PR #1](https://github.com/H3nb/J2ME-VM/pull/1) | G1 bounded structural class parser | Not CLDC bytecode verification |
+| [PR #2](https://github.com/H3nb/J2ME-VM/pull/2) | Staged plan and profile-aware design | No MIDP implementation |
+| [PR #3](https://github.com/H3nb/J2ME-VM/pull/3) | Closed `int` bytecode proof with owned stepping state | No locals/branches/general interpreter |
+| [PR #8](https://github.com/H3nb/J2ME-VM/pull/8) | W1 source-graded CLDC verifier/linking research | **N01 still open**, full final 2003/2007 text not yet compared |
+| [PR #9](https://github.com/H3nb/J2ME-VM/pull/9) | W2 original Java locals/loop source and expected results | Source-only at merge, independently tested 8/8 on Java 21 |
+| [PR #11](https://github.com/H3nb/J2ME-VM/pull/11) | Coordinator-generated 48.0 ECJ class files with hashes, manifest and structural test | **Not CLDC-preverified**, not currently executed by J2ME-VM |
 
-Workers use separate branches/workspaces and verify the exact current branch
-and task owner before starting. Contract changes and blockers return to the
-coordinator; workers do not merge or write unowned files.
+**Baseline before this status update:** main
+`2029dcae7ff327f546fd1a1a5659cab12cd4b01d`. The W1+W2 combined candidate had the same Git tree SHA
+(`ed3e17bba638290c049bf2522406cd34672a2238`) as PR #9's squash result,
+and [candidate CI](https://github.com/H3nb/J2ME-VM/actions/runs/40814269545)
+and [post-merge CI](https://github.com/H3nb/J2ME-VM/actions/runs/40814379001)
+both succeeded. The [PR #11 CI](https://github.com/H3nb/J2ME-VM/actions/runs/40814870749)
+and [post-merge CI](https://github.com/H3nb/J2ME-VM/actions/runs/40814947775)
+also succeeded. The coordinator's PR #11 review is **self-review**, not
+independent reviewer sign-off.
 
-**Next:** Hendra launches W1 and W2 and relays their PR/handoff links.
-Coordinator reviews source evidence and final effective diffs and integrates
-accepted outcomes one at a time, checking CI against the combined tree.
-After relevant N01 contract evidence and original fixtures, assign one
-code-owning WP02 slice for locals, branch targets and dataflow validation.
-No worker may claim CLDC preverification success from a non-preverified class.
-G3 cross-process restore and broader MIDP stay separate gates.
+**No whole G2 gate passed.** The parser and experimental integer proof do not
+supply full CLDC `StackMap` checking, class loading, resolution semantics,
+calls/exceptions, heap, general interpreter, MIDP, cross-process restore or
+rewind. The Java 48.0 fixtures are test inputs, not evidence of full acceptance.
 
-**Open:** exact final N01 clauses, JSR use rights, class resolution timing,
-host recovery feasibility, legacy MIDP mapping and product budgets.
+## Canonical tasks and ownership
+
+[Issue #5](https://github.com/H3nb/J2ME-VM/issues/5) and
+[Issue #6](https://github.com/H3nb/J2ME-VM/issues/6) are closed **as integrated
+worker assignments**. Their remaining limitations are not silently dismissed.
+
+| Slot | Canonical task and state | Exclusive ownership |
+| --- | --- | --- |
+| **W3 — N01** | [Issue #12](https://github.com/H3nb/J2ME-VM/issues/12); **Ready; session not launched/observed** | Final 2003/2007 CLDC verifier and linking evidence, spec/profile docs only |
+| **W4 — G2 proof** | [Issue #13](https://github.com/H3nb/J2ME-VM/issues/13); **Ready; session not launched/observed** | Experimental verified locals/branch execution, `src/execution.rs` and `tests/execution_tests.rs` only |
+| **Coordinator / sole integrator** | This coordinating session | Common documentation/status, contract conflicts, code review, sequential merge and combined CI |
+
+W4 may use the actual original 48.0 binaries from PR #11, but must not claim
+CLDC-conformant bytecode admission while N01 is unresolved. W3 must not modify
+W4's implementation or fixtures. Both start from live main in isolated branches
+after Hendra opens their sessions; verify ownership first. Neither may merge.
+
+**Next coordinator action:** Hendra starts W3/W4 using canonical Issue links,
+then relays PR or blocker links. Independently review evidence and final
+effective diffs, reconcile changed contracts, validate the combined state and
+integrate only within authorization. Material deviations return to the owner.
+No JL-Mod Plus or Android integration is authorized at these gates.
