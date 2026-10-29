@@ -66,4 +66,10 @@ Review source and transitive licenses before introducing crates. Add automated d
 
 ## Change review and handoff
 
+For multiple sessions, use the assignment, handoff and integration procedure in
+[parallel-development.md](parallel-development.md). Apply the focused review
+criteria in [engineering-quality.md](engineering-quality.md); avoid duplicating
+those policies in PR templates. Changes to engineering policy or acceptance
+contracts require relevant validation and must not use a CI skip marker.
+
 Use the specification clause and current code to identify state owners, error boundaries and invariants before changing architecture. Review the final effective diff for unnecessary layers, stale fallbacks, superseded approaches and weak tests. Report executable evidence separately from hypotheses. Do not consult other emulator implementations for debugging; see the [clean-room policy](licensing-and-provenance.md).
