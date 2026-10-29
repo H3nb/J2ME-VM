@@ -409,6 +409,14 @@ impl IntProgram {
         name: &[u8],
         descriptor: &[u8],
     ) -> Result<Self, PrepareError> {
+        // This proof admits only ordinary static methods as entrypoints.
+        // Constructor/class-initializer names are not callable as ordinary methods.
+        if name.starts_with(b"<") {
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("special method entry unsupported"),
+            ));
+        }
         if class
             .methods
             .iter()
@@ -478,7 +486,7 @@ impl IntProgram {
                 let signature = class
                     .utf8_bytes(*descriptor_index)
                     .ok_or_else(|| error(at, PrepareErrorKind::InvalidMethodReference))?;
-                if method_name == b"<init>" || method_name == b"<clinit>" {
+                if method_name.starts_with(b"<") {
                     return Err(error(
                         at,
                         PrepareErrorKind::UnsupportedMethod(
