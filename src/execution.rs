@@ -66,18 +66,32 @@ impl IntProgram {
         }
         let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
         if class.utf8_bytes(member.descriptor_index) != Some(b"()I") {
-            return Err(error(0, PrepareErrorKind::UnsupportedMethod("signature must be ()I")));
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("signature must be ()I"),
+            ));
         }
         if member.access_flags & 0x0008 == 0
             || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
         {
-            return Err(error(0, PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method")));
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod(
+                    "requires static unsynchronized concrete method",
+                ),
+            ));
         }
-        let code = member.code.as_ref().ok_or_else(|| {
-            error(0, PrepareErrorKind::UnsupportedMethod("missing Code"))
-        })?;
+        let code = member
+            .code
+            .as_ref()
+            .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
         if code.max_locals != 0 || !code.exceptions.is_empty() || !code.attributes.is_empty() {
-            return Err(error(0, PrepareErrorKind::UnsupportedMethod("locals, handlers and nested attributes unsupported")));
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod(
+                    "locals, handlers and nested attributes unsupported",
+                ),
+            ));
         }
         Self::verify(code)
     }
@@ -85,7 +99,10 @@ impl IntProgram {
     fn verify(code: &Code<'_>) -> Result<Self, PrepareError> {
         let bytes = code.instructions;
         if bytes.len() > MAX_CODE || code.max_stack as usize > MAX_STACK {
-            return Err(error(0, PrepareErrorKind::UnsupportedMethod("resource budget exceeded")));
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("resource budget exceeded"),
+            ));
         }
         let mut instructions = Vec::new();
         let mut pc = 0;
@@ -97,13 +114,19 @@ impl IntProgram {
             let op = match opcode {
                 0x02..=0x08 => Op::Push(opcode as i32 - 3),
                 0x10 => {
-                    let byte = *bytes.get(pc).ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
+                    let byte = *bytes
+                        .get(pc)
+                        .ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
                     pc += 1;
                     Op::Push(i8::from_be_bytes([byte]) as i32)
                 }
                 0x11 => {
-                    let hi = *bytes.get(pc).ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
-                    let lo = *bytes.get(pc + 1).ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
+                    let hi = *bytes
+                        .get(pc)
+                        .ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
+                    let lo = *bytes
+                        .get(pc + 1)
+                        .ok_or_else(|| error(at, PrepareErrorKind::TruncatedOperand))?;
                     pc += 2;
                     Op::Push(i16::from_be_bytes([hi, lo]) as i32)
                 }
@@ -168,11 +191,18 @@ pub enum Step {
 
 impl IntMachine {
     pub fn new(program: IntProgram) -> Self {
-        Self { program, position: 0, stack: Vec::new(), result: None }
+        Self {
+            program,
+            position: 0,
+            stack: Vec::new(),
+            result: None,
+        }
     }
 
     pub fn pc(&self) -> usize {
-        self.program.instructions.get(self.position)
+        self.program
+            .instructions
+            .get(self.position)
             .map_or(self.program.code_len, |instruction| instruction.pc)
     }
 
@@ -249,7 +279,11 @@ mod tests {
             (&[0x11, 0x01][..], 1, PrepareErrorKind::TruncatedOperand),
             (&[0x03][..], 1, PrepareErrorKind::MissingReturn),
             (&[0xac][..], 1, PrepareErrorKind::InvalidReturnStack),
-            (&[0x03, 0xac, 0x04][..], 1, PrepareErrorKind::InstructionsAfterReturn),
+            (
+                &[0x03, 0xac, 0x04][..],
+                1,
+                PrepareErrorKind::InstructionsAfterReturn,
+            ),
             (&[0xb8][..], 1, PrepareErrorKind::UnsupportedOpcode(0xb8)),
         ] {
             assert_eq!(verified(bytes, stack).unwrap_err().kind, expected);
@@ -259,7 +293,8 @@ mod tests {
     #[test]
     fn signed_operands_arithmetic_and_budget() {
         // sipush -32768; bipush -1; isub; ireturn
-        let mut vm = IntMachine::new(verified(&[0x11, 0x80, 0, 0x10, 0xff, 0x64, 0xac], 2).unwrap());
+        let mut vm =
+            IntMachine::new(verified(&[0x11, 0x80, 0, 0x10, 0xff, 0x64, 0xac], 2).unwrap());
         assert_eq!(vm.run(2), None);
         assert_eq!(vm.operand_stack(), &[-32768, -1]);
         assert_eq!(vm.run(2), Some(-32767));
