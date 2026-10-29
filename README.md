@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — G1 parser merged; WP02 arithmetic-only stepping proof under review.** G1 reads bounded CLDC-era class structures. WP02 experimentally checks and executes one restricted static int-return method; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 parser merged; WP02 arithmetic-only stepping proof merged (partial G2).** G1 reads bounded CLDC-era class structures. WP02 experimentally checks and executes one restricted static int-return method; this is **not** full class-file/CLDC verification. There is **no general bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
