@@ -17,6 +17,12 @@ A future change to **or-later**, dual licensing, contributor requirements, or in
 
 This is engineering policy, not legal advice or a conclusion that all JSR implementation conditions have been met.
 
+The [specification map's acquisition record](specification-map.md#official-acquisition-and-terms-routes-2026-10-29)
+links the actual CLDC 1.1 final and 1.1.1 maintenance terms, distinguishing
+evaluation from implementation access. Those terms were read; no gated agreement
+was accepted and no specification archive was retrieved. A different project's
+license or fair-use position does not itself establish the applicable basis here.
+
 ## Clean-room evidence
 
 Each substantive VM behavior should be traceable to an **original** implementation rationale and a version-specific primary normative clause (see [specification-map.md](specification-map.md)). Maintain original fixture provenance: who created it, original source or generator/compiler version, permitted license, and what behavior it exercises. For fixture source, prefer small program text authored for this project. Binary fixtures should be reproducibly generated, or otherwise carry documented permission and hashes.
