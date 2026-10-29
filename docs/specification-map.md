@@ -92,6 +92,62 @@ wording. Do not use CLDC 8, modern `StackMapTable`, or the current experimental
 | N01-D / **later primary-authored, edition mismatch** | [Oracle-hosted CLDC Byte Code Typechecker Specification](https://docs.oracle.com/javame/8.0/api/cldc/api/Appendix1-verifier.pdf), dated **13 Apr 2012**, §§1.2, 2, 2.1 and 3; [Oracle CLDC 8 typechecker overview](https://docs.oracle.com/javame/8.0/api/cldc/api/doc-files/CLDCtypechecker.html) | Documents legacy `StackMap` format and errors, implicit empty maps, type safety checks, and off-device preverification followed by runtime verification. Its history explicitly records a **2012 correction for `goto_w`**. Neither this corrected appendix nor CLDC 8's support rules prove the exact 2003/2007 text unchanged. |
 | N01-E / **mirrored/indexed excerpt only** | [March 2003 CLDC 1.1 Sun-authored PDF, academic mirror](https://vsis-www.informatik.uni-hamburg.de/oldServer/teaching/ws-05.06/dbms/materialien/j2me/CLDCSpecification1.1.pdf) (retrieval returned HTTP 403; search-index contents only) | Index places class-file verification and off-device/runtime stack maps at §§5.2–5.2.1; format/loading at §§5.3–5.3.4. It is **not** proof that the full PDF contents were inspected or that particular detailed rules are final. |
 
+### W3 historical cross-check: what the added evidence does (and does not) close
+
+The [JSR 139 stage history](https://www.jcp.org/en/jsr/detail?id=139)
+dates the **Final Release to 27 March 2003** and the **Maintenance Release
+to 29 November 2007**. Those dates authenticate release *stages*, not the
+identity of an independently hosted PDF or the final wording of a clause.
+[JCP 2.6 §4.2.1](https://jcp.org/en/procedures/jcp2_6) distinguishes proposed
+items reviewed by the public from changes incorporated by the maintenance lead
+in the accepted specification; §4.2.3 addresses synchronization with RI/TCK.
+The official [2007 change-log index](https://www.jcp.org/aboutJava/communityprocess/maintenance/jsr139/139ChangeLog.html)
+places Maintenance Review 1 under accepted changes, but its
+[linked text](https://jcp.org/aboutJava/communityprocess/maintenance/jsr139/CHANGE_LOG.txt)
+still says *Proposed Change Log*. Therefore the added §5.4 and §5.3.4
+**use-site** rule for resolution-related `LinkageError` is a well-located
+maintenance *candidate*, not a verified transcription of the 1.1.1 final PDF.
+
+A separately accessible [14 January 2003 typechecker manuscript](https://www.researchgate.net/publication/242481956_CLDC_Byte_Code_Typechecker_Specification)
+names Sun authors Gilad Bracha, Tim Lindholm, Wei Tao and Frank Yellin; its
+ResearchGate record says Bracha uploaded the copy on **27 March 2014**.
+This is **source-authored historical text, not an authenticated JCP final
+attachment**. Comparing its readable §§2–2.1 (printed p. 2) and §3 (p. 5)
+with the [Oracle-hosted 13 April 2012 appendix](https://docs.oracle.com/javame/8.0/api/cldc/api/Appendix1-verifier.pdf)
+at the same locators provides independent *historical corroboration* that:
+
+- `StackMap` is an optional per-method `Code` subattribute; an absent
+  attribute denotes zero map entries. Duplicate or malformed attributes
+  implicate `ClassFormatError`, while unsuccessful typechecking implicates
+  `VerifyError`. This says **nothing** by itself about a public JAR's separate
+  preverification/distribution requirements; absent maps do not guarantee a
+  method verifies.
+- For branches/handlers, 2003 manuscript §§3.2.3–3.2.5 (printed pp. 15–18)
+  requires compatible states at mapped targets and exception-handler entry.
+  This corroborates the verifier distinction without authenticating an exact
+  final-2003 or final-2007 clause.
+- Oracle's **2012** appendix §1.2 (printed p. 1) records a
+  `goto_w` correction and §3.3 (printed p. 45) contains the rule.
+  Searching the readable 2003 manuscript did **not** find `goto_w`; that
+  search is not a byte-for-byte or pagination-complete edition diff.
+  Neither the 2012 correction nor the available manuscript can be
+  backdated into final 1.1 or 1.1.1 by assumption.
+
+**Remaining N01 blockers:** Obtain/access the actual JCP final 2003 and final
+maintenance 2007 *complete* specifications under reviewed evaluation and
+implementation terms, then compare §5.2.1, §5.3.1, §5.3.4, any §5.4, and the
+typechecker appendix using exact page/section locators. The indexed
+[March 2003 mirror](https://vsis-www.informatik.uni-hamburg.de/oldServer/teaching/ws-05.06/dbms/materialien/j2me/CLDCSpecification1.1.pdf)
+shows §5.2.1 on p. 37, §5.3.1 on p. 41 and §5.3.4 on p. 43, but full PDF
+retrieval was **HTTP 403**; indexed text is not direct final-clause evidence.
+The official [2007 acquisition page](https://jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html)
+separates evaluation/application use from implementation access. No download
+agreement was accepted here, no license determination was made, and no
+protected PDF or third-party implementation material was added. **N01 remains
+open for final version-specific verifier/admission and resolution timing.**
+W4's independent execution subset must not inherit these hypotheses as a
+CLDC conformance guarantee.
+
 ### Clause-to-observable-behavior matrix
 
 The stage below means the *earliest applicable semantic boundary*, not a
