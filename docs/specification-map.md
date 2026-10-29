@@ -52,3 +52,22 @@ Any work extending verification must independently check exact JSR 139 normative
 When closing a gap, record edition, section/API member, retrieval provenance and
 the specific expected behavior. Do not assign an invented clause number. The
 study's original architecture proposals are not themselves normative Java rules.
+
+## WP02 first executable proof: exact source boundaries
+
+The scope and executable entry preconditions are owned by
+[wp02-execution-contract.md](wp02-execution-contract.md).
+
+- [JVMS Second Edition §3.6](https://docs.oracle.com/javase/specs/jvms/se6/html/Overview.doc.html):
+  explicit method frame/operand stack and PC behavior; exact host memory
+  layout is not prescribed.
+- [JVMS Second Edition §4.7.3 and §4.9](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html):
+  method Code bounds and static/structural bytecode constraints.
+- [JVMS Second Edition opcode map](https://docs.oracle.com/javase/specs/jvms/se6/html/Mnemonics.doc.html)
+  and its instruction descriptions: iconst_m1..iconst_5, bipush, sipush,
+  iadd, isub and ireturn. The project uses signed immediates and 32-bit
+  two's-complement wrapping arithmetic.
+- **CLDC status:** This is deliberately an execution *proof* of a subset,
+  not a CLDC 1.1 / 1.1.1 verifier. The fixture predates preverification,
+  lacks legacy CLDC StackMap, and cannot establish a conformant class loader.
+  N01 remains open for full CLDC execution admission and linking semantics.

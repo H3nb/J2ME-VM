@@ -1,6 +1,6 @@
 # Project definition and staged delivery
 
-**Status:** Proposed planning baseline, 2026-10-29. Adoption does not establish
+**Status:** Adopted planning baseline by PR #2, 2026-10-29. Adoption does not establish
 technical feasibility or authorize an Android release. Current implementation
 and the next action are recorded in [project-status.md](project-status.md).
 

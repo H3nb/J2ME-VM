@@ -15,9 +15,40 @@ Commit the Cargo-generated lockfile. `--locked` makes checks fail when the lockf
 
 The initial `Cargo.lock` was generated and validated with a temporary GitHub Actions bootstrap workflow because the scaffold environment lacked Rust. That workflow was removed after successful validation and lockfile incorporation; the permanent Rust workflow owns ongoing validation.
 
+### When to use [skip ci]
+
+GitHub Actions supports `[skip ci]` (also `[ci skip]`) in commit messages
+for `push` and `pull_request` events. This is a **manual, exceptional
+optimization**, not a substitute for validation. The default is to run CI.
+
+- **Permitted only for an isolated, non-behavioral documentation-only or
+  comment-only commit**, after reviewing the diff and confirming that no
+  executable code, compiler inputs, tests, fixture bytes/metadata, manifests,
+  `Cargo.lock`, `AGENTS.md` engineering policy, GitHub workflow, or normative
+  behavior/acceptance contract was changed. Prefer running CI when uncertain.
+- **Never** skip CI for Rust/source, tests, checked-in class/JAR fixtures,
+  dependencies, workflow permissions, security/licensing or acceptance behavior,
+  or changes where the scope cannot be established.
+- **Do not put a skip marker on a PR's final/head commit when required
+  status checks are configured.** GitHub leaves skipped workflow checks
+  *Pending*, blocking the merge. Push a genuine non-skipped validation commit
+  and await a successful run if a skip was used earlier. The squash commit
+  title/body must not inherit a skip marker if the resulting main push needs CI.
+- `workflow_dispatch` can still run the ordinary Rust workflow when a manual
+  verification is needed. Never claim a skipped commit was CI-validated; report
+  the exact previously checked SHA and the verification gap.
+
+Example for an independently reviewed spelling-only change when no required
+check will be left pending: `docs: correct typo [skip ci]`. If any condition
+above is unclear, **omit the marker**. Do not introduce path filters merely
+to force skipping because required checks may become permanently Pending.
+
+References: [GitHub: skip workflow runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)
+and [required checks](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks).
+
 ### CI evidence boundary
 
-The initial crate has no interpreter or guest behavior tests. Green Rust checks prove formatting, compiler lint and compilation hygiene only. They do not prove Java ME compatibility, save/restore, or certification. Add original contract tests when an actual VM gate is implemented; do not add placeholder tests or extra jobs just for a green badge.
+The initial crate had no interpreter tests. The G1 parser and WP02 proof now have their own tests; green Rust checks prove only the behavior exercised by those checks. They do not prove Java ME compatibility, save/restore, or certification. Add original contract tests when an actual VM gate is implemented; do not add placeholder tests or extra jobs just for a green badge.
 
 ### Java ME guest fixtures and SDK separation
 
