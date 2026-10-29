@@ -329,6 +329,52 @@ fn recursive_frames_budget_and_call_depth_are_vm_owned() {
 }
 
 #[test]
+fn special_method_entry_is_rejected_before_building_a_machine() {
+    // G1 accepts structural class data; it does not perform the complete
+    // JVMS class/member-name verification. Do not execute a malformed
+    // static int-return method masquerading as a constructor.
+    for special_name in [b"<init>".as_slice(), b"<invalid>".as_slice()] {
+        let mut class = parse_class(NESTED).unwrap();
+        class.constant_pool[10] = Constant::Utf8(special_name);
+        assert_eq!(
+            IntProgram::prepare_with_calls(&class, special_name, b"(I)I")
+                .unwrap_err()
+                .kind,
+            PrepareErrorKind::UnsupportedMethod("special method entry unsupported")
+        );
+    }
+
+    // A user-supplied special name must never select a normal method.
+    let class = parse_class(NESTED).unwrap();
+    assert_eq!(
+        IntProgram::prepare_with_calls(&class, b"<init>", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("special method entry unsupported")
+    );
+}
+
+#[test]
+fn malformed_reachable_callee_cfg_fails_before_execution() {
+    let mut class = parse_class(NESTED).unwrap();
+    // The entry calls adjust(I)I, which calls increment(I)I. A goto target
+    // inside its own operand is invalid even though the entry Code is valid.
+    let invalid_code = [0xa7, 0x00, 0x01, 0x03, 0xac];
+    let callee = class
+        .methods
+        .iter_mut()
+        .find(|method| method.name_index == 20 && method.descriptor_index == 11)
+        .expect("increment(I)I in original W6 fixture");
+    callee.code.as_mut().expect("Code").instructions = &invalid_code;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidBranchTarget
+    );
+}
+
+#[test]
 fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() {
     let mut invalid_zero = parse_class(NESTED).unwrap();
     let invalid_code = [0x1a, 0xb8, 0x00, 0x00, 0xac];
