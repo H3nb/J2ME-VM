@@ -4,13 +4,15 @@
 
 use std::collections::VecDeque;
 
-use crate::classfile::{ClassFile, Code};
+use crate::classfile::{ClassFile, Code, Constant, Member};
 
 const MAX_CODE: usize = 4096;
 const MAX_STACK: usize = 64;
 const MAX_LOCALS: usize = 64;
 // Host policy: one run call cannot monopolize the caller indefinitely.
 const MAX_RUN_STEPS: usize = 65_536;
+const MAX_FRAMES: usize = 64;
+const MAX_METHODS: usize = 64;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PrepareError {
@@ -35,6 +37,8 @@ pub enum PrepareErrorKind {
     InvalidReturnStack,
     MissingReturn,
     InstructionsAfterReturn,
+    InvalidMethodReference,
+    UnresolvedMethod,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -71,6 +75,8 @@ enum Op {
     CompareBranch(Comparison, usize),
     Goto(usize),
     Return,
+    Invoke(u16),
+    Call(usize),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -80,12 +86,18 @@ struct Instruction {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct IntProgram {
+struct MethodProgram {
     instructions: Vec<Instruction>,
     code_len: usize,
     max_stack: usize,
     max_locals: usize,
     arguments: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IntProgram {
+    methods: Vec<MethodProgram>,
+    entry: usize,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -116,53 +128,8 @@ fn branch_target(bytes: &[u8], at: usize) -> Result<usize, PrepareError> {
     Ok(target as usize)
 }
 
-impl IntProgram {
-    /// Prepare exactly one static int-return method with either zero or one
-    /// int parameter. This checks only the explicitly supported opcode subset.
-    pub fn prepare(class: &ClassFile<'_>, name: &[u8]) -> Result<Self, PrepareError> {
-        let mut selected = None;
-        for member in &class.methods {
-            if class.utf8_bytes(member.name_index) == Some(name)
-                && selected.replace(member).is_some()
-            {
-                return Err(error(0, PrepareErrorKind::AmbiguousMethod));
-            }
-        }
-        let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
-        let arguments = match class.utf8_bytes(member.descriptor_index) {
-            Some(signature) if signature == b"()I" => 0,
-            Some(signature) if signature == b"(I)I" => 1,
-            _ => {
-                return Err(error(
-                    0,
-                    PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"),
-                ));
-            }
-        };
-        if member.access_flags & 0x0008 == 0
-            || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
-        {
-            return Err(error(
-                0,
-                PrepareErrorKind::UnsupportedMethod(
-                    "requires static unsynchronized concrete method",
-                ),
-            ));
-        }
-        let code = member
-            .code
-            .as_ref()
-            .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
-        if !code.exceptions.is_empty() || !code.attributes.is_empty() {
-            return Err(error(
-                0,
-                PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported"),
-            ));
-        }
-        Self::verify(code, arguments)
-    }
-
-    fn verify(code: &Code<'_>, arguments: usize) -> Result<Self, PrepareError> {
+impl MethodProgram {
+    fn decode(code: &Code<'_>, arguments: usize, allow_calls: bool) -> Result<Self, PrepareError> {
         let bytes = code.instructions;
         let max_stack = code.max_stack as usize;
         let max_locals = code.max_locals as usize;
@@ -235,6 +202,12 @@ impl IntProgram {
                     Op::Goto(branch_target(bytes, at)?)
                 }
                 0xac => Op::Return,
+                0xb8 if allow_calls => {
+                    let hi = operand(bytes, at, pc)?;
+                    let lo = operand(bytes, at, pc + 1)?;
+                    pc += 2;
+                    Op::Invoke(u16::from_be_bytes([hi, lo]))
+                },
                 _ => return Err(error(at, PrepareErrorKind::UnsupportedOpcode(opcode))),
             };
             if matches!(op, Op::Load(i) | Op::Store(i) | Op::Increment(i, _) if i >= max_locals) {
@@ -257,6 +230,21 @@ impl IntProgram {
             return Err(error(0, PrepareErrorKind::MissingReturn));
         }
 
+
+        Ok(Self {
+            instructions,
+            code_len: bytes.len(),
+            max_stack,
+            max_locals,
+            arguments,
+        })
+    }
+
+    fn validate(&self, methods: &[MethodProgram]) -> Result<(), PrepareError> {
+        let instructions = &self.instructions;
+        let max_stack = self.max_stack;
+        let max_locals = self.max_locals;
+        let arguments = self.arguments;
         // Forward fixed point: every incoming edge must agree on operand
         // stack height; a local is definitely assigned only if assigned on
         // every predecessor path. Back-edges are revisited when facts shrink.
@@ -315,6 +303,15 @@ impl IntProgram {
                     vec![target, index + 1]
                 }
                 Op::Goto(target) => vec![target],
+                Op::Call(target) => {
+                    let arguments = methods[target].arguments;
+                    if out.depth < arguments {
+                        return Err(error(instruction.pc, PrepareErrorKind::StackUnderflow));
+                    }
+                    out.depth = out.depth - arguments + 1;
+                    vec![index + 1]
+                }
+                Op::Invoke(_) => unreachable!("unresolved invoke cannot be verified"),
                 Op::Return => {
                     if out.depth != 1 {
                         return Err(error(instruction.pc, PrepareErrorKind::InvalidReturnStack));
@@ -359,7 +356,7 @@ impl IntProgram {
             }
         }
         if !has_return {
-            return Err(error(bytes.len(), PrepareErrorKind::MissingReturn));
+            return Err(error(self.code_len, PrepareErrorKind::MissingReturn));
         }
         for (index, state) in states.iter().enumerate() {
             if state.is_none() {
@@ -372,27 +369,218 @@ impl IntProgram {
             }
         }
 
-        Ok(Self {
-            instructions,
-            code_len: bytes.len(),
-            max_stack,
-            max_locals,
-            arguments,
-        })
+
+        Ok(())
+    }
+}
+
+impl IntProgram {
+    /// Prepare exactly one static int-return method with either zero or one
+    /// int parameter. This checks only the explicitly supported opcode subset.
+    pub fn prepare(class: &ClassFile<'_>, name: &[u8]) -> Result<Self, PrepareError> {
+        let mut selected = None;
+        for member in &class.methods {
+            if class.utf8_bytes(member.name_index) == Some(name)
+                && selected.replace(member).is_some()
+            {
+                return Err(error(0, PrepareErrorKind::AmbiguousMethod));
+            }
+        }
+        let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
+        let arguments = match class.utf8_bytes(member.descriptor_index) {
+            Some(signature) if signature == b"()I" => 0,
+            Some(signature) if signature == b"(I)I" => 1,
+            _ => {
+                return Err(error(
+                    0,
+                    PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"),
+                ));
+            }
+        };
+        if member.access_flags & 0x0008 == 0
+            || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
+        {
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod(
+                    "requires static unsynchronized concrete method",
+                ),
+            ));
+        }
+        let code = member
+            .code
+            .as_ref()
+            .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
+        if !code.exceptions.is_empty() || !code.attributes.is_empty() {
+            return Err(error(
+                0,
+                PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported"),
+            ));
+        }
+        Self::verify(code, arguments)
+    }
+
+
+    // Retain the original single-method admission path, including rejection of
+    // invokestatic, so its callers and tests do not silently gain new semantics.
+    fn verify(code: &Code<'_>, arguments: usize) -> Result<Self, PrepareError> {
+        let method = MethodProgram::decode(code, arguments, false)?;
+        method.validate(std::slice::from_ref(&method))?;
+        Ok(Self { methods: vec![method], entry: 0 })
+    }
+
+    /// Closed experimental proof: a class without <clinit>, with same-class
+    /// static invocations and integer-only ()I or (I)I method descriptors.
+    /// This is not general class loading, initialization, or CLDC verification.
+    pub fn prepare_with_calls(
+        class: &ClassFile<'_>,
+        name: &[u8],
+        descriptor: &[u8],
+    ) -> Result<Self, PrepareError> {
+        if class.methods.iter().any(|member| class.utf8_bytes(member.name_index) == Some(b"<clinit>")) {
+            return Err(error(0, PrepareErrorKind::UnsupportedMethod("class initialization unsupported")));
+        }
+        let mut entry_member = None;
+        for (index, member) in class.methods.iter().enumerate() {
+            if class.utf8_bytes(member.name_index) == Some(name)
+                && class.utf8_bytes(member.descriptor_index) == Some(descriptor)
+            {
+                if entry_member.replace(index).is_some() {
+                    return Err(error(0, PrepareErrorKind::AmbiguousMethod));
+                }
+            }
+        }
+        let entry_member = entry_member.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
+        let mut member_to_id = vec![None; class.methods.len()];
+        member_to_id[entry_member] = Some(0usize);
+        let mut pending = VecDeque::from([entry_member]);
+        let mut compiled: Vec<Option<MethodProgram>> = vec![None];
+
+        while let Some(member_index) = pending.pop_front() {
+            let method_id = member_to_id[member_index].expect("queued method id");
+            let member = &class.methods[member_index];
+            let arguments = supported_method_arguments(class, member)?;
+            let code = member.code.as_ref().expect("validated Code presence");
+            let mut method = MethodProgram::decode(code, arguments, true)?;
+            for instruction in &mut method.instructions {
+                let Op::Invoke(cp_index) = instruction.op else { continue };
+                let at = instruction.pc;
+                let (class_index, name_and_type_index) =
+                    match class.constant_pool.get(cp_index as usize) {
+                        Some(Constant::Methodref { class_index, name_and_type_index }) =>
+                            (*class_index, *name_and_type_index),
+                        _ => return Err(error(at, PrepareErrorKind::InvalidMethodReference)),
+                    };
+                let Some(Constant::Class { name_index }) =
+                    class.constant_pool.get(class_index as usize) else {
+                    return Err(error(at, PrepareErrorKind::InvalidMethodReference));
+                };
+                if class.utf8_bytes(*name_index) != class.class_name_bytes() {
+                    return Err(error(at, PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported")));
+                }
+                let Some(Constant::NameAndType { name_index, descriptor_index }) =
+                    class.constant_pool.get(name_and_type_index as usize) else {
+                    return Err(error(at, PrepareErrorKind::InvalidMethodReference));
+                };
+                let method_name = class.utf8_bytes(*name_index)
+                    .ok_or_else(|| error(at, PrepareErrorKind::InvalidMethodReference))?;
+                let signature = class.utf8_bytes(*descriptor_index)
+                    .ok_or_else(|| error(at, PrepareErrorKind::InvalidMethodReference))?;
+                if method_name == b"<init>" || method_name == b"<clinit>" {
+                    return Err(error(at, PrepareErrorKind::UnsupportedMethod("special method invocation unsupported")));
+                }
+                let mut resolved = None;
+                for (index, candidate) in class.methods.iter().enumerate() {
+                    if class.utf8_bytes(candidate.name_index) == Some(method_name)
+                        && class.utf8_bytes(candidate.descriptor_index) == Some(signature)
+                    {
+                        if resolved.replace(index).is_some() {
+                            return Err(error(at, PrepareErrorKind::AmbiguousMethod));
+                        }
+                    }
+                }
+                let resolved = resolved.ok_or_else(|| error(at, PrepareErrorKind::UnresolvedMethod))?;
+                // Callee eligibility and its Code are checked when dequeued.
+                let next_id = if let Some(existing) = member_to_id[resolved] {
+                    existing
+                } else {
+                    if compiled.len() >= MAX_METHODS {
+                        return Err(error(at, PrepareErrorKind::UnsupportedMethod("method count limit")));
+                    }
+                    let id = compiled.len();
+                    member_to_id[resolved] = Some(id);
+                    compiled.push(None);
+                    pending.push_back(resolved);
+                    id
+                };
+                instruction.op = Op::Call(next_id);
+            }
+            compiled[method_id] = Some(method);
+        }
+
+        let methods: Vec<MethodProgram> = compiled.into_iter()
+            .map(|method| method.expect("queued methods decoded")).collect();
+        for method in &methods {
+            method.validate(&methods)?;
+        }
+        Ok(Self { methods, entry: 0 })
     }
 
     pub fn code_len(&self) -> usize {
-        self.code_len
+        self.methods[self.entry].code_len
     }
 }
+
+fn supported_method_arguments(class: &ClassFile<'_>, member: &Member<'_>) -> Result<usize, PrepareError> {
+    let arguments = match class.utf8_bytes(member.descriptor_index) {
+        Some(b"()I") => 0,
+        Some(b"(I)I") => 1,
+        _ => return Err(error(0, PrepareErrorKind::UnsupportedMethod("signature must be ()I or (I)I"))),
+    };
+    if member.access_flags & 0x0008 == 0
+        || member.access_flags & (0x0020 | 0x0100 | 0x0400) != 0
+    {
+        return Err(error(0, PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method")));
+    }
+    let code = member.code.as_ref()
+        .ok_or_else(|| error(0, PrepareErrorKind::UnsupportedMethod("missing Code")))?;
+    if !code.exceptions.is_empty() || !code.attributes.is_empty() {
+        return Err(error(0, PrepareErrorKind::UnsupportedMethod("handlers and nested attributes unsupported")));
+    }
+    Ok(arguments)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IntFrame {
+    method: usize,
+    position: usize,
+    stack: Vec<i32>,
+    locals: Vec<Option<i32>>,
+}
+
+impl IntFrame {
+    fn new(method: usize, program: &MethodProgram, argument: Option<i32>) -> Self {
+        let mut locals = vec![None; program.max_locals];
+        if let Some(value) = argument {
+            locals[0] = Some(value);
+        }
+        Self { method, position: 0, stack: Vec::new(), locals }
+    }
+
+    pub fn method_id(&self) -> usize { self.method }
+    pub fn operand_stack(&self) -> &[i32] { &self.stack }
+    pub fn locals(&self) -> &[Option<i32>] { &self.locals }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExecutionError { CallDepthExceeded }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct IntMachine {
     program: IntProgram,
-    position: usize,
-    stack: Vec<i32>,
-    locals: Vec<Option<i32>>,
+    frames: Vec<IntFrame>,
     result: Option<i32>,
+    failure: Option<ExecutionError>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -400,109 +588,123 @@ pub enum Step {
     Advanced { next_pc: usize },
     Returned(i32),
     AlreadyReturned(i32),
+    Failed(ExecutionError),
+    AlreadyFailed(ExecutionError),
 }
 
 impl IntMachine {
-    /// Construct the original no-argument proof. Supplying the wrong invocation
-    /// shape is a host programming error, not guest-bytecode validation.
     pub fn new(program: IntProgram) -> Self {
-        assert_eq!(program.arguments, 0, "use with_int_arg for (I)I");
+        assert_eq!(program.methods[program.entry].arguments, 0, "use with_int_arg for (I)I");
         Self::create(program, None)
     }
 
     pub fn with_int_arg(program: IntProgram, value: i32) -> Self {
-        assert_eq!(program.arguments, 1, "use new for ()I");
+        assert_eq!(program.methods[program.entry].arguments, 1, "use new for ()I");
         Self::create(program, Some(value))
     }
 
-    fn create(program: IntProgram, arg: Option<i32>) -> Self {
-        let mut locals = vec![None; program.max_locals];
-        if let Some(value) = arg {
-            locals[0] = Some(value);
-        }
-        Self {
-            program,
-            position: 0,
-            stack: Vec::new(),
-            locals,
-            result: None,
-        }
+    fn create(program: IntProgram, argument: Option<i32>) -> Self {
+        let frame = IntFrame::new(program.entry, &program.methods[program.entry], argument);
+        Self { program, frames: vec![frame], result: None, failure: None }
     }
 
+    pub fn frames(&self) -> &[IntFrame] { &self.frames }
+    pub fn frame_pc(&self, depth: usize) -> Option<usize> {
+        let frame = self.frames.get(depth)?;
+        let method = &self.program.methods[frame.method];
+        Some(method.instructions.get(frame.position)
+            .map_or(method.code_len, |instruction| instruction.pc))
+    }
     pub fn pc(&self) -> usize {
-        self.program
-            .instructions
-            .get(self.position)
-            .map_or(self.program.code_len, |instruction| instruction.pc)
+        self.frame_pc(self.frames.len().saturating_sub(1))
+            .unwrap_or_else(|| self.program.methods[self.program.entry].code_len)
     }
-
     pub fn operand_stack(&self) -> &[i32] {
-        &self.stack
+        self.frames.last().map_or(&[], |frame| frame.operand_stack())
     }
-
     pub fn locals(&self) -> &[Option<i32>] {
-        &self.locals
+        self.frames.last().map_or(&[], |frame| frame.locals())
     }
+    pub fn result(&self) -> Option<i32> { self.result }
+    pub fn failure(&self) -> Option<ExecutionError> { self.failure }
 
-    pub fn result(&self) -> Option<i32> {
-        self.result
-    }
-
+    /// Exactly one guest opcode, including call or return, is one step. No
+    /// native Rust recursion is used for nested Java calls.
     pub fn step(&mut self) -> Step {
-        if let Some(value) = self.result {
-            return Step::AlreadyReturned(value);
-        }
-        let instruction = &self.program.instructions[self.position];
-        self.position += 1;
-        match instruction.op {
-            Op::Push(value) => self.stack.push(value),
-            Op::Load(local) => self
-                .stack
-                .push(self.locals[local].expect("validated local read")),
-            Op::Store(local) => {
-                self.locals[local] = Some(self.stack.pop().expect("validated store"));
+        if let Some(value) = self.result { return Step::AlreadyReturned(value); }
+        if let Some(err) = self.failure { return Step::AlreadyFailed(err); }
+        let current = self.frames.len() - 1;
+        let method_id = self.frames[current].method;
+        let instruction = self.program.methods[method_id].instructions[self.frames[current].position].clone();
+        if let Op::Call(target) = instruction.op {
+            if self.frames.len() >= MAX_FRAMES {
+                self.failure = Some(ExecutionError::CallDepthExceeded);
+                return Step::Failed(ExecutionError::CallDepthExceeded);
             }
+            let callee = &self.program.methods[target];
+            let arg = if callee.arguments == 1 {
+                Some(*self.frames[current].stack.last().expect("validated invocation argument"))
+            } else {
+                None
+            };
+            // State transition is committed only after the depth preflight.
+            self.frames[current].position += 1;
+            if callee.arguments == 1 { self.frames[current].stack.pop(); }
+            self.frames.push(IntFrame::new(target, callee, arg));
+            return Step::Advanced { next_pc: self.pc() };
+        }
+        if instruction.op == Op::Return {
+            let value = self.frames[current].stack.pop().expect("validated return");
+            self.frames.pop();
+            if let Some(caller) = self.frames.last_mut() {
+                caller.stack.push(value);
+                return Step::Advanced { next_pc: self.pc() };
+            }
+            self.result = Some(value);
+            return Step::Returned(value);
+        }
+        let frame = &mut self.frames[current];
+        frame.position += 1;
+        match instruction.op {
+            Op::Push(value) => frame.stack.push(value),
+            Op::Load(local) => frame.stack.push(frame.locals[local].expect("validated local read")),
+            Op::Store(local) => frame.locals[local] = Some(frame.stack.pop().expect("validated store")),
             Op::Increment(local, amount) => {
-                let value = self.locals[local].expect("validated increment");
-                self.locals[local] = Some(value.wrapping_add(amount));
+                let value = frame.locals[local].expect("validated increment");
+                frame.locals[local] = Some(value.wrapping_add(amount));
             }
             Op::Add => {
-                let rhs = self.stack.pop().expect("validated RHS");
-                let lhs = self.stack.pop().expect("validated LHS");
-                self.stack.push(lhs.wrapping_add(rhs));
+                let rhs = frame.stack.pop().expect("validated RHS");
+                let lhs = frame.stack.pop().expect("validated LHS");
+                frame.stack.push(lhs.wrapping_add(rhs));
             }
             Op::Subtract => {
-                let rhs = self.stack.pop().expect("validated RHS");
-                let lhs = self.stack.pop().expect("validated LHS");
-                self.stack.push(lhs.wrapping_sub(rhs));
+                let rhs = frame.stack.pop().expect("validated RHS");
+                let lhs = frame.stack.pop().expect("validated LHS");
+                frame.stack.push(lhs.wrapping_sub(rhs));
             }
             Op::CompareBranch(condition, target) => {
-                let rhs = self.stack.pop().expect("validated RHS");
-                let lhs = self.stack.pop().expect("validated LHS");
-                if condition.test(lhs, rhs) {
-                    self.position = target;
-                }
+                let rhs = frame.stack.pop().expect("validated RHS");
+                let lhs = frame.stack.pop().expect("validated LHS");
+                if condition.test(lhs, rhs) { frame.position = target; }
             }
-            Op::Goto(target) => self.position = target,
-            Op::Return => {
-                let value = self.stack.pop().expect("validated return");
-                self.result = Some(value);
-                return Step::Returned(value);
-            }
+            Op::Goto(target) => frame.position = target,
+            Op::Return | Op::Call(_) | Op::Invoke(_) => unreachable!("handled or rejected before execution"),
         }
-        debug_assert!(self.stack.len() <= self.program.max_stack);
+        debug_assert!(frame.stack.len() <= self.program.methods[frame.method].max_stack);
         Step::Advanced { next_pc: self.pc() }
     }
 
-    /// Each call consumes at most `budget.min(MAX_RUN_STEPS)` guest instructions;
-    /// exhausted budget preserves the frame for a subsequent call.
+    /// Guest instruction budget spans every nested call. Failure is terminal
+    /// and separately inspectable; budget exhaustion leaves frames resumable.
     pub fn run(&mut self, budget: usize) -> Option<i32> {
-        if self.result.is_some() {
-            return self.result;
-        }
+        if self.result.is_some() { return self.result; }
+        if self.failure.is_some() { return None; }
         for _ in 0..budget.min(MAX_RUN_STEPS) {
-            if let Step::Returned(value) = self.step() {
-                return Some(value);
+            match self.step() {
+                Step::Returned(value) | Step::AlreadyReturned(value) => return Some(value),
+                Step::Failed(_) | Step::AlreadyFailed(_) => return None,
+                Step::Advanced { .. } => {}
             }
         }
         None
