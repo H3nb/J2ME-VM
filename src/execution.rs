@@ -128,8 +128,8 @@ impl IntProgram {
         }
         let member = selected.ok_or_else(|| error(0, PrepareErrorKind::MethodNotFound))?;
         let arguments = match class.utf8_bytes(member.descriptor_index) {
-            Some(b"()I") => 0,
-            Some(b"(I)I") => 1,
+            Some(signature) if signature == b"()I" => 0,
+            Some(signature) if signature == b"(I)I" => 1,
             _ => {
                 return Err(error(
                     0,
