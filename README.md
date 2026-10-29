@@ -16,6 +16,12 @@ A **VM core snapshot is not a complete game save state**: display, audio, I/O, h
 
 ## Scope and structure
 
+Development follows the proposed [staged project plan](docs/project-plan.md):
+define the next increment, reduce its main risks, and accept executable evidence
+before expanding scope. Read [project status](docs/project-status.md) to resume
+existing work without duplicating open PRs. Architecture and gates describe
+targets, not capabilities already implemented.
+
 - A **single Rust library crate**; desktop first. No Android/JNI, JIT, full Java SE, proprietary device extensions or speculative crate workspace at this stage.
 - [`AGENTS.md`](AGENTS.md): mandatory engineering and clean-room rules for humans and coding agents.
 - [`docs/README.md`](docs/README.md): documentation map; use it to locate the owning architecture, standards, testing, validation and licensing policy.

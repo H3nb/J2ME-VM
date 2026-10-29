@@ -30,6 +30,13 @@ Never convert an unverified assumption or test expectation into a normative requ
 
 ## 3. Before changing code
 
+For continuity, read [project-status.md](docs/project-status.md), verify current
+remote heads/open work, and select the next unfinished dependency from the
+[project plan](docs/project-plan.md). Preserve existing work. Update the handoff
+with exact evidence and the next action when an increment ends; do not restart
+or expand the project silently. This adds no routine approval requirement and
+does not override the user's existing authorization.
+
 1. Read `README.md`, this file, and only the task-relevant links in [docs/README.md](docs/README.md). Inspect actual source, tests, configuration, and the current branch; check whether the proposed feature exists.
 2. Define the externally visible behavior and versioned specification scope. Trace which component owns the relevant state, its lifetime, loading/verification, concurrency, and host boundary.
 3. State important preconditions, postconditions, invariants, and realistic failure paths. Distinguish *verified findings* from hypotheses. Use a small reversible experiment if the design hinges on an unresolved property.

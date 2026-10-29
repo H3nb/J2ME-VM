@@ -1,6 +1,6 @@
-# Technical architecture — proposal v0
+# Technical architecture — proposal v1
 
-**Status:** Working hypothesis, not a completed implementation. Outbound license and clean-room policy are decided in [ADR-0002](adr/0002-gplv3-only-and-clean-room.md); implementation hypotheses remain open. Revisit after each proof-of-concept result.
+**Status:** Proposed behavioral contracts plus implementation hypotheses, not a completed implementation. Outbound license and clean-room policy are decided in [ADR-0002](adr/0002-gplv3-only-and-clean-room.md). [ADR-0004](adr/0004-staged-delivery-and-recoverable-state.md) proposes the staged delivery baseline. Sections 9–13 clarify required outcomes without freezing data structures. Revisit implementation hypotheses after experiments; change a contract explicitly when evidence requires it.
 
 ## 1. The question we must answer
 
@@ -24,7 +24,7 @@ Can a purpose-built Rust VM execute relevant Java ME bytecode while owning **all
 +-------------------------------------------------------------------+
 ```
 
-A host adapter must not mutate VM internals through arbitrary shared pointers. The VM should use explicit events and host service calls; exactly how to serialize pending host operations is **unresolved**.
+A host adapter must not mutate VM internals through arbitrary shared pointers. The VM should use explicit events and host service calls. Section 10 defines the proposed pending-operation lifecycle; its representation and feasibility still require G3H evidence. Logical graphics/audio/storage state belongs to the recoverable runtime where supported; native devices and handles belong to the host. The diagram locates execution services, not permission to hide guest-visible state in the host.
 
 ## 3. Early target and exclusions
 
@@ -106,3 +106,129 @@ A future embedding API should support separate operations akin to `load`, `step(
 - General JVM format/bytecodes (used with CLDC caveats): https://docs.oracle.com/javase/specs/jvms/se8/html/
 
 See [specification-map.md](specification-map.md) for the precise version hierarchy and [licensing-and-provenance.md](licensing-and-provenance.md) for implementation-access caveats. The modern JVMS site is **informative** until reconciled against the historical JVMS edition referenced by JSR 139. Do not copy reference implementation sources, libraries, TCKs or proprietary game assets into the repository.
+
+## 9. Canonical state, safepoints and cache ownership
+
+These project contracts enable recovery; they do not add requirements to the
+Java specification or prove a particular implementation efficient.
+
+| Owner | State required for continuation | Reconstructable / external material |
+| --- | --- | --- |
+| VM | Frames/PCs, locals/stacks, heap identities, statics, initialization and exception state, scheduler/monitor state | Decoded-instruction and resolution caches may be rebuilt if behavior is preserved |
+| Java ME runtime | MIDlet lifecycle, event queues, mutable image contents/drawing state, supported media timeline, session-managed RMS | Immutable assets may be reloaded only with verified content identity |
+| Host adapter | Delivery/cancellation tracking and actual device resources | Windows, GPU/audio handles, file descriptors and connections are never portable snapshot identities |
+| Debugger/control layer | Explicit commands and inspection points | UI views are not guest state; pending commands must not leak into a restored timeline |
+
+Use one authoritative owner for each logical state item. A cache may be omitted
+from snapshots only if recreating it cannot change required guest-visible
+behavior. A mutable image cannot be replaced by its original asset unless all
+subsequent modifications are also reconstructed. Media seeking/decoder state
+and completion callbacks require resource-specific proof; exact audio output
+is not automatically preserved by remembering a playback timestamp.
+
+Define the commit boundary of an instruction/runtime operation before allowing
+pause or checkpoint there. At a safepoint, PCs, stacks, roots, exceptions and
+pending operations describe one coherent execution state. Checkpoint latency
+must account for long native helpers; helpers must finish within a declared
+bound or expose a resumable logical operation. Do not serialize a Rust closure,
+future, native stack or borrowed pointer as the sole pending continuation.
+
+Failed restore must leave the prior active VM and its managed storage intact.
+Validate a candidate state and stage resource reconstruction before publishing
+it as active. If staging fails, release candidate resources; do not execute
+guest-visible effects during validation. Coordinate storage and runtime commit
+so failures cannot expose a half-restored session. These properties need tests,
+not an assumption that swapping a heap alone is atomic.
+
+## 10. Host requests and effect policy
+
+Conceptual lifecycle: guest issues a request; its thread either obtains a
+synchronous result or blocks with an explicit logical continuation; the host
+returns a completion event; the VM accepts it at a defined scheduling point.
+Request identity, operation type, necessary arguments and continuation must be
+represented without host pointers. Guest exceptions and host failures remain
+distinguishable. Host code must not re-enter and mutate the VM arbitrarily.
+
+Use a session/timeline epoch plus request identity (or an equivalent proven
+mechanism) to prevent old callbacks from being accepted after restore, rewind
+or stop. An epoch must not be restored in a way that admits callbacks from the
+discarded timeline. Within an active timeline, a completion can be consumed at
+most once. This is a local delivery property, **not** an exactly-once guarantee
+for an external server transaction.
+
+Each resource/operation declares its recovery policy before support is claimed:
+
+| Policy | Example / obligation |
+| --- | --- |
+| VM/runtime-owned | Include logical state, such as a pending timer or managed storage version |
+| Reconstructable | Recreate a renderer resource from retained data; validate identities and report failure |
+| Recorded result | Replay previously captured input/I/O completion without repeating the original effect |
+| Unsupported while active | Reject checkpoint with a specific reason for an unrecoverable operation/resource |
+
+For each supported policy, define disposal, cancellation, late completion and
+failure behavior. Operation arguments are not sufficient evidence that a
+request may safely be reissued. Network sends, purchases or external file
+writes are not undone by rewinding local memory. Checkpoint refusal must be
+reported; do not silently omit a resource or hang indefinitely waiting for it.
+
+## 11. Time, replay and persistent storage
+
+The initial deterministic envelope is a fixed semantics/build version, guest
+and runtime content identities, device/API profile, configuration, initial
+state and ordered input/completion stream. Define any host-dependent numeric,
+rendering or decoder behavior outside that envelope explicitly. Portable
+snapshot bytes alone do not establish cross-platform deterministic execution.
+
+Execution budget, guest-observed time and display pacing are distinct concepts.
+Define how timers advance and simultaneous events are ordered, including when
+all guest threads are blocked. Real-time operation may sample the host through
+this boundary; replay consumes recorded virtual-time/event decisions. Do not
+let interpreter/JIT speed silently define guest elapsed time. A budgeted
+scheduler still needs CLDC priority, monitor and memory-visibility semantics;
+deterministic scheduling alone is not proof of conformance.
+
+Rewind first uses measured full checkpoints and, if selected, recorded events.
+Incremental snapshots/copy-on-write are deferred; admitting them requires a
+complete mutation-tracking contract for all affected state. Restore the nearest
+usable checkpoint and replay to the target without duplicating external side
+effects. New input after rewind creates a new timeline; discard incompatible
+future events and reject old completions. Bound history and explain eviction.
+
+RMS persistence must survive ordinary application restart, while rewind must
+keep guest memory and managed storage mutually consistent. Before RMS support,
+specify how session storage versions/checkpoints, durable commits, crashes,
+shared stores and concurrent writers interact. Isolated session storage with
+versioned checkpoints is the initial candidate. Do not silently overwrite
+external changes or claim shared/live resources can rewind. Select and test
+the policy before G6 rather than treating storage as an ordinary host file.
+
+## 12. Inspection and future execution engines
+
+G2 introduces bounded stepping and read-only inspection of class/method/bytecode
+location, frames, locals, operand stacks and heap identities. Inspection occurs
+at a consistent stop point. Add breakpoint/exception stops for the supported
+subset, and thread/block/monitor inspection as G4 introduces concurrency.
+Source-line/name views depend on available debug metadata; obfuscated or
+stripped JARs retain bytecode-level support. A debugger write is a deliberate
+state mutation and timeline event, not an invisible inspection side effect.
+
+Future JIT admission must identify live references for GC, preserve exception
+and monitor behavior, honor scheduling/stop boundaries, and materialize
+logical state at supported safepoints. Machine code is a disposable cache;
+restore may resume in the interpreter. Compare optimized behavior with both
+the applicable normative tests and interpreter results; agreement between two
+wrong implementations is insufficient. Backend/IR design and any unsafe/FFI
+boundary require a later focused decision under the existing safety policy.
+
+## 13. Compatibility and format evolution
+
+Record profile/API selections and evidenced compatibility quirks in snapshot
+and replay identity. Keep quirks at the owning runtime/profile boundary; do not
+add title-specific interpreter branches without a reviewed semantic reason.
+API availability, snapshot support and replay support are separate capabilities.
+
+Initially reject mismatched build/semantics, code or profile identities. Version
+the explicit wire schema; never dump Rust layout. Snapshot migration and stable
+embedding ABI are later commitments, with a tested supported-version matrix.
+Integrity checks detect corruption but do not make untrusted snapshots safe:
+all bounds, references and allocation budgets still require validation.
