@@ -43,6 +43,8 @@ The coordinator publishes a bounded assignment before concurrent writing:
 Task ID and canonical URL:
 Goal / work package / observable result:
 Current writer session ID; coordinator; reviewer or review still unassigned:
+Designated integrator session ID, or unassigned until integration:
+Authorized actions and source of user direction (implementation / publication / merge):
 Target branch and starting commit SHA; task branch:
 Contract revision (commit + document/section); dependency task/PR links:
 Owned responsibilities/files; shared files and designated writer:
@@ -57,6 +59,12 @@ are sufficient for that work. A research task can be ready with an unresolved
 question as its explicit output. Dependent implementation cannot treat the
 question as settled. Fixtures use confirmed expected behavior, not guesses from
 the implementation being tested.
+
+Record existing authorization without requesting it again. A task assignment
+does not expand it: naming an integrator does not grant merge permission, and
+permission for one PR does not grant permission for every dependent PR. The
+coordinator names the integrator before integration starts; workers retain their
+assigned scope when a general project plan is updated.
 
 The coordinator assigns tasks serially; workers do not race to claim an apparently
 empty slot. Issue labels and comments are not atomic locks. A worker verifies the
@@ -128,6 +136,9 @@ writing if replaced. The same explicit transfer applies to the coordinator.
    diff and actual checks against the current target. Apply
    [engineering-quality.md](engineering-quality.md). Verify cross-task behavior,
    not only textual conflicts; record the reviewed base/head SHAs and limitations.
+   Classify and disposition findings under engineering-quality.md. Unresolved
+   blockers keep the affected task out of integration; optional suggestions do
+   not silently become new acceptance criteria.
 2. Recheck live target/head, prerequisite merges and outstanding findings before
    integration. If either changed since review, examine the intervening diff and
    repeat affected review/checks. Reuse still-applicable evidence with explicit

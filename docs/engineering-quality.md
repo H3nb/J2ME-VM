@@ -52,6 +52,15 @@ No quota of findings, tests or comments; "no confirmed findings" is valid. Diffe
 agent sessions can share the same mistaken assumption, so disagreement is resolved
 with evidence rather than votes or the number of reviewers.
 
+Record each substantive finding's disposition: fixed with evidence, rejected
+with rationale/evidence, or deferred with an owning task and reason. Confirmed
+violations of the agreed behavior, safety invariants or required acceptance
+evidence block the affected change until corrected or the authorized scope is
+explicitly revised. A deferral label or resolved review thread alone does not
+clear such a blocker. Unanswered questions block only the behavior that depends
+on them; stylistic preferences and unrelated debt do not become implicit merge
+conditions. Verify the fix at the revised head before closing a blocker.
+
 ## Keeping quality from eroding over increments
 
 Fix relevant introduced defects before acceptance and remove mechanisms made
