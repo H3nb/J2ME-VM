@@ -93,35 +93,32 @@ based tests. If private GitHub Actions are ever proposed, separately review
 hosting rights, secret handling, artifact retention and fork-PR isolation before
 creating a workflow. No private-corpus workflow is justified at scaffold stage.
 
-## J2ME Dev Kit: narrowly scoped offline reference
+## Private offline compiler and API references
 
-ChatGPT Library `/J2ME Dev Kit/` contains `README.md`, `API-CATALOG.md`,
-`MANIFEST.json`, `Toolkit/J2ME-Dev-Kit-Offline.zip`, and
-`Documentation/J2ME_Docs.zip` (inventory checked 2026-10-29). This is a
-**separate research resource, not a repository dependency**. Its own README
-explicitly describes the toolkit as *private research only*; its redistribution
-rights are **not** cleared for public GitHub CI.
+Permitted private SDK/toolkit material is a **separate research resource, not a
+repository dependency**. Possession and private availability do not establish
+redistribution rights or permission to use it in public CI. Keep private storage
+locations and inventories out of public documentation.
 
 - Use the exact official JVMS/JSR *version and clause* as behavior authority.
   Indexed API documentation and SDK JAR signatures may assist research, but are
   not a normative substitute for the specification.
 - For private fixture compilation where permitted, use a **single compatible
-  profile**: the catalog's `midp20` baseline uses separate CLDC 1.1 and MIDP
-  2.0 API JARs; its `midp21` Nokia reference is self-contained. Never combine
-  the two profiles or wildcard all optional JSR JARs. Select only required API
-  declarations; record exact JAR SHA-256 from the toolkit manifest.
+  profile**. Do not stack incompatible profiles, duplicate a self-contained API
+  set or wildcard optional JSR JARs. Select only required API declarations and
+  record the relevant compiler/API versions and SHA-256 in fixture provenance.
 - Treat SDK API JARs as **compile-time references only**. Their classes are not
   guest test programs and their presence does not prove an implemented runtime.
   Do not redistribute them or embed their contents in generated fixture JARs.
-- The toolkit includes historical runtime implementation/source material,
+- Private toolkits may include historical runtime implementation/source material,
   vendor materials and third-party samples. **Do not inspect or use their
   implementation code, internal algorithms or tests** when designing this VM.
   Use only cleared compiler tooling and interface documentation as permitted
   by the project [clean-room policy](licensing-and-provenance.md).
-- `scripts/self-test.sh` in that toolkit checks its own compilation path, not
+- A toolkit's own build self-test checks its compilation path, not
   VM correctness. It must never be counted as a passing `j2me-vm` test.
 
-No Google/ChatGPT Library credential or third-party binary should be required
+No private storage credential or third-party binary should be required
 by an external contributor or the public CI to reproduce core project tests.
 
 ## Snapshot proof and CI growth

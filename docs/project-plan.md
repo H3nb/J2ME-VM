@@ -43,7 +43,7 @@ The process borrows the evidence/risk principle of the
 [Incremental Commitment Spiral Model](https://boehmcsse.org/tools/icsm/);
 this lightweight project process is not a claim of formal ICSM compliance.
 
-Hendra owns product priorities, material scope changes, release/integration,
+The product owner owns priorities, material scope changes, release/integration,
 and any decision to abandon or replace the project. Contributors and agents
 make routine implementation choices within authorized scope and prepare
 evidence and recommendations. Reviewers check primary contracts and behavior
@@ -208,8 +208,8 @@ At G3 measure snapshot bytes, save/restore duration and peak memory for declared
 fixture sizes. At G6/G6R also measure host reconstruction, event-log growth,
 rewind memory per second of history and replay latency. Record CPU/OS/toolchain,
 build mode, input hashes, workload and measurement method. Before G7 is judged,
-Hendra and the technical contributor select representative lawful workloads,
-target Android device class and acceptable playability/memory/latency/energy
+the product owner and the technical contributor select representative lawful
+workloads, target Android device class and acceptable playability/memory/latency/energy
 budgets. These are **TBD**, not passed or silently unlimited. Research can
 continue with stated bounds before product budgets are chosen.
 
@@ -227,7 +227,7 @@ Compare the smallest corrective change, a bounded redesign and replacement;
 include migration cost, retained tests and rollback. Prefer repairing the
 current repository where it can still meet the mission. Never start a successor
 repo, abandon the project or replace the engine merely because a task is hard.
-Material direction changes belong to Hendra; prepare evidence first.
+Material direction changes belong to the product owner; prepare evidence first.
 
 A gate outcome is **pass**, **needs rework**, **blocked** or **not attempted**.
 Only pass unlocks dependent capability claims. A failed experiment normally

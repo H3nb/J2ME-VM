@@ -52,7 +52,7 @@ The initial crate had no interpreter tests. The G1 parser and WP02 proof now hav
 
 ### Java ME guest fixtures and SDK separation
 
-Public CI deliberately needs no JDK, proprietary JAR, Java ME SDK or access to ChatGPT Library. The Library `/J2ME Dev Kit/` is available for private, licensed, local fixture compilation, **not** as a runtime implementation source and not as a public CI download. When a VM test first needs bytecode, admit original guest fixtures with authored Java source, compile recipe, version, SHA-256, rights and expected result per [testing.md](testing.md). No live downloads from Archive.org, no commercial MIDlets and no vendor API JARs in public CI.
+Public CI deliberately needs no JDK, proprietary JAR, Java ME SDK or private storage access. Permitted offline compiler/API references may support local fixture compilation, **not** runtime implementation design or public CI downloads. When a VM test first needs bytecode, admit original guest fixtures with authored Java source, compile recipe, version, SHA-256, rights and expected result per [testing.md](testing.md). No live downloads from Archive.org, no commercial MIDlets and no vendor API JARs in public CI.
 
 Review source and transitive licenses before introducing crates. Add automated dependency advisory/license checks when real dependencies warrant them, and add cross-platform, benchmark or fuzz CI only when protecting distinct implementation risks.
 

@@ -8,10 +8,10 @@
 The VM needs reproducible tests of class parsing, instruction semantics,
 checkpoint/restore and eventually Java ME API integration. A public Rust CI
 must be runnable by outside contributors without possessing old proprietary
-Java ME SDKs or redistributing commercial game JARs. The curated, privately
-held J2ME Dev Kit includes API JARs and compilers, but its archives are not
-cleared for redistribution and also include implementation material excluded
-by this project's clean-room restriction.
+Java ME SDKs or redistributing commercial game JARs. Private SDK/compiler
+references may support permitted compilation, but their redistribution rights
+require review and their implementation material is excluded by this project's
+clean-room restriction.
 
 ## Decision
 
@@ -23,8 +23,8 @@ by this project's clean-room restriction.
 2. **Staged test inputs:** raw class bytes and `.class` files at G1, executable
    authored classes at G2, JARs with loading, cross-process snapshot workloads
    at G3, and synthesized MIDlets/optional JSR probes only when supported.
-3. **Local SDK use:** the Library J2ME Dev Kit can support **private, permitted
-   fixture compilation**, but its API/runtime JARs, vendor binaries, sample
+3. **Local SDK use:** permitted offline compiler/API references can support
+   **private fixture compilation**, but API/runtime JARs, vendor binaries, sample
    programs, reference implementation and TCK must not be committed or used
    as implementation-design source. Its self-test is not a VM test.
 4. **Compatibility corpus:** commercial JARs and permission-cleared third-party
