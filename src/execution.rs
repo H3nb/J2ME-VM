@@ -454,7 +454,9 @@ impl IntMachine {
         self.position += 1;
         match instruction.op {
             Op::Push(value) => self.stack.push(value),
-            Op::Load(local) => self.stack.push(self.locals[local].expect("validated local read")),
+            Op::Load(local) => self
+                .stack
+                .push(self.locals[local].expect("validated local read")),
             Op::Store(local) => {
                 self.locals[local] = Some(self.stack.pop().expect("validated store"));
             }
