@@ -80,7 +80,7 @@ fixture was executed by `j2me-vm` or verified for CLDC.**
 ### Verified Java 1.4 (48.0) compiler output for W2 sources
 
 The coordinator independently built the *already committed, unchanged* W2
-Java sources with **ECJ 3.26.0** from the private J2ME Dev Kit (on OpenJDK
+Java sources with **ECJ 3.26.0** used as a private offline compiler (on OpenJDK
 21.0.12.1). Source files were checked byte-for-byte against their GitHub Git
 blob SHA before compilation. Neither ECJ, the SDK bundle, nor any Java ME API
 implementation is included in the repository.
