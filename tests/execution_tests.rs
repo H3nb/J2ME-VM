@@ -239,3 +239,20 @@ fn a_branch_fallthrough_cannot_escape_the_method() {
         PrepareErrorKind::MissingReturn
     );
 }
+
+#[test]
+fn large_host_budget_does_not_spin_forever_on_guest_back_edge() {
+    // If input == 0, return 1; otherwise execute goto pc=5 forever.
+    // The verifier accepts the reachable return while run enforces a cap.
+    let bytes = [0x1a, 0x03, 0x9f, 0x00, 0x06, 0xa7, 0x00, 0x00, 0x04, 0xac];
+    let program = changed_loop_code(&bytes, 2, 1).unwrap();
+    let mut looping = IntMachine::with_int_arg(program.clone(), 1);
+    assert_eq!(looping.run(usize::MAX), None);
+    assert_eq!(looping.pc(), 5);
+    assert_eq!(looping.operand_stack(), &[]);
+    assert_eq!(looping.run(1), None);
+    assert_eq!(looping.pc(), 5);
+
+    let mut terminating = IntMachine::with_int_arg(program, 0);
+    assert_eq!(terminating.run(usize::MAX), Some(1));
+}
