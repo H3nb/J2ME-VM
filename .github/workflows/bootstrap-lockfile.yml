@@ -1,0 +1,33 @@
+# Temporary bootstrap: removed after Cargo generates the first lockfile.
+name: Bootstrap Rust lockfile (temporary)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Generate lockfile and validate
+        run: |
+          set -eu
+          rustc --version
+          cargo --version
+          cargo generate-lockfile
+          cargo fmt --all -- --check
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked
+      - name: Print generated Cargo.lock for reviewed incorporation
+        run: |
+          echo 'BEGIN-CARGO-LOCK'
+          cat Cargo.lock
+          echo 'END-CARGO-LOCK'

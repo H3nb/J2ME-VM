@@ -1,0 +1,12 @@
+/target/
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+# Cargo.lock is committed once generated for reproducible experiments.
+
+# Rights-reviewed private guest corpora never enter the public repository.
+/local-corpus/
+/tests/private/
+/tests/fixtures/private/
