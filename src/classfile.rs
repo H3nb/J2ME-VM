@@ -274,6 +274,9 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
     }
     let mut pool = Vec::new();
     pool.push(Constant::Unusable);
+    // Retain the exact location of each constant so validation errors point
+    // to the offending reference, not the end of the constant pool.
+    let mut offsets = vec![r.offset()];
     while pool.len() < count {
         let at = r.offset();
         let tag = r.u1()?;
@@ -303,6 +306,8 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
                 }
                 pool.push(value);
                 pool.push(Constant::Unusable);
+                offsets.push(at);
+                offsets.push(at);
                 continue;
             }
             6 => {
@@ -317,6 +322,8 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
                 }
                 pool.push(value);
                 pool.push(Constant::Unusable);
+                offsets.push(at);
+                offsets.push(at);
                 continue;
             }
             7 => Constant::Class {
@@ -349,13 +356,14 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
             }
         };
         pool.push(constant);
+        offsets.push(at);
     }
-    for c in &pool {
-        let at = r.offset();
+    for (index, c) in pool.iter().enumerate() {
+        let at = offsets[index];
         match c {
-            Constant::Class { name_index } => check_ref(&pool, *name_index, "Utf8", is_utf8, at)?,
+            Constant::Class { name_index } => check_ref(&pool, *name_index, "Utf8", is_utf8, at + 1)?,
             Constant::String { string_index } => {
-                check_ref(&pool, *string_index, "Utf8", is_utf8, at)?
+                check_ref(&pool, *string_index, "Utf8", is_utf8, at + 1)?
             }
             Constant::Fieldref {
                 class_index,
@@ -369,21 +377,21 @@ fn parse_pool<'a>(r: &mut Reader<'a>) -> Result<Vec<Constant<'a>>, ParseError> {
                 class_index,
                 name_and_type_index,
             } => {
-                check_ref(&pool, *class_index, "Class", is_class, at)?;
+                check_ref(&pool, *class_index, "Class", is_class, at + 1)?;
                 check_ref(
                     &pool,
                     *name_and_type_index,
                     "NameAndType",
                     is_name_and_type,
-                    at,
+                    at + 3,
                 )?;
             }
             Constant::NameAndType {
                 name_index,
                 descriptor_index,
             } => {
-                check_ref(&pool, *name_index, "Utf8", is_utf8, at)?;
-                check_ref(&pool, *descriptor_index, "Utf8", is_utf8, at)?;
+                check_ref(&pool, *name_index, "Utf8", is_utf8, at + 1)?;
+                check_ref(&pool, *descriptor_index, "Utf8", is_utf8, at + 3)?;
             }
             _ => {}
         }

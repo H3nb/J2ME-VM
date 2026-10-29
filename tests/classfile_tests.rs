@@ -113,10 +113,12 @@ fn validates_constant_pool_types_and_modified_utf8() {
     let mut v = minimal(48, 0);
     let first_class_offset = 13 + b"Sample".len();
     v[first_class_offset + 1..first_class_offset + 3].copy_from_slice(&99u16.to_be_bytes());
+    let error = parse_class(&v).unwrap_err();
     assert!(matches!(
-        parse_class(&v).unwrap_err().kind,
+        error.kind,
         ParseErrorKind::InvalidReference { index: 99, .. }
     ));
+    assert_eq!(error.offset, first_class_offset + 1); // CP Class.name_index
 }
 
 #[test]
