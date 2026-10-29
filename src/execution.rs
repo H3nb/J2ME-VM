@@ -39,6 +39,8 @@ pub enum PrepareErrorKind {
     InstructionsAfterReturn,
     InvalidMethodReference,
     UnresolvedMethod,
+    InvalidClassAccessFlags,
+    InvalidMethodAccessFlags,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -376,6 +378,7 @@ impl IntProgram {
     /// Prepare exactly one static int-return method with either zero or one
     /// int parameter. This checks only the explicitly supported opcode subset.
     pub fn prepare(class: &ClassFile<'_>, name: &[u8]) -> Result<Self, PrepareError> {
+        check_class_admission(class)?;
         let mut selected = None;
         for member in &class.methods {
             if class.utf8_bytes(member.name_index) == Some(name)
@@ -409,6 +412,7 @@ impl IntProgram {
         name: &[u8],
         descriptor: &[u8],
     ) -> Result<Self, PrepareError> {
+        check_class_admission(class)?;
         // This proof admits only ordinary static methods as entrypoints.
         // Constructor/class-initializer names are not callable as ordinary methods.
         if name.starts_with(b"<") {
@@ -541,10 +545,32 @@ impl IntProgram {
     }
 }
 
+// This is a deliberately narrow executable-admission boundary, not a
+// substitute for the class-file verifier or CLDC preverification.
+fn check_class_admission(class: &ClassFile<'_>) -> Result<(), PrepareError> {
+    const ACC_FINAL: u16 = 0x0010;
+    const ACC_INTERFACE: u16 = 0x0200;
+    const ACC_ABSTRACT: u16 = 0x0400;
+    if class.access_flags & (ACC_FINAL | ACC_ABSTRACT) == (ACC_FINAL | ACC_ABSTRACT) {
+        return Err(error(0, PrepareErrorKind::InvalidClassAccessFlags));
+    }
+    if class.access_flags & ACC_INTERFACE != 0 {
+        return Err(error(
+            0,
+            PrepareErrorKind::UnsupportedMethod("interface class unsupported"),
+        ));
+    }
+    Ok(())
+}
+
 fn supported_method_arguments(
     class: &ClassFile<'_>,
     member: &Member<'_>,
 ) -> Result<usize, PrepareError> {
+    // JVMS Second Edition §4.6: at most one method visibility flag.
+    if (member.access_flags & 0x0007).count_ones() > 1 {
+        return Err(error(0, PrepareErrorKind::InvalidMethodAccessFlags));
+    }
     let arguments = match class.utf8_bytes(member.descriptor_index) {
         Some(signature) if signature == b"()I" => 0,
         Some(signature) if signature == b"(I)I" => 1,
