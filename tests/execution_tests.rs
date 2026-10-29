@@ -2,12 +2,16 @@
 //! WP02: original Java 1.4 class -> checked integer subset -> VM-owned frame.
 //! Not CLDC verification: fixtures have no legacy StackMap preverification.
 
-use j2me_vm::classfile::parse_class;
-use j2me_vm::execution::{IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step};
+use j2me_vm::classfile::{parse_class, Constant};
+use j2me_vm::execution::{
+    ExecutionError, IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step,
+};
 
 const CLASS: &[u8] = include_bytes!("fixtures/compiled/MinimalClass.class");
 const LOCALS: &[u8] = include_bytes!("fixtures/compiled/LocalArithmetic.class");
 const LOOP: &[u8] = include_bytes!("fixtures/compiled/BranchLoop.class");
+const NESTED: &[u8] = include_bytes!("fixtures/compiled/NestedStaticCalls.class");
+const RECURSIVE: &[u8] = include_bytes!("fixtures/compiled/RecursiveStaticCalls.class");
 
 #[test]
 fn original_class_is_executed_only_after_subset_validation() {
@@ -255,4 +259,318 @@ fn large_host_budget_does_not_spin_forever_on_guest_back_edge() {
 
     let mut terminating = IntMachine::with_int_arg(program, 0);
     assert_eq!(terminating.run(usize::MAX), Some(1));
+}
+
+#[test]
+fn original_nested_invocations_select_descriptors_and_preserve_callers() {
+    let class = parse_class(NESTED).unwrap();
+    let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
+    for (input, expected) in [
+        (i32::MIN, 7),
+        (-3, 1),
+        (-1, 5),
+        (0, 7),
+        (4, 15),
+        (i32::MAX, 5),
+    ] {
+        let mut vm = IntMachine::with_int_arg(program.clone(), input);
+        assert_eq!(vm.run(200), Some(expected));
+        assert_eq!(vm.frames().len(), 0);
+        assert_eq!(vm.failure(), None);
+    }
+
+    let overload = IntProgram::prepare_with_calls(&class, b"adjust", b"()I").unwrap();
+    assert_eq!(IntMachine::new(overload).run(10), Some(4));
+
+    let mut vm = IntMachine::with_int_arg(program, 4);
+    assert_eq!(vm.run(0), None);
+    assert_eq!(vm.step(), Step::Advanced { next_pc: 1 }); // iload_0
+    assert_eq!(vm.frames().len(), 1);
+    assert_eq!(vm.step(), Step::Advanced { next_pc: 0 }); // invokestatic adjust(I)I
+    assert_eq!(vm.frames().len(), 2);
+    assert_eq!(vm.frames()[0].operand_stack(), &[]); // caller argument transferred
+    assert_eq!(vm.frames()[1].locals(), &[Some(4)]);
+    assert_eq!(vm.frame_pc(0), Some(4)); // caller resumes after the 3-byte invoke
+    assert_eq!(vm.run(1), None);
+    assert_eq!(vm.frames().len(), 2);
+    assert_eq!(vm.run(100), Some(15));
+    assert_eq!(vm.step(), Step::AlreadyReturned(15));
+}
+
+#[test]
+fn recursive_frames_budget_and_call_depth_are_vm_owned() {
+    let class = parse_class(RECURSIVE).unwrap();
+    let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
+    for (input, expected) in [(-3, 0), (0, 0), (1, 1), (4, 4), (8, 8)] {
+        let mut vm = IntMachine::with_int_arg(program.clone(), input);
+        assert_eq!(vm.run(1), None);
+        assert_eq!(vm.run(0), None);
+        assert_eq!(vm.run(500), Some(expected));
+    }
+    let mut exact = IntMachine::with_int_arg(program.clone(), 63);
+    assert_eq!(exact.run(1000), Some(63)); // maximum 64 simultaneous frames
+    let mut too_deep = IntMachine::with_int_arg(program, 64);
+    assert_eq!(too_deep.run(1000), None);
+    assert_eq!(too_deep.failure(), Some(ExecutionError::CallDepthExceeded));
+    assert_eq!(too_deep.frames().len(), 64);
+    let pcs: Vec<_> = (0..too_deep.frames().len())
+        .map(|i| too_deep.frame_pc(i))
+        .collect();
+    assert_eq!(
+        too_deep.step(),
+        Step::AlreadyFailed(ExecutionError::CallDepthExceeded)
+    );
+    assert_eq!(
+        (0..too_deep.frames().len())
+            .map(|i| too_deep.frame_pc(i))
+            .collect::<Vec<_>>(),
+        pcs
+    );
+}
+
+#[test]
+fn executable_class_admission_rejects_invalid_kind_and_class_flags() {
+    let mut invalid_class = parse_class(NESTED).unwrap();
+    // ACC_FINAL | ACC_ABSTRACT is not a legal ordinary class combination.
+    invalid_class.access_flags = 0x0431;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_class, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidClassAccessFlags
+    );
+    assert_eq!(
+        IntProgram::prepare(&invalid_class, b"evaluate")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidClassAccessFlags
+    );
+
+    // Even a structurally parseable interface cannot enter this class-only
+    // static-invocation proof (class-file 48.0).
+    let mut interface = parse_class(NESTED).unwrap();
+    interface.access_flags = 0x0601; // ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT
+    assert_eq!(
+        IntProgram::prepare_with_calls(&interface, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("interface class unsupported")
+    );
+}
+
+#[test]
+fn method_visibility_exclusion_applies_to_entry_and_reachable_callees() {
+    // Reproduce an invalid public|private|static entry from the original
+    // W6 48.0 fixture, without copying or committing a mutated class binary.
+    let mut entry = parse_class(NESTED).unwrap();
+    let method = entry
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 10)
+        .expect("original evaluate(I)I");
+    method.access_flags = 0x000b;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&entry, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+    assert_eq!(
+        IntProgram::prepare(&entry, b"evaluate").unwrap_err().kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+
+    // The invalid method need not be the entry: the reachable private static
+    // adjust(I)I method with ACC_PROTECTED added must also fail admission.
+    let mut callee = parse_class(NESTED).unwrap();
+    let method = callee
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .expect("original adjust(I)I");
+    method.access_flags |= 0x0004;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&callee, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+
+    // Private static, final, strictfp and reserved flags must not be
+    // blanket-rejected by the narrow admission checks.
+    let mut allowed = parse_class(NESTED).unwrap();
+    allowed.access_flags |= 0x8000;
+    let adjust = allowed
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .expect("original private static adjust(I)I");
+    adjust.access_flags |= 0x8000 | 0x0010 | 0x0800;
+    let program = IntProgram::prepare_with_calls(&allowed, b"evaluate", b"(I)I").unwrap();
+    assert_eq!(IntMachine::with_int_arg(program, 4).run(200), Some(15));
+}
+
+#[test]
+fn special_method_entry_is_rejected_before_building_a_machine() {
+    // G1 accepts structural class data; it does not perform the complete
+    // JVMS class/member-name verification. Do not execute a malformed
+    // static int-return method masquerading as a constructor.
+    for special_name in [b"<init>".as_slice(), b"<invalid>".as_slice()] {
+        let mut class = parse_class(NESTED).unwrap();
+        class.constant_pool[10] = Constant::Utf8(special_name);
+        assert_eq!(
+            IntProgram::prepare_with_calls(&class, special_name, b"(I)I")
+                .unwrap_err()
+                .kind,
+            PrepareErrorKind::UnsupportedMethod("special method entry unsupported")
+        );
+    }
+
+    // The transitive Methodref target must also be an ordinary method.
+    // CP #20 is both increment(I)I's method name and its Methodref name.
+    let mut invalid_callee = parse_class(NESTED).unwrap();
+    invalid_callee.constant_pool[20] = Constant::Utf8(b"<invalid>");
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_callee, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("special method invocation unsupported")
+    );
+
+    // A user-supplied special name must never select a normal method.
+    let class = parse_class(NESTED).unwrap();
+    assert_eq!(
+        IntProgram::prepare_with_calls(&class, b"<init>", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("special method entry unsupported")
+    );
+}
+
+#[test]
+fn malformed_reachable_callee_cfg_fails_before_execution() {
+    let mut class = parse_class(NESTED).unwrap();
+    // The entry calls adjust(I)I, which calls increment(I)I. A goto target
+    // inside its own operand is invalid even though the entry Code is valid.
+    let invalid_code = [0xa7, 0x00, 0x01, 0x03, 0xac];
+    let callee = class
+        .methods
+        .iter_mut()
+        .find(|method| method.name_index == 20 && method.descriptor_index == 11)
+        .expect("increment(I)I in original W6 fixture");
+    callee.code.as_mut().expect("Code").instructions = &invalid_code;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidBranchTarget
+    );
+}
+
+#[test]
+fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() {
+    let mut invalid_zero = parse_class(NESTED).unwrap();
+    let invalid_code = [0x1a, 0xb8, 0x00, 0x00, 0xac];
+    let member = invalid_zero
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 10)
+        .expect("entry method");
+    member.code.as_mut().expect("Code").instructions = &invalid_code;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_zero, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodReference
+    );
+
+    let mut invalid_kind = parse_class(NESTED).unwrap();
+    invalid_kind.constant_pool[12] = Constant::Integer(0);
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_kind, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodReference
+    );
+
+    let mut external = parse_class(NESTED).unwrap();
+    external.constant_pool[12] = Constant::Methodref {
+        class_index: 3,
+        name_and_type_index: 13,
+    };
+    assert_eq!(
+        IntProgram::prepare_with_calls(&external, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported")
+    );
+
+    let mut unresolved = parse_class(NESTED).unwrap();
+    unresolved.constant_pool[13] = Constant::NameAndType {
+        name_index: 2,
+        descriptor_index: 11,
+    };
+    assert_eq!(
+        IntProgram::prepare_with_calls(&unresolved, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnresolvedMethod
+    );
+
+    // A statically typed callee needs one int argument, but none is on stack.
+    let mut missing_arg = parse_class(NESTED).unwrap();
+    let no_argument = [0xb8, 0x00, 0x12, 0xac]; // adjust(I)I -> increment(I)I
+    let callee = missing_arg
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .unwrap();
+    callee.code.as_mut().unwrap().instructions = &no_argument;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&missing_arg, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::StackUnderflow
+    );
+
+    // A non-static target cannot be admitted for invokestatic.
+    let mut initializer = parse_class(NESTED).unwrap();
+    initializer.constant_pool[14] = Constant::Utf8(b"<clinit>");
+    assert_eq!(
+        IntProgram::prepare_with_calls(&initializer, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("class initialization unsupported")
+    );
+
+    let mut nonstatic = parse_class(NESTED).unwrap();
+    let target = nonstatic
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .unwrap();
+    target.access_flags &= !0x0008;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&nonstatic, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("requires static unsynchronized concrete method")
+    );
+
+    let mut truncated = parse_class(NESTED).unwrap();
+    let code = truncated
+        .methods
+        .iter_mut()
+        .find(|m| m.code.is_some() && m.name_index == 10)
+        .unwrap()
+        .code
+        .as_mut()
+        .unwrap();
+    code.instructions = &[0xb8, 0x00];
+    assert_eq!(
+        IntProgram::prepare_with_calls(&truncated, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::TruncatedOperand
+    );
 }
