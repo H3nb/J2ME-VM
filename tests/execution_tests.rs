@@ -2,12 +2,14 @@
 //! WP02: original Java 1.4 class -> checked integer subset -> VM-owned frame.
 //! Not CLDC verification: fixtures have no legacy StackMap preverification.
 
-use j2me_vm::classfile::parse_class;
-use j2me_vm::execution::{IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step};
+use j2me_vm::classfile::{parse_class, Constant};
+use j2me_vm::execution::{ExecutionError, IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step};
 
 const CLASS: &[u8] = include_bytes!("fixtures/compiled/MinimalClass.class");
 const LOCALS: &[u8] = include_bytes!("fixtures/compiled/LocalArithmetic.class");
 const LOOP: &[u8] = include_bytes!("fixtures/compiled/BranchLoop.class");
+const NESTED: &[u8] = include_bytes!("fixtures/compiled/NestedStaticCalls.class");
+const RECURSIVE: &[u8] = include_bytes!("fixtures/compiled/RecursiveStaticCalls.class");
 
 #[test]
 fn original_class_is_executed_only_after_subset_validation() {
@@ -255,4 +257,90 @@ fn large_host_budget_does_not_spin_forever_on_guest_back_edge() {
 
     let mut terminating = IntMachine::with_int_arg(program, 0);
     assert_eq!(terminating.run(usize::MAX), Some(1));
+}
+
+#[test]
+fn original_nested_invocations_select_descriptors_and_preserve_callers() {
+    let class = parse_class(NESTED).unwrap();
+    let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
+    for (input, expected) in [
+        (i32::MIN, 7), (-3, 1), (-1, 5), (0, 7), (4, 15), (i32::MAX, 5)
+    ] {
+        let mut vm = IntMachine::with_int_arg(program.clone(), input);
+        assert_eq!(vm.run(200), Some(expected));
+        assert_eq!(vm.frames().len(), 0);
+        assert_eq!(vm.failure(), None);
+    }
+
+    let mut vm = IntMachine::with_int_arg(program, 4);
+    assert_eq!(vm.run(0), None);
+    assert_eq!(vm.step(), Step::Advanced { next_pc: 1 }); // iload_0
+    assert_eq!(vm.frames().len(), 1);
+    assert_eq!(vm.step(), Step::Advanced { next_pc: 0 }); // invokestatic adjust(I)I
+    assert_eq!(vm.frames().len(), 2);
+    assert_eq!(vm.frames()[0].operand_stack(), &[]); // caller argument transferred
+    assert_eq!(vm.frames()[1].locals(), &[Some(4)]);
+    assert_eq!(vm.frame_pc(0), Some(4)); // caller resumes after the 3-byte invoke
+    assert_eq!(vm.run(1), None);
+    assert_eq!(vm.frames().len(), 2);
+    assert_eq!(vm.run(100), Some(15));
+    assert_eq!(vm.step(), Step::AlreadyReturned(15));
+}
+
+#[test]
+fn recursive_frames_budget_and_call_depth_are_vm_owned() {
+    let class = parse_class(RECURSIVE).unwrap();
+    let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
+    for (input, expected) in [(-3, 0), (0, 0), (1, 1), (4, 4), (8, 8)] {
+        let mut vm = IntMachine::with_int_arg(program.clone(), input);
+        assert_eq!(vm.run(1), None);
+        assert_eq!(vm.run(0), None);
+        assert_eq!(vm.run(500), Some(expected));
+    }
+    let mut exact = IntMachine::with_int_arg(program.clone(), 63);
+    assert_eq!(exact.run(1000), Some(63)); // maximum 64 simultaneous frames
+    let mut too_deep = IntMachine::with_int_arg(program, 64);
+    assert_eq!(too_deep.run(1000), None);
+    assert_eq!(too_deep.failure(), Some(ExecutionError::CallDepthExceeded));
+    assert_eq!(too_deep.frames().len(), 64);
+    let pcs: Vec<_> = (0..too_deep.frames().len()).map(|i| too_deep.frame_pc(i)).collect();
+    assert_eq!(too_deep.step(), Step::AlreadyFailed(ExecutionError::CallDepthExceeded));
+    assert_eq!((0..too_deep.frames().len()).map(|i| too_deep.frame_pc(i)).collect::<Vec<_>>(), pcs);
+}
+
+#[test]
+fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() {
+    let mut invalid_kind = parse_class(NESTED).unwrap();
+    invalid_kind.constant_pool[12] = Constant::Integer(0);
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_kind, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::InvalidMethodReference
+    );
+
+    let mut external = parse_class(NESTED).unwrap();
+    external.constant_pool[12] = Constant::Methodref { class_index: 3, name_and_type_index: 13 };
+    assert_eq!(
+        IntProgram::prepare_with_calls(&external, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported")
+    );
+
+    let mut unresolved = parse_class(NESTED).unwrap();
+    unresolved.constant_pool[13] = Constant::NameAndType { name_index: 2, descriptor_index: 11 };
+    assert_eq!(
+        IntProgram::prepare_with_calls(&unresolved, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::UnresolvedMethod
+    );
+
+    let mut truncated = parse_class(NESTED).unwrap();
+    let code = truncated.methods.iter_mut()
+        .find(|m| m.code.is_some() && m.name_index == 10).unwrap().code.as_mut().unwrap();
+    code.instructions = &[0xb8, 0x00];
+    assert_eq!(
+        IntProgram::prepare_with_calls(&truncated, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::TruncatedOperand
+    );
 }
