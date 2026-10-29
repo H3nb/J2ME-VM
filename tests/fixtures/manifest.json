@@ -39,6 +39,32 @@
       "sha256": "75492454cf4457f8b700b4874ea9c63235da345dfeb9c79364ad89f9b9abe827",
       "expected": "evaluate(I)I; forward and backward branches/loop, signed comparisons; see README test vectors",
       "specification": "JVMS Second Edition §§3.6,4.1,4.7 and conditional/unconditional branches; no CLDC StackMap claim"
+    },
+    {
+      "path": "compiled/NestedStaticCalls.class",
+      "source": "java/NestedStaticCalls.java",
+      "license": "GPL-3.0-only",
+      "authoring": "Original WP02-W6 source fixture",
+      "compiler": "ECJ 3.26.0",
+      "command": "java -jar ecj-3.26.0.jar -source 1.4 -target 1.4 -g:none -d tests/fixtures/compiled tests/fixtures/java/NestedStaticCalls.java",
+      "class_file_version": "48.0",
+      "preverified": false,
+      "sha256": "519ef34a1c7038b21f94168eaca17cc8b86d81bc228c82654c091da9ba37e4aa",
+      "expected": "evaluate(I)I = 2*input+7 modulo 2^32 as signed int; nested and overloaded same-class static calls; see invocation-w6.md",
+      "specification": "JVMS Second Edition §§3.6,4.3.3,4.4.2,4.7.3,4.9; ch. 6 invokestatic, ireturn, iadd, isub, if_icmpgt; no CLDC StackMap claim"
+    },
+    {
+      "path": "compiled/RecursiveStaticCalls.class",
+      "source": "java/RecursiveStaticCalls.java",
+      "license": "GPL-3.0-only",
+      "authoring": "Original WP02-W6 source fixture",
+      "compiler": "ECJ 3.26.0",
+      "command": "java -jar ecj-3.26.0.jar -source 1.4 -target 1.4 -g:none -d tests/fixtures/compiled tests/fixtures/java/RecursiveStaticCalls.java",
+      "class_file_version": "48.0",
+      "preverified": false,
+      "sha256": "19882d5f8a9c7b8d35dad9cf54467d428839da34cef7db3e17875083b9faeedf",
+      "expected": "evaluate(I)I = max(depth,0) if completed; depth=n requires n+1 active frames for n>=0; see invocation-w6.md",
+      "specification": "JVMS Second Edition §§3.6,4.3.3,4.4.2,4.7.3,4.9; ch. 6 invokestatic, ireturn, iadd, isub, if_icmpgt; no CLDC StackMap claim"
     }
   ]
 }

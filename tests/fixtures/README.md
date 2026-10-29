@@ -108,3 +108,15 @@ methods and is **not** claimed to execute them.
 
 The previous `javac --release 8` hashes above remain diagnostic-only and
 must not be mistaken for these committed 48.0 binaries.
+
+## WP02-W6 invocation fixtures (Issue #19)
+
+`NestedStaticCalls.java` and `RecursiveStaticCalls.java` are independently
+written, GPL-3.0-only Java 1.4 fixtures, compiled with ECJ 3.26.0 to verified
+48.0 class files. See [invocation-w6.md](invocation-w6.md) for independently
+derived expected results, bytecode/constant-pool inspection, SHA-256,
+reproduction commands and precise positive/negative test recipes.
+
+**These are not CLDC-preverified classes** (no legacy `StackMap`). This
+fixture-only change neither enables `invokestatic` in `IntProgram` nor proves
+an interpreter execution result, CLDC verification or G2 completion.
