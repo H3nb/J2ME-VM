@@ -310,6 +310,17 @@ fn recursive_frames_budget_and_call_depth_are_vm_owned() {
 
 #[test]
 fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() {
+    let mut invalid_zero = parse_class(NESTED).unwrap();
+    let invalid_code = [0x1a, 0xb8, 0x00, 0x00, 0xac];
+    let member = invalid_zero.methods.iter_mut()
+        .find(|m| m.name_index == 10).expect("entry method");
+    member.code.as_mut().expect("Code").instructions = &invalid_code;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_zero, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::InvalidMethodReference
+    );
+
     let mut invalid_kind = parse_class(NESTED).unwrap();
     invalid_kind.constant_pool[12] = Constant::Integer(0);
     assert_eq!(
