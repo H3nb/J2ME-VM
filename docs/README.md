@@ -15,6 +15,8 @@ This index selects an **owning document** rather than introducing duplicate poli
 | Test selection, guest fixture provenance, public CI and private compatibility corpus | [`testing.md`](testing.md) and [ADR-0003](adr/0003-public-fixtures-private-compatibility-corpus.md) |
 | Commands, CI, reproducibility, pre-commit checklist | [`development.md`](development.md) |
 | Consequential accepted decisions and alternatives | [`adr/`](adr/) |
+| Multi-session assignments, isolated work, contract changes, review and integration | [`parallel-development.md`](parallel-development.md) |
+| Code quality erosion, AI slop, simplification and evidence-based review | [`engineering-quality.md`](engineering-quality.md) |
 
 Documents differentiate **requirements**, **accepted decisions**, **hypotheses**, and **observed evidence**. Experiments do not silently promote a proposal to a contract. Only claim capabilities demonstrated by tests at the relevant gate.
 

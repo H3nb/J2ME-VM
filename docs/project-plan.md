@@ -117,10 +117,16 @@ state, execution and host contracts; do not duplicate them in task checklists.
 
 ## 5. Work packages and dependency order
 
-One primary foundational implementation package should be active at a time.
-Independent review, specification research or fixture work may proceed where
-it does not race on state ownership or the same files. This is a coordination
-rule, not permission to spawn agents or start unrelated work.
+Keep one primary foundational increment as the shared integration goal.
+Several ready tasks within it may proceed in parallel when their contracts,
+dependencies and ownership are explicit. Research, fixtures and independent
+review may also proceed without racing on shared state or decisions. Follow
+[parallel development](parallel-development.md) for assignment and integration,
+and [engineering quality](engineering-quality.md) for the combined result.
+Package dependencies below constrain acceptance evidence; they do not require
+every preparatory task to be serial. Unknown contracts block dependent work,
+not unrelated work. This policy does not itself authorize spawning agents,
+publishing, merging or expanding scope.
 
 | Package | Concrete output | Depends on / completion boundary |
 | --- | --- | --- |
