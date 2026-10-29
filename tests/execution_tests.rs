@@ -329,6 +329,87 @@ fn recursive_frames_budget_and_call_depth_are_vm_owned() {
 }
 
 #[test]
+fn executable_class_admission_rejects_invalid_kind_and_class_flags() {
+    let mut invalid_class = parse_class(NESTED).unwrap();
+    // ACC_FINAL | ACC_ABSTRACT is not a legal ordinary class combination.
+    invalid_class.access_flags = 0x0431;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&invalid_class, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidClassAccessFlags
+    );
+    assert_eq!(
+        IntProgram::prepare(&invalid_class, b"evaluate")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidClassAccessFlags
+    );
+
+    // Even a structurally parseable interface cannot enter this class-only
+    // static-invocation proof (class-file 48.0).
+    let mut interface = parse_class(NESTED).unwrap();
+    interface.access_flags = 0x0601; // ACC_PUBLIC | ACC_INTERFACE | ACC_ABSTRACT
+    assert_eq!(
+        IntProgram::prepare_with_calls(&interface, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::UnsupportedMethod("interface class unsupported")
+    );
+}
+
+#[test]
+fn method_visibility_exclusion_applies_to_entry_and_reachable_callees() {
+    // Reproduce an invalid public|private|static entry from the original
+    // W6 48.0 fixture, without copying or committing a mutated class binary.
+    let mut entry = parse_class(NESTED).unwrap();
+    let method = entry
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 10)
+        .expect("original evaluate(I)I");
+    method.access_flags = 0x000b;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&entry, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+    assert_eq!(
+        IntProgram::prepare(&entry, b"evaluate").unwrap_err().kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+
+    // The invalid method need not be the entry: the reachable private static
+    // adjust(I)I method with ACC_PROTECTED added must also fail admission.
+    let mut callee = parse_class(NESTED).unwrap();
+    let method = callee
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .expect("original adjust(I)I");
+    method.access_flags |= 0x0004;
+    assert_eq!(
+        IntProgram::prepare_with_calls(&callee, b"evaluate", b"(I)I")
+            .unwrap_err()
+            .kind,
+        PrepareErrorKind::InvalidMethodAccessFlags
+    );
+
+    // Private static and reserved flags must not be blanket-rejected.
+    let mut allowed = parse_class(NESTED).unwrap();
+    allowed.access_flags |= 0x8000;
+    let adjust = allowed
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 14 && m.descriptor_index == 11)
+        .expect("original private static adjust(I)I");
+    adjust.access_flags |= 0x8000;
+    let program = IntProgram::prepare_with_calls(&allowed, b"evaluate", b"(I)I").unwrap();
+    assert_eq!(IntMachine::with_int_arg(program, 4).run(200), Some(15));
+}
+
+#[test]
 fn special_method_entry_is_rejected_before_building_a_machine() {
     // G1 accepts structural class data; it does not perform the complete
     // JVMS class/member-name verification. Do not execute a malformed
