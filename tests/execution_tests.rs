@@ -3,7 +3,9 @@
 //! Not CLDC verification: fixtures have no legacy StackMap preverification.
 
 use j2me_vm::classfile::{parse_class, Constant};
-use j2me_vm::execution::{ExecutionError, IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step};
+use j2me_vm::execution::{
+    ExecutionError, IntMachine, IntProgram, PrepareError, PrepareErrorKind, Step,
+};
 
 const CLASS: &[u8] = include_bytes!("fixtures/compiled/MinimalClass.class");
 const LOCALS: &[u8] = include_bytes!("fixtures/compiled/LocalArithmetic.class");
@@ -264,7 +266,12 @@ fn original_nested_invocations_select_descriptors_and_preserve_callers() {
     let class = parse_class(NESTED).unwrap();
     let program = IntProgram::prepare_with_calls(&class, b"evaluate", b"(I)I").unwrap();
     for (input, expected) in [
-        (i32::MIN, 7), (-3, 1), (-1, 5), (0, 7), (4, 15), (i32::MAX, 5)
+        (i32::MIN, 7),
+        (-3, 1),
+        (-1, 5),
+        (0, 7),
+        (4, 15),
+        (i32::MAX, 5),
     ] {
         let mut vm = IntMachine::with_int_arg(program.clone(), input);
         assert_eq!(vm.run(200), Some(expected));
@@ -303,21 +310,35 @@ fn recursive_frames_budget_and_call_depth_are_vm_owned() {
     assert_eq!(too_deep.run(1000), None);
     assert_eq!(too_deep.failure(), Some(ExecutionError::CallDepthExceeded));
     assert_eq!(too_deep.frames().len(), 64);
-    let pcs: Vec<_> = (0..too_deep.frames().len()).map(|i| too_deep.frame_pc(i)).collect();
-    assert_eq!(too_deep.step(), Step::AlreadyFailed(ExecutionError::CallDepthExceeded));
-    assert_eq!((0..too_deep.frames().len()).map(|i| too_deep.frame_pc(i)).collect::<Vec<_>>(), pcs);
+    let pcs: Vec<_> = (0..too_deep.frames().len())
+        .map(|i| too_deep.frame_pc(i))
+        .collect();
+    assert_eq!(
+        too_deep.step(),
+        Step::AlreadyFailed(ExecutionError::CallDepthExceeded)
+    );
+    assert_eq!(
+        (0..too_deep.frames().len())
+            .map(|i| too_deep.frame_pc(i))
+            .collect::<Vec<_>>(),
+        pcs
+    );
 }
 
 #[test]
 fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() {
     let mut invalid_zero = parse_class(NESTED).unwrap();
     let invalid_code = [0x1a, 0xb8, 0x00, 0x00, 0xac];
-    let member = invalid_zero.methods.iter_mut()
-        .find(|m| m.name_index == 10).expect("entry method");
+    let member = invalid_zero
+        .methods
+        .iter_mut()
+        .find(|m| m.name_index == 10)
+        .expect("entry method");
     member.code.as_mut().expect("Code").instructions = &invalid_code;
     assert_eq!(
         IntProgram::prepare_with_calls(&invalid_zero, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::InvalidMethodReference
     );
 
@@ -325,33 +346,49 @@ fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() 
     invalid_kind.constant_pool[12] = Constant::Integer(0);
     assert_eq!(
         IntProgram::prepare_with_calls(&invalid_kind, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::InvalidMethodReference
     );
 
     let mut external = parse_class(NESTED).unwrap();
-    external.constant_pool[12] = Constant::Methodref { class_index: 3, name_and_type_index: 13 };
+    external.constant_pool[12] = Constant::Methodref {
+        class_index: 3,
+        name_and_type_index: 13,
+    };
     assert_eq!(
         IntProgram::prepare_with_calls(&external, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::UnsupportedMethod("cross-class invocation unsupported")
     );
 
     let mut unresolved = parse_class(NESTED).unwrap();
-    unresolved.constant_pool[13] = Constant::NameAndType { name_index: 2, descriptor_index: 11 };
+    unresolved.constant_pool[13] = Constant::NameAndType {
+        name_index: 2,
+        descriptor_index: 11,
+    };
     assert_eq!(
         IntProgram::prepare_with_calls(&unresolved, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::UnresolvedMethod
     );
 
     let mut truncated = parse_class(NESTED).unwrap();
-    let code = truncated.methods.iter_mut()
-        .find(|m| m.code.is_some() && m.name_index == 10).unwrap().code.as_mut().unwrap();
+    let code = truncated
+        .methods
+        .iter_mut()
+        .find(|m| m.code.is_some() && m.name_index == 10)
+        .unwrap()
+        .code
+        .as_mut()
+        .unwrap();
     code.instructions = &[0xb8, 0x00];
     assert_eq!(
         IntProgram::prepare_with_calls(&truncated, b"evaluate", b"(I)I")
-            .unwrap_err().kind,
+            .unwrap_err()
+            .kind,
         PrepareErrorKind::TruncatedOperand
     );
 }
