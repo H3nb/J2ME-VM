@@ -451,10 +451,9 @@ impl IntProgram {
         for (index, member) in class.methods.iter().enumerate() {
             if class.utf8_bytes(member.name_index) == Some(name)
                 && class.utf8_bytes(member.descriptor_index) == Some(descriptor)
+                && entry_member.replace(index).is_some()
             {
-                if entry_member.replace(index).is_some() {
-                    return Err(error(0, PrepareErrorKind::AmbiguousMethod));
-                }
+                return Err(error(0, PrepareErrorKind::AmbiguousMethod));
             }
         }
         let entry_member =
@@ -519,10 +518,9 @@ impl IntProgram {
                 for (index, candidate) in class.methods.iter().enumerate() {
                     if class.utf8_bytes(candidate.name_index) == Some(method_name)
                         && class.utf8_bytes(candidate.descriptor_index) == Some(signature)
+                        && resolved.replace(index).is_some()
                     {
-                        if resolved.replace(index).is_some() {
-                            return Err(error(at, PrepareErrorKind::AmbiguousMethod));
-                        }
+                        return Err(error(at, PrepareErrorKind::AmbiguousMethod));
                     }
                 }
                 let resolved =
