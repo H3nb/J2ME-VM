@@ -120,3 +120,11 @@ reproduction commands and precise positive/negative test recipes.
 **These are not CLDC-preverified classes** (no legacy `StackMap`). This
 fixture-only change neither enables `invokestatic` in `IntProgram` nor proves
 an interpreter execution result, CLDC verification or G2 completion.
+
+## WP02-W9 source candidates (Issue #26)
+
+`ReferenceIdentity.java` and `ExceptionIdentity.java` are original source-only
+candidates for future reference and exception contracts. See
+[reference-exception-w9.md](reference-exception-w9.md) for independently expected
+results, actual offline 48.0 compilation evidence and missing runtime behavior.
+No new compiled binary is checked in or executable on the current VM.
