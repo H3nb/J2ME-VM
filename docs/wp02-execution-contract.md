@@ -91,9 +91,9 @@ non-`int` state. G3 separately requires a real **process A exits →
 process B restores** proof. This execution prototype does not justify
 a MIDP compatibility, Java certification or JL-Mod Plus integration claim.
 
-## Proposed W7 stacked increment — bounded same-class invocation (not yet integrated)
+## WP02-W7 bounded same-class invocation — experimental contract
 
-The coordinator prepares this experimental contract in [Issue #22](https://github.com/H3nb/J2ME-VM/issues/22) above [W6 PR #20](https://github.com/H3nb/J2ME-VM/pull/20). It changes no general CLDC verifier, loader, or G2 gate claim.
+This experimental increment was developed under [Issue #22](https://github.com/H3nb/J2ME-VM/issues/22) using the original fixtures from [W6 PR #20](https://github.com/H3nb/J2ME-VM/pull/20). It changes no general CLDC verifier, loader, or G2 gate claim.
 
 A caller explicitly requests `IntProgram::prepare_with_calls(class, name, descriptor)`. The old `prepare(class, name)` remains a single-method compatibility path and still rejects invocation. This new entry must match **both** name and descriptor, and explicitly rejects special method entry names such as `<init>` and `<clinit>` (including other names starting with `<` in the experimental admission policy). It prepares the statically reachable same-class `CONSTANT_Methodref` calls, with only `()I` and `(I)I` descriptors; unused compiler-generated constructors are ignored. Unsupported or malformed reachable callees, invalid constant-pool kind/index, truncated `invokestatic` operands, stack-underflow at invoke, invalid return/CFG, and external calls are rejected before an `IntMachine` exists. Calls do not guess CLDC linkage errors or their timing.
 
