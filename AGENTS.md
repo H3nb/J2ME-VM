@@ -9,7 +9,7 @@ Build an **independent, host-neutral Java ME virtual machine in Rust** to invest
 Use this authority order when deciding behavior:
 
 1. Explicit user requirements and this repository's license, clean-room, and security constraints.
-2. Applicable **version-specific primary specifications** (CLDC 1.1 / JSR 139, MIDP 2.0 / JSR 118, and the JVMS edition they reference), subject to legal access and use terms. CLDC-specific amendments prevail for the CLDC target.
+2. Applicable **version-specific primary specifications** (the selected CLDC revision / JSR 139, MIDP 1.0 / JSR 37 or 2.0–2.1 / JSR 118, and the JVMS edition they reference; consult JSR 271 for the future MIDP 3.0 contract), subject to legal access and use terms. CLDC-specific amendments prevail for the CLDC target.
 3. Accepted, current [architecture decisions](docs/adr/) and the maintained behavior contract in [architecture.md](docs/architecture.md).
 4. Current source, executable tests, and reproducible observations as **implementation evidence**, not as authority over the intended contract.
 5. Prior commits, proposals, notes, and agent output as nonbinding history.
@@ -29,6 +29,13 @@ Never convert an unverified assumption or test expectation into a normative requ
 - Do not claim Java certification, TCK compliance, trademark rights, or that GPLv3 by itself grants specification implementation rights. Follow [licensing and provenance](docs/licensing-and-provenance.md).
 
 ## 3. Before changing code
+
+For continuity, read [project-status.md](docs/project-status.md), verify current
+remote heads/open work, and select the next unfinished dependency from the
+[project plan](docs/project-plan.md). Preserve existing work. Update the handoff
+with exact evidence and the next action when an increment ends; do not restart
+or expand the project silently. This adds no routine approval requirement and
+does not override the user's existing authorization.
 
 1. Read `README.md`, this file, and only the task-relevant links in [docs/README.md](docs/README.md). Inspect actual source, tests, configuration, and the current branch; check whether the proposed feature exists.
 2. Define the externally visible behavior and versioned specification scope. Trace which component owns the relevant state, its lifetime, loading/verification, concurrency, and host boundary.

@@ -2,7 +2,7 @@
 
 **Experimental, independent Java ME VM research in Rust** — investigating whether a VM that owns its execution state can support reliable checkpoint/restore and eventually rewind. Intended as a possible *optional* engine for JL-Mod Plus, **not** a replacement for its existing Android runtime.
 
-> **Current status — G1 class-file structural reader under review.** The crate can parse a bounded subset of CLDC-era class-file structures; it does **not** verify or execute bytecode. There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
+> **Current status — G1 class-file structural reader implemented.** The crate can parse a bounded subset of CLDC-era class-file structures; it does **not** verify or execute bytecode. There is **no bytecode interpreter, MIDlet runtime, functioning snapshot, or rewind**. No Java ME compatibility or TCK certification is claimed.
 
 ## Research goals and gates
 
@@ -10,11 +10,17 @@
 2. Implement a small bytecode interpreter with VM-owned frames and observable specification-correct results.
 3. Prove a bounded, versioned snapshot can reconstruct VM-owned heap, PC, frames and class state in a **new process**, with the old process terminated.
 4. Extend proof to virtual threads, monitors, timers, and explicit host callbacks without guessing at unsnapshotable resources.
-5. Evaluate CLDC 1.1 → MIDP 2.0 in phases, then consider whether integration into JL-Mod Plus is viable.
+5. Deliver declared MIDP 1.0–2.1 compatibility in phases, keeping foundations suitable for later MIDP 3.0 on CLDC; evaluate Android hosting after evidence. See the [profile evolution study](docs/profile-evolution.md).
 
 A **VM core snapshot is not a complete game save state**: display, audio, I/O, host resources, and external time must be reconciled separately. Failure of the proof is an acceptable research outcome; we will not paper it over with compatibility patches or overbuilt frameworks.
 
 ## Scope and structure
+
+Development follows the proposed [staged project plan](docs/project-plan.md):
+define the next increment, reduce its main risks, and accept executable evidence
+before expanding scope. Read [project status](docs/project-status.md) to resume
+existing work without duplicating open PRs. Architecture and gates describe
+targets, not capabilities already implemented.
 
 - A **single Rust library crate**; desktop first. No Android/JNI, JIT, full Java SE, proprietary device extensions or speculative crate workspace at this stage.
 - [`AGENTS.md`](AGENTS.md): mandatory engineering and clean-room rules for humans and coding agents.

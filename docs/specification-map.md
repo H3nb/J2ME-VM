@@ -20,6 +20,11 @@
 
 ## Verification work still required
 
+The [profile evolution study](profile-evolution.md) adds source findings and
+open questions N01–N05. Product delivery targets MIDP 1.0–2.1 first; JSR 271 and
+CLDC 1.1.1 inform architectural constraints now. Do not treat a new API version
+as a drop-in semantic replacement for an older execution environment.
+
 - Acquire and catalog an appropriately licensed copy of the **exact CLDC 1.1 / 1.1.1 text** needed for implementation without distributing the PDF in this repo.
 - Confirm referenced JVMS edition and map each supported bytecode, class format and verifier requirement before claiming CLDC-level conformance.
 - Resolve Java specification implementation/TCK licensing and permitted branding before any public claim of standards compatibility.
@@ -33,3 +38,17 @@
 - **Host resource policy:** input size capped at 16 MiB, independent of normative class-file limits. Errors carry an offset. Parser borrows attribute/constant bytes and does not normalize guest strings with lossy UTF-8 conversion.
 
 Any work extending verification must independently check exact JSR 139 normative clauses and applicable terms before claiming compliance.
+
+## Expanded profile sources and evidence levels
+
+| Contract | Source | Current evidence boundary |
+| --- | --- | --- |
+| MIDP 1.0 / JSR 37 | [Oracle MIDlet API](https://docs.oracle.com/javame/config/cldc/ref-impl/midp1.0/jsr037/javax/microedition/midlet/package-summary.html) | Lifecycle source inspected; complete profile/version clauses still mapped incrementally |
+| MIDP 2.1 / JSR 118 | [Final maintenance download](https://download.oracle.com/otndocs/jcp/midp-2.1-mrel-oth-JSpec/), [MR2 change log](https://www.jcp.org/aboutJava/communityprocess/maintenance/jsr118/JSR_118_MR2_Changelog.pdf) | Accepted/rejected status inspected, including runtime declaration and behavior deltas; final full text must close N03. MIDP 2.2 changes must not be attributed to 2.1 |
+| CLDC 1.1.1 / JSR 139 | [Maintenance release](https://jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html), [accepted review index](https://jcp.org/aboutJava/communityprocess/maintenance/jsr139/139ChangeLog.html), [change text](https://jcp.org/aboutJava/communityprocess/maintenance/jsr139/CHANGE_LOG.txt) | Change text addresses resolution failure timing in sections 5.4/5.3.4 but retains a proposed heading; reconcile final wording before dependent implementation (N01) |
+| MIDP 3.0 / JSR 271 | [Final release](https://jcp.org/aboutJava/communityprocess/final/jsr271/index.html), [Oracle final artifacts](https://download.oracle.com/otndocs/jcp/midp-3.0-fr-oth-JSpec/) | Acquisition points identified; complete final chapters have not been validated in this planning increment |
+| MIDP 3 API descriptions | [Mirrored final Javadoc](https://nikita36078.github.io/J2ME_Docs/docs/midp-3_0-fr-javadoc/overview-summary.html), individual sources S05–S08 in the study | Primary-authored API text on third-party hosting; research evidence only until artifact identity/final chapter cross-check. No emulator implementation was inspected |
+
+When closing a gap, record edition, section/API member, retrieval provenance and
+the specific expected behavior. Do not assign an invented clause number. The
+study's original architecture proposals are not themselves normative Java rules.
