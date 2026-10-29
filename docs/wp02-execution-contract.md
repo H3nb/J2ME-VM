@@ -1,6 +1,6 @@
 # WP02: bounded arithmetic execution proof
 
-**Status:** Proposed and under implementation review; partial evidence for G2
+**Status:** Accepted limited research proof via PR #3; partial evidence for G2
 only. Normative references: [JVMS Second Edition §3.6 and §3.11](https://docs.oracle.com/javase/specs/jvms/se6/html/Overview.doc.html),
 [§4.7.3/§4.9](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html),
 [opcode listing](https://docs.oracle.com/javase/specs/jvms/se6/html/Mnemonics.doc.html).

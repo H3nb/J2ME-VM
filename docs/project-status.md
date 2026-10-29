@@ -1,42 +1,45 @@
 # Project status and next action
 
-**Observation date:** 2026-10-29 (Asia/Makassar). This status is a handoff,
-not a substitute for checking live GitHub refs and CI.
+**Observed:** 2026-10-29 (Asia/Makassar). Always recheck GitHub refs,
+canonical Issues and Actions; this is a dated handoff.
 
-## Verified baseline
+## Integrated baseline
 
-- Main at start of WP02: `4abb2aa67ef85145b68abb801cd5f95f234d78ef`.
-- [PR #1](https://github.com/H3nb/J2ME-VM/pull/1) merged G1 parser.
-- [PR #2](https://github.com/H3nb/J2ME-VM/pull/2) merged the staged planning
-  baseline and profile-aware design. Earlier status claiming PR #2 was open
-  has been superseded.
-- [Baseline CI](https://github.com/H3nb/J2ME-VM/actions/runs/40807003845)
-  succeeded at main with 8 parser integration tests.
-- No general verifier, class loader, full interpreter, runtime, snapshot,
-  or rewind is implemented or demonstrated.
+- Main after [PR #3](https://github.com/H3nb/J2ME-VM/pull/3):
+  `528d826f8ffb08f044acf75e72f82d2edf4745b9`.
+- [Main Rust CI](https://github.com/H3nb/J2ME-VM/actions/runs/40811751715)
+  passed fmt, Clippy and **13 tests** at that SHA.
+- PR #1 merged the bounded G1 parser; PR #2 merged the staged plan and
+  profile-aware architecture. PR #3 merged only a small, checked integer
+  method execution proof and the conditional `[skip ci]` policy.
+- PR #3 was **self-reviewed** by its author/coordinator; independent
+  architecture sign-off remains absent. G2 is **not passed**. There is no
+  conformant CLDC StackMap verifier, class loader, branches/calls/exceptions,
+  heap, MIDP, snapshot, rewind or Android integration.
 
-## Active WP02
+## Active WP02 and multi-session assignments
 
-A feature branch `feature/wp02-int-execution-slice` contains an experimental
-arithmetic-only method validator and stepping proof using the original class
-fixture, with [explicit scope](wp02-execution-contract.md). No class loading,
-linking, initialization, StackMap checking, general locals/branching,
-exceptions, or persistent state.
+Hendra opens worker sessions; this session is **coordinator and designated
+integrator**. Follow [parallel-development.md](parallel-development.md).
+No worker session is known to have started yet.
 
-**Validation:** CI at the branch's final commit must be checked before
-acceptance. Do not equate a passing isolated arithmetic proof with G2.
+| Worker slot | Canonical assignment / state | Ownership |
+| --- | --- | --- |
+| **W1** | [Issue #5](https://github.com/H3nb/J2ME-VM/issues/5): Ready; awaiting Hendra to open session | CLDC 1.1/1.1.1 N01 normative evidence; own standards docs only |
+| **W2** | [Issue #6](https://github.com/H3nb/J2ME-VM/issues/6): Ready; awaiting Hendra to open session | Original Java locals/branch fixtures, metadata only; no runtime code |
+| **Coordinator** | In progress; integration/assignment authority within user authorization | Common status, wiring, conflict resolution, independent-review requests, serialized merge |
 
-**Next:** Review the effective PR diff independently, check format/Clippy/tests
-and negative cases, then either correct confirmed failures or retain the PR
-for review. Subsequent work closes N01 where affected and expands the
-verified instruction subset with locals/branches, followed by calls,
-exceptions, instance isolation and snapshot-ready frame ownership.
-Preserve clean-room and rights-cleared fixture policy.
+Workers use separate branches/workspaces and verify the exact current branch
+and task owner before starting. Contract changes and blockers return to the
+coordinator; workers do not merge or write unowned files.
 
-## Later gates
+**Next:** Hendra launches W1 and W2 and relays their PR/handoff links.
+Coordinator reviews source evidence and final effective diffs and integrates
+accepted outcomes one at a time, checking CI against the combined tree.
+After relevant N01 contract evidence and original fixtures, assign one
+code-owning WP02 slice for locals, branch targets and dataflow validation.
+No worker may claim CLDC preverification success from a non-preverified class.
+G3 cross-process restore and broader MIDP stay separate gates.
 
-G2 (full declared subset) → G3 two-process restore → G3H host completion →
-G4 virtual threads → G5 runtime → G6 MIDlet pilot → G6R rewind → G6C
-legacy MIDP stabilization → G7 product decision. MIDP 3 remains architectural
-research and is **not** implemented. No Android or JL-Mod Plus change is
-authorized as part of WP02.
+**Open:** exact final N01 clauses, JSR use rights, class resolution timing,
+host recovery feasibility, legacy MIDP mapping and product budgets.
