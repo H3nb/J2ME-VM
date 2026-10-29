@@ -228,7 +228,13 @@ fn original_wp02_source_fixtures_parse_as_java_1_4_class_files() {
             .iter()
             .find(|m| class.utf8_bytes(m.name_index) == Some(&b"evaluate"[..]))
             .expect("authored Java method exists");
-        assert_eq!(class.utf8_bytes(method.descriptor_index), Some(&b"(I)I"[..]));
-        assert!(method.code.as_ref().is_some_and(|code| !code.instructions.is_empty()));
+        assert_eq!(
+            class.utf8_bytes(method.descriptor_index),
+            Some(&b"(I)I"[..])
+        );
+        assert!(method
+            .code
+            .as_ref()
+            .is_some_and(|code| !code.instructions.is_empty()));
     }
 }
