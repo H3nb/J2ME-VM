@@ -391,6 +391,14 @@ fn invalid_method_references_and_callee_stack_are_rejected_during_preparation() 
     );
 
     // A non-static target cannot be admitted for invokestatic.
+    let mut initializer = parse_class(NESTED).unwrap();
+    initializer.constant_pool[14] = Constant::Utf8(b"<clinit>");
+    assert_eq!(
+        IntProgram::prepare_with_calls(&initializer, b"evaluate", b"(I)I")
+            .unwrap_err().kind,
+        PrepareErrorKind::UnsupportedMethod("class initialization unsupported")
+    );
+
     let mut nonstatic = parse_class(NESTED).unwrap();
     let target = nonstatic.methods.iter_mut()
         .find(|m| m.name_index == 14 && m.descriptor_index == 11).unwrap();
