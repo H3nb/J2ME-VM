@@ -115,9 +115,10 @@ a working CLDC/MIDP runtime or a claim that G4 is passed.
 Issue #12 was closed without new final-clause or rights evidence; its closure
 does not settle N01. [Issue #30](https://github.com/H3nb/J2ME-VM/issues/30)
 remains open. Research does not clear implementation-use or distribution terms.
-The next technical action is reviewed multi-root preparation and scheduler
-backend work under the proposal; public runtime implementation acceptance
-remains dependent on the unresolved specification/use basis.
+The next public acceptance dependency is the applicable final-clause and
+source/use basis. This proposal does not authorize public backend implementation.
+Any original local backend feasibility work remains separate bounded research;
+it does not accept a runtime capability or clear publication rights.
 
 No JAR runtime, MIDP stack, general class loader, checkpoint/restore,
 rewind, Android/JL-Mod Plus integration, or compatibility certification exists
