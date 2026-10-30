@@ -1,6 +1,6 @@
 # Project status and coordinator handoff
 
-**Observed:** 2026-10-29; refresh live GitHub refs, canonical Issues and
+**Observed:** 2026-10-30; refresh live GitHub refs, canonical Issues and
 Actions before taking another task. The [project plan](project-plan.md),
 [parallel workflow](parallel-development.md) and
 [quality rules](engineering-quality.md) remain authoritative.
@@ -41,7 +41,7 @@ W6 post-merge [CI #40880712729](https://github.com/H3nb/J2ME-VM/actions/runs/408
   ended at successful integration. New worker sessions require new canonical
   assignment and separate branches.
 
-## Current coordinator handoff
+## Earlier WP02 coordinator handoff (2026-10-29)
 
 The active goal is a tested CLDC/MIDP runtime with focused commits and independent
 review. The maintainer authorized squash merges after review and successful
@@ -83,7 +83,7 @@ through the coordinator; only the coordinator wrote/published shared files.
   [specification map](specification-map.md#official-acquisition-and-terms-routes-2026-10-29),
   but the gated final technical text remains uninspected.
 
-**Next action:** establish the applicable source/use basis and obtain the needed
+**WP02 dependency:** establish the applicable source/use basis and obtain the needed
 final technical clauses through an authorized route. Resolve those affected
 rights/specification gaps before a bounded bootstrap
 class/type/initialization contract and reference implementation. Preserve the
@@ -91,5 +91,35 @@ future caller call-site PC requirement for exception propagation. G2 is still
 partial; G3 snapshot remains a later gate. Do not start a speculative heap,
 general loader or null-only framework from these research notes.
 
+## WP05 concurrency research handoff (2026-10-30)
+
+Public baseline `5b2552423593a4343ae93166f9783aa29959496b` was equal to
+remote main with no open PR before this documentation increment.
+[Post-merge CI #40902149184](https://github.com/H3nb/J2ME-VM/actions/runs/40902149184)
+succeeded on that baseline. This increment changes research documentation only.
+
+The [WP05 concurrency proposal](wp05-concurrency-contract.md) defines ownership,
+scheduling, monitor/time/interrupt dependencies and whole-scheduler restore
+invariants. A concurrency contributor authored it; separate source/state and
+fixture/process reviewers checked the contract. The coordinator owns this
+handoff and documentation integration. The maintainer explicitly authorized
+focused commits and squash merges after review and successful relevant CI.
+The PR for this bounded documentation increment is its assignment record.
+
+W14/W15 in the proposal refer to unpublished local checkpoint/host experiments,
+not code or accepted capabilities on public main. No local implementation stack,
+private corpus, binary or dependency is included. The proposed multi-entry
+scheduler is an implementation prerequisite, not a replacement for the goal of
+a working CLDC/MIDP runtime or a claim that G4 is passed.
+
+Issue #12 was closed without new final-clause or rights evidence; its closure
+does not settle N01. [Issue #30](https://github.com/H3nb/J2ME-VM/issues/30)
+remains open. Research does not clear implementation-use or distribution terms.
+The next public acceptance dependency is the applicable final-clause and
+source/use basis. This proposal does not authorize public backend implementation.
+Any original local backend feasibility work remains separate bounded research;
+it does not accept a runtime capability or clear publication rights.
+
 No JAR runtime, MIDP stack, general class loader, checkpoint/restore,
-rewind, Android/JL-Mod Plus integration, or compatibility certification exists.
+rewind, Android/JL-Mod Plus integration, or compatibility certification exists
+on public main.
