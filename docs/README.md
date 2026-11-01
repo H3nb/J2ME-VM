@@ -1,28 +1,32 @@
-# Documentation map
+# Documentation map and authority
 
-This index selects an **owning document** rather than introducing duplicate policy. Start with [`AGENTS.md`](../AGENTS.md), then read only the relevant contract.
+Start with [AGENTS.md](../AGENTS.md), the relevant source/tests and [current status](project-status.md). Read **only the documents that own the task's contracts**; do not load the entire planning/research archive before every implementation.
 
-| Question / task | Owning document |
+| Need | Owning source |
 | --- | --- |
-| Purpose, non-goals, status, getting started | [`README.md`](../README.md) |
-| Mission, requirements, staged commitment, work packages, risks and change control | [`project-plan.md`](project-plan.md) |
-| Current baseline, open work, evidence pointers and next action | [`project-status.md`](project-status.md) |
-| MIDP version differences, evidence limits and evolution experiments | [`profile-evolution.md`](profile-evolution.md) and [ADR-0005](adr/0005-legacy-midp-first-with-profile-aware-contexts.md) |
-| First executable proof, supported bytecodes and rejection contract | [`wp02-execution-contract.md`](wp02-execution-contract.md) |
-| WP05 virtual-thread scheduling, monitor, time, callback and checkpoint prerequisites | [`wp05-concurrency-contract.md`](wp05-concurrency-contract.md) |
-| Reference/exception prerequisites and source-only fixture research | [`wp02-reference-exception-research.md`](wp02-reference-exception-research.md) |
-| VM/host ownership, execution model, snapshot semantics and open design questions | [`architecture.md`](architecture.md) |
-| Milestones, evidence, stop criteria | [`validation-plan.md`](validation-plan.md) |
-| Java ME / JVMS editions, source selection, clause-level traceability | [`specification-map.md`](specification-map.md) |
-| GPLv3, clean-room provenance, third-party dependency review, release cautions | [`licensing-and-provenance.md`](licensing-and-provenance.md) |
-| Test selection, guest fixture provenance, public CI and private compatibility corpus | [`testing.md`](testing.md) and [ADR-0003](adr/0003-public-fixtures-private-compatibility-corpus.md) |
-| Commands, CI, reproducibility, pre-commit checklist | [`development.md`](development.md) |
-| Consequential accepted decisions and alternatives | [`adr/`](adr/) |
-| Multi-session assignments, isolated work, contract changes, review and integration | [`parallel-development.md`](parallel-development.md) |
-| Code quality erosion, AI slop, simplification and evidence-based review | [`engineering-quality.md`](engineering-quality.md) |
+| Project mission, actual features and basic build | [Root README](../README.md) |
+| Current integrated capabilities, major blockers and next step | [Project status](project-status.md); verify against live GitHub |
+| Requirements, work packages, dependency order and scope changes | [Project plan](project-plan.md) |
+| Accepted VM/host boundaries and architecture hypotheses | [Architecture](architecture.md) and accepted [ADRs](adr/) |
+| Version-specific Java ME/JVMS source evidence and unresolved gaps | [Specification map](specification-map.md) |
+| License, clean-room boundaries, permitted source use | [Licensing and provenance](licensing-and-provenance.md) |
+| Tests, original fixtures, public/private corpus rules | [Testing](testing.md) |
+| Build, CI, PR and integration checks | [Development](development.md) |
+| Risk-proportional implementation/review quality | [Engineering quality](engineering-quality.md) |
+| Autonomous task continuity and optional multi-agent assignments | [Parallel development](parallel-development.md) |
+| Experiment gates and acceptance conditions | [Validation plan](validation-plan.md) |
+| MIDP-version differences and future evolution | [Profile evolution](profile-evolution.md); [ADR-0005](adr/0005-legacy-midp-first-with-profile-aware-contexts.md) |
 
-Documents differentiate **requirements**, **accepted decisions**, **hypotheses**, and **observed evidence**. Experiments do not silently promote a proposal to a contract. Only claim capabilities demonstrated by tests at the relevant gate.
+## Feature-specific contracts and research
 
-When resuming work, read project status and verify current remote refs before
-selecting a package. The project plan is the development baseline proposal;
-it does not supersede existing license, clean-room or specification contracts.
+| Scope | Evidence / document | Authority |
+| --- | --- | --- |
+| Existing bounded integer/static-call behavior | [WP02 execution contract](wp02-execution-contract.md) | Actual **partial** implementation contract; compare with source |
+| Method lookup optimization | [WP02 evidence](wp02-method-lookup-evidence.md) | Experiment-specific evidence |
+| Reference/exception prerequisites | [WP02 reference/exception research](wp02-reference-exception-research.md) | Research, **not** accepted runtime capability |
+| Virtual concurrency, monitors and restore | [WP05 concurrency contract](wp05-concurrency-contract.md) | **Proposal**, not implemented or a passed gate |
+| Fixture provenance and bounded tests | [Fixture README](../tests/fixtures/README.md) and related fixture notes | Test evidence, not Java certification |
+
+**Authority distinction:** a requirement says what is needed; an ADR records an accepted consequential decision; a proposal describes a possible design; a successful experiment provides bounded evidence; only integrated implementation plus relevant verification supports a capability claim. Do not infer that all proposals are approved simply because they are in `docs/`.
+
+Keep existing paths stable for historical links. When consolidating, edit the owning document rather than duplicating rules or creating new workflow registries. GitHub Issues, PRs, commits and CI already own task history.

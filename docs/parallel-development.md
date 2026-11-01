@@ -1,203 +1,48 @@
-# Parallel development across agent sessions
+# Autonomous work and parallel-session coordination
 
-This document owns multi-session coordination. [AGENTS.md](../AGENTS.md) owns
-project-wide authority and constraints; [project-plan.md](project-plan.md) owns
-scope and dependencies. These rules apply equally to human and AI contributors.
-They enable parallel work within authorization, not automatic delegation or merge.
+This document owns **task selection, continuity and multi-session coordination**. [AGENTS.md](../AGENTS.md) owns engineering boundaries; [project plan](project-plan.md) owns dependencies; [development](development.md) owns CI and merge checks. The default is **one capable implementer**, not a standing hierarchy of coordinators.
 
-## Roles and shared records
+## Default: one bounded engineering loop
 
-The maintainer opens sessions and sets product priorities. One named coordinator
-at a time prepares ready assignments, resolves overlaps and sequences integration.
-Each task has one current writer; a reviewer checks primary evidence independently
-of the implementation claims. The coordinator may implement a separate task but
-must label their review of their own work as self-review. Another session or
-model is not inherently an independent or correct review.
+1. **Resume:** inspect current `main`, open PRs/issues, and the short [project status](project-status.md). Continue an existing authorized task before starting a duplicate. Prefer a ready item that advances executable VM capability or removes a real blocker.
+2. **Define:** record the observable outcome, essential contract/dependency, scope exclusions and the smallest credible verification. A GitHub Issue is useful for multi-session or nontrivial work; an existing PR or a direct, clear assignment is enough for small work. No mandatory planning document.
+3. **Implement:** work on a task branch, choose routine technical solutions autonomously, make focused changes and validate incrementally. Avoid parallel work on shared state ownership/contracts unless coordination is explicit.
+4. **Accept:** inspect the complete effective diff and relevant checks. Resolve introduced correctness, safety and contract failures. Prepare a PR with a short result, tests actually run, and limitations; do not create an extra PR solely for routine coordination or evidence.
+5. **Continue:** after **authorized** integration, check the resulting `main` and CI once where relevant. Update the owning status/contract only when materially changed, then choose the next ready task. An external runner/scheduler is necessary for unattended recurrence; this document does not by itself execute jobs.
 
-Use one GitHub Issue as the canonical assignment for a multi-session task. An
-existing PR may serve as the assignment for a small, already authorized change;
-do not require a duplicate Issue or retroactively block existing work. The
-coordinator records a direct user assignment rather than asking for it again.
-Reference these records from the current increment's handoff; do not create
-competing task lists in private tools, project status and new registry files.
+Do not optimize for the number of sessions, commits, tests, or PRs. One substantive result is better than repeated documentation-only handoffs.
 
-| Record | Authority / owner |
-| --- | --- |
-| Accepted behavior and design | Owning specification/architecture document and ADR; changes reviewed through a PR |
-| Task scope, assignment and dependencies | Canonical Issue or PR, maintained by the coordinator |
-| Implementation and evidence | Task branch/PR, maintained by its current writer |
-| Integrated progress and next action | `project-status.md`, maintained by the integrator |
-| Actual merge, branch head and CI outcome | Live GitHub refs/results; verify dated summaries against them |
+## Prioritization and blocked work
 
-Separate sessions have no guaranteed shared memory or automatic notification.
-GitHub records are shared evidence, not automatic synchronization. The maintainer
-relays task links, blockers and changed assignments when a session needs to act; agents
-reread the relevant records at the checkpoints below. Never claim another session
-was notified without evidence. Use distinct public task labels; a shared GitHub
-login does not identify an active writer. Keep private session identifiers out of
-public records.
+Prefer work by dependency readiness, value toward a runnable/recoverable VM, risk reduction and implementation cost. Useful preparatory refactoring is allowed when it removes a demonstrated obstacle; avoid speculative infrastructure.
 
-## Assignment and readiness
+Distinguish:
+- **Local blocker:** one behavior lacks a spec, legal basis, ownership decision or reliable test; record it and pursue independent authorized work.
+- **Global blocker:** every useful next increment genuinely depends on the unresolved matter; report the concrete missing decision/evidence instead of looping.
+- **Exploratory result:** a bounded local experiment may disprove a design. Record only the conclusion and reproducible evidence needed for subsequent decisions; do not publish restricted implementation material.
 
-The coordinator publishes a bounded assignment before concurrent writing:
+For foundational JVM/CLDC behavior, missing normative evidence or unresolved implementation-use rights cannot be solved by assumption or renamed as a harmless edge case. Relevant restrictions in [licensing](licensing-and-provenance.md) remain in force.
 
-```text
-Task ID and canonical URL:
-Goal / work package / observable result:
-Current writer public task label/role; coordinator; reviewer or review still unassigned:
-Designated integrator public task label/role, or unassigned until integration:
-Authorized actions and source of user direction (implementation / publication / merge):
-Target branch and starting commit SHA; task branch:
-Contract revision (commit + document/section); dependency task/PR links:
-Owned responsibilities/files; shared files and designated writer:
-Scope exclusions; unresolved assumptions that block this task:
-Acceptance evidence / relevant checks; practical experiment bound if needed:
-Status; latest handoff; next action:
-```
+Repeated failed attempts without new evidence trigger a smaller experiment, a revised design, or a recorded blocker—not endless retries. Do not chase extremely unlikely scenarios unless they threaten correctness, input security, recovery integrity or a documented compatibility requirement.
 
-Keep it short and link to owning contracts instead of copying them. A task is
-`Ready` only when its scope, writer, required dependencies and acceptance criteria
-are sufficient for that work. A research task can be ready with an unresolved
-question as its explicit output. Dependent implementation cannot treat the
-question as settled. Fixtures use confirmed expected behavior, not guesses from
-the implementation being tested.
+## When parallel agents are useful
 
-Record existing authorization without requesting it again. A task assignment
-does not expand it: naming an integrator does not grant merge permission, and
-permission for one PR does not grant permission for every dependent PR. The
-coordinator names the integrator before integration starts; workers retain their
-assigned scope when a general project plan is updated.
+Use parallel sessions **only** for independent, ready tasks whose benefit outweighs review and integration cost. Start small. Assign a distinct current writer for each task and a single integrator for shared changes. Coordination uses the existing GitHub Issue/PR; do not invent another task registry.
 
-The coordinator assigns tasks serially; workers do not race to claim an apparently
-empty slot. Issue labels and comments are not atomic locks. A worker verifies the
-assignment before starting, resuming, publishing or modifying shared contracts.
-If ownership is ambiguous, pause writes to the disputed area and ask the
-coordinator to reconcile it; continue independent authorized work.
+A bounded parallel assignment needs only:
+- Public task/Issue or PR, expected result and explicit authorizations.
+- Starting base/branch, dependent contract and owned boundaries (including shared files).
+- Verifiable acceptance criteria, unresolved assumptions and current writer.
+- Integrator/reviewer when relevant, and next handoff.
 
-States: `Ready -> In progress -> Review -> Integrated`. Use `Blocked` with the
-specific missing evidence/decision and who can resolve it; review can return a
-task to `In progress`. `Cancelled` records why and preserves useful work. Research
-is integrated when its reviewed output is recorded; a code task is integrated
-only after its accepted changes land. A finished chat or green CI is insufficient.
+Each writer uses an isolated branch/worktree; never share a mutable checkout, overwrite another writer's work, or silently change a shared contract. Separate files may still share semantics (state ownership, errors, formats, caller/callee assumptions). Resolve those dependencies before concurrent implementation. The maintainer need not approve routine steps already authorized.
 
-## Boundaries, branches and contract changes
+If a writer is interrupted or replaced, preserve the branch and transfer responsibility explicitly through the canonical Issue/PR. Old sessions must recheck ownership before writing. A chat session or GitHub login is **not** an ownership lock.
 
-- Use one branch and separate checkout/worktree per task. Do not share a mutable
-  working directory, overwrite another worker's branch, or reset their work.
-  Separate files do not guarantee independent behavior: trace state ownership,
-  errors, data formats and caller/callee assumptions before splitting work.
-- Agree only the contract needed for the current increment. For verifier and
-  interpreter work, specify accepted input, validated guarantees, error timing
-  and frame/PC ownership before dependent implementations diverge. Do not invent
-  stable APIs, traits, crates or adapters solely to create more parallel tasks.
-- Name a writer for shared wiring, manifests/lockfile, CI, architecture and status
-  files when they are touched concurrently. Other tasks propose the necessary
-  change in their handoff; no blanket ownership of a whole subsystem forever.
-- Prefer dependent tasks branching from main after their prerequisite merges.
-  Use stacked branches only for a justified benefit, recording the exact parent
-  head and merge order. After a squash merge, reconcile the child with the new
-  main and review its effective diff; do not reintroduce the parent's old commits
-  or treat the parent PR's checks as validation of the child.
-- A contract change names the reason/evidence, affected tasks, revised behavior
-  and migration needed. The coordinator identifies which work must pause and
-  records the accepted revision. Workers reread it before continuing affected
-  work. Do not bridge incompatible assumptions with silent fallbacks or duplicate
-  models. Unaffected work may continue; material product changes remain the
-  maintainer's.
+## Review, integration and handoff
 
-Start with a coordinator and two bounded worker tasks. Increase concurrency only
-when review capacity and independent ready work justify it. Measure time to an
-integrated result, rework, regressions and CI cost, not agent/commit/line counts.
-Unfinished work beyond review capacity is a reason to finish or narrow tasks,
-not launch more. The coordinator role must remain transferable through records.
+Review against the current target, actual contracts, final diff, and relevant executable evidence—not the implementer's claims or historical commit count. An independent reviewer is valuable for high-risk state, verification, security and snapshot changes, but **not mandatory for every small PR**. Label self-review honestly; resolve blockers with evidence, not votes among agents. See [engineering quality](engineering-quality.md).
 
-## Handoff, interruption and reassignment
+One integrator acts at a time. Confirm dependencies, up-to-date target/head, permissions and required checks before a permitted merge. If the base changed, reassess the affected diff and checks instead of reflexively rerunning everything. After a squash merge, downstream branches must reconcile against the accepted main tree. Never force-push another worker's branch or infer merge authority from a task assignment.
 
-At a useful stopping point, leave the following in the canonical Issue/PR (within
-authorized publication scope), then give the maintainer the link:
-
-```text
-Public task label; status:
-Baseline SHA; branch; current head SHA; PR:
-Implemented or researched result and its limits:
-Contract changes / affected tasks, or none:
-Checks actually run: command/environment, tested SHA, result, evidence URL:
-Unrun checks and remaining risks:
-Blocker and required decision, or next concrete action:
-```
-
-If publishing is unavailable, supply this handoff in the final response and state
-that it is not yet stored in GitHub. Do not pretend other sessions can read it.
-An abandoned or interrupted session does not release ownership automatically.
-The coordinator verifies/preserves its branch, records reassignment and gives the
-replacement the handoff. A resumed old session must recheck ownership and stop
-writing if replaced. The same explicit transfer applies to the coordinator.
-
-## Review and serialized integration
-
-1. The reviewer reads requirements, applicable primary clauses, the full effective
-   diff and actual checks against the current target. Apply
-   [engineering-quality.md](engineering-quality.md). Verify cross-task behavior,
-   not only textual conflicts; record the reviewed base/head SHAs and limitations.
-   Classify and disposition findings under engineering-quality.md. Unresolved
-   blockers keep the affected task out of integration; optional suggestions do
-   not silently become new acceptance criteria.
-2. Recheck live target/head, prerequisite merges and outstanding findings before
-   integration. If either changed since review, examine the intervening diff and
-   repeat affected review/checks. Reuse still-applicable evidence with explicit
-   provenance; do not rerun unrelated expensive work by reflex.
-3. Validate the candidate combined result with the relevant existing checks.
-   Separate successful branch checks do not prove compatible integration. Record
-   what tree/commit was exercised, including a CI merge candidate if applicable;
-   never substitute an old successful run for the current candidate.
-4. One integrator merges at a time, within the maintainer's authorization. Use an
-   expected PR head guard where available. Recheck the target immediately before merging;
-   if it changed, reassess the candidate. A rejected update requires rereading refs,
-   not a blind retry or force push. GitHub settings may enforce stronger guards;
-   this document does not claim they are configured.
-5. Verify the merge result, inspect the applicable main CI, and update integrated
-   status/dependent assignments. Preserve pending or failed checks explicitly;
-   investigate failures before dependent acceptance. Do not declare a whole gate
-   passed from a partial PR. Record merged PRs and observed commits without trying
-   to embed a document's own future commit SHA. Reconcile adoption/status wording
-   at integration or in a named follow-up, not an unowned perpetual stale note.
-
-Independent review is preferred for foundational changes. If unavailable, report
-self-review and residual risk honestly; do not fabricate another reviewer or add
-an approval loop where existing authorization suffices. CI/skip policy remains
-owned by [development.md](development.md); do not weaken checks to speed integration.
-
-## Session launch prompts for the maintainer
-
-The coordinator fills in public task references before handing over these prompts.
-The maintainer opens sessions, pastes the prompts and relays completion/blocker links.
-
-**Coordinator:**
-
-> Coordinate https://github.com/H3nb/J2ME-VM. Read AGENTS.md, current remote work
-> and the project plan. Preserve existing assignments. Select the current
-> increment, record ready tasks/dependencies and prepare complete worker prompts
-> using docs/parallel-development.md. Distinguish work ready now from blocked
-> work. Prepare integration recommendations; merge only within my authorization.
-
-**Worker:**
-
-> Work as [public task label] on [canonical task URL] in H3nb/J2ME-VM. Verify ownership,
-> current refs and the linked contract before writing. Use the assigned branch
-> and separate workspace. Complete the bounded task, relevant checks and PR
-> within the assignment's authorization. Do not take other tasks, change shared
-> contracts unilaterally or merge. Record evidence/blockers and a resumable handoff.
-
-**Reviewer:**
-
-> Independently review [PR URL] against the current target and [task URL]. Read
-> AGENTS.md and the owning contracts. Check the entire effective diff and primary
-> evidence, including interaction with [related tasks/PRs]. Separate confirmed
-> defects from suggestions and existing debt; report reviewed SHAs and unverified
-> claims. Do not modify the author's branch or merge without an assigned mandate.
-
-**Replacement:**
-
-> You replace [old public task label] as [new public task label] for [task URL],
-> as recorded by the coordinator. Verify that transfer and the latest handoff/refs. Preserve and
-> continue existing work rather than restarting it; follow the worker procedure.
+Handoff in the existing Issue/PR (or final report when publication is unavailable): **result, current head, checks and limitations, blocker, next action**. Use links for evidence rather than copying long logs. Update [project status](project-status.md) only for material integrated capability, important blockers or priorities. Do not copy private session identifiers/paths into public records.
