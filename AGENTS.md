@@ -1,90 +1,56 @@
-# j2me-vm — contributor and coding-agent contract
+# J2ME-VM — contributor and coding-agent guidance
 
-This is the root guidance for humans and AI agents. Its requirements apply to every change. Keep this file durable and concise; follow [the documentation map](docs/README.md) for task-specific contracts. **This project has no functional VM yet.** Never infer capabilities from a roadmap.
+This file is the short, always-applicable contract. Use the [documentation map](docs/README.md) to find task-specific details; do **not** read every document for every change. Instructions guide judgment rather than impose a ritual.
 
-## 1. Mission, scope, and authority
+## Mission and priorities
 
-Build an **independent, host-neutral Java ME virtual machine in Rust** to investigate reliable VM checkpoint/restore and, eventually, rewind. It is a possible *optional* JL-Mod Plus engine, not a mandate to replace its existing runtime. Desktop research and independently repeatable proof precede Android work.
+Build an independent, host-neutral Java ME VM in Rust, with correct execution and recoverable VM state. It is research toward a *possible optional* JL-Mod Plus engine, not a replacement mandate.
 
-Use this authority order when deciding behavior:
+Prioritize, in order: **correct useful capability**, preserved safety/clean-room boundaries, maintainability, and efficient delivery. A working increment or a decision-changing experiment is more valuable than extra plans, test counts, or procedural output. Failure of a bounded experiment is an acceptable result.
 
-1. Explicit user requirements and this repository's license, clean-room, and security constraints.
-2. Applicable **version-specific primary specifications** (the selected CLDC revision / JSR 139, MIDP 1.0 / JSR 37 or 2.0–2.1 / JSR 118, and the JVMS edition they reference; consult JSR 271 for the future MIDP 3.0 contract), subject to legal access and use terms. CLDC-specific amendments prevail for the CLDC target.
-3. Accepted, current [architecture decisions](docs/adr/) and the maintained behavior contract in [architecture.md](docs/architecture.md).
-4. Current source, executable tests, and reproducible observations as **implementation evidence**, not as authority over the intended contract.
-5. Prior commits, proposals, notes, and agent output as nonbinding history.
+This repository currently has a **class-file structural parser and bounded integer/static-call execution proof**, not a general VM, full CLDC verifier, MIDlet runtime, checkpoint/restore, or rewind. Never promote planned behavior to implemented capability.
 
-Never convert an unverified assumption or test expectation into a normative requirement. When sources conflict, identify the exact section/version, record the unresolved conflict, and avoid implementing a guessed answer.
+## Authority and autonomous work
 
-## 2. Mandatory clean-room design
+For behavior decisions, follow: (1) explicit user requirements and non-negotiable license/security/clean-room restrictions; (2) applicable, version-specific primary JVM/CLDC/MIDP specifications and their permitted use terms; (3) accepted [ADRs](docs/adr/) and current architecture contracts; (4) source and reproducible observations as implementation evidence; (5) prior proposals, AI output, and historical notes as nonbinding context. Identify unresolved conflicts rather than guessing.
 
-**All project implementation code must be independently authored from allowed standards and original reasoning.** This restriction is stronger than what the GPL alone requires.
+Within an **authorized task**, independently inspect relevant code/contracts, choose a sound design, implement, refactor locally, run relevant checks, repair introduced failures, and prepare a focused PR. Do not stop at planning if the work can proceed. Do not ask again for authorization already granted. Escalate material scope/architecture changes, rights/security questions, or actions outside the authorization; do not expand permission by inference. Publication, merges, releases, and modifications to JL-Mod Plus require the applicable user authorization. Use [development guidance](docs/development.md) and [task continuity](docs/parallel-development.md).
 
-- **Allowed inputs:** authoritative publicly accessible JVMS/JSR normative materials after confirming applicable access/implementation terms; official Java ME API contracts; original design analyses; original bytecode fixtures; compiler-produced fixtures whose license permits use; documented observations from our own test programs.
-- **Prohibited inputs:** source, decompiled output, internal design descriptions, implementation-specific algorithms, data structures, function/class naming patterns, generated code, or patches from **other VM/emulator implementations** (including KEmulator, FreeJ2ME, MicroEmulator, and similar projects). Do not browse or search those implementations to solve a problem, including via AI retrieval, code suggestions, or copied test suites. Do not port JL-Mod Plus runtime internals into this VM.
-- **Interoperability exception:** exact Java-defined names, signatures, opcodes, error classes, and binary layouts *required by the specification* may be used. These are external interface contracts, not permission to reproduce another project's implementation.
-- Never paste lengthy specification text, proprietary JSR source code, reference implementation binaries, TCK materials, proprietary JARs, or unlicensed game assets into this repository. Paraphrase rules and cite the exact primary source section in the relevant design or test.
-- For every significant behavior change, record its **normative reference** (specification + edition/revision + clause), design rationale, and provenance of fixtures. Record any empirical assumption explicitly. A short source comment or test note is enough when the context is simple; do not create one provenance form per trivial edit.
-- If prohibited implementation material is encountered accidentally, **do not use or adapt it**. Disclose the exposure in the handoff; isolate the affected task and arrange an independent re-derivation from allowed sources before accepting code. Removing attribution does not sanitize copied code.
-- Do not claim Java certification, TCK compliance, trademark rights, or that GPLv3 by itself grants specification implementation rights. Follow [licensing and provenance](docs/licensing-and-provenance.md).
+Work from the current remote state and open assignments, not stale chat handoffs. Start with the relevant source/tests and only the documents owning the affected contract. Choose the next independent, ready task when another task is blocked; do not treat a local blocker as a global project freeze.
 
-## 3. Before changing code
+## Clean-room and rights — mandatory
 
-For continuity, read [project-status.md](docs/project-status.md), verify current
-remote heads/open work, and select the next unfinished dependency from the
-[project plan](docs/project-plan.md). Preserve existing work. Update the handoff
-with exact evidence and the next action when an increment ends; do not restart
-or expand the project silently. This adds no routine approval requirement and
-does not override the user's existing authorization.
+This project's code is **GPL-3.0-only** and independently authored. Follow [licensing and provenance](docs/licensing-and-provenance.md) and the [specification map](docs/specification-map.md).
 
-1. Read `README.md`, this file, and only the task-relevant links in [docs/README.md](docs/README.md). Inspect actual source, tests, configuration, and the current branch; check whether the proposed feature exists.
-2. Define the externally visible behavior and versioned specification scope. Trace which component owns the relevant state, its lifetime, loading/verification, concurrency, and host boundary.
-3. State important preconditions, postconditions, invariants, and realistic failure paths. Distinguish *verified findings* from hypotheses. Use a small reversible experiment if the design hinges on an unresolved property.
-4. Compare only materially different designs. Choose the solution with **lowest total conceptual complexity** that meets the contract—not the shortest diff. No speculative modules, crates, adapters, caches, fallback layers, feature flags, or configuration knobs.
-5. Implement the complete authorized behavior; do not hide gaps behind placeholders, silent success, undefined behavior, or unsupported compatibility claims. If a foundational assumption fails, reassess instead of layering workarounds.
+- **Allowed design inputs:** applicable authoritative JVM/Java ME specifications after checking access/use terms, official API contracts, original reasoning, and our independently authored experiments/fixtures.
+- **Prohibited design inputs:** implementation source, decompilation, internal designs, implementation-specific algorithms/data structures, copied patches or tests from **other VMs/emulators**, including KEmulator, FreeJ2ME, MicroEmulator and JL-Mod Plus runtime internals. Do not search their implementations for solutions, even through AI retrieval.
+- Specification-mandated public names, signatures, opcodes and layouts may be used for interoperability. This does not authorize adapting another implementation.
+- Do not redistribute proprietary Java libraries, SDK/TCK/RI material, copyrighted games, unlicensed specifications, or third-party sample code. Offline SDK/compiler resources may be used only within their permitted interface/fixture scope; never as design sources for VM internals or public CI dependencies.
+- If prohibited implementation material is encountered, do not use it; disclose the exposure and rederive affected work from allowed sources. Deleting attribution does not cleanse copied code.
+- Identify the version and normative clause behind consequential guest behavior. Keep unknown final CLDC clauses and implementation-use terms explicit; do not claim Java certification, trademark rights, or legal clearance from GPL alone.
 
-Keep the crate independent from Android and JL-Mod Plus. A change to their repositories, native ABI, or license/integration contract is **separately authorized work**. No implementation should depend on another emulator being present.
+Use the Rust standard library when suitable. Review a new crate's maintenance, security, **transitive licenses**, notices, and actual need before adoption; not every GPL-licensed crate is GPLv3-compatible. Preserve `Cargo.lock`. No unapproved build-time downloads or telemetry.
 
-## 4. JVM correctness and hard boundaries
+## Correctness boundaries
 
-- **Untrusted input:** class files, JAR/JAD contents, snapshot blobs, and guest-controlled resources may be hostile. Reject malformed or unsupported versions/structures deterministically; check integer overflows, length arithmetic, recursive/nesting/size limits and allocation before use. A parser success does not imply bytecode verification.
-- **Semantics:** implement Java's numeric, conversion, exception, class-loading, initialization, reference identity, monitor, and bytecode rules from the targeted specifications; do not substitute Rust's defaults where they differ. Reject unsupported bytecode and APIs explicitly rather than approximate.
-- **CLDC verification:** treat preverification/StackMap requirements as a distinct contract. Do not confuse the legacy CLDC `StackMap` with modern JVMS `StackMapTable`; identify target versions and behavior before implementation.
-- **State ownership:** only durable logical identities may cross a checkpoint. No serialized Rust pointers/references, native stack frames, host locks/threads, handles, file descriptors, GPU/audio handles, or assumptions about process address space.
-- **Restore:** use a bounded, explicit, versioned format. Validate schema, code/runtime identity, graph consistency, resource policy, and integrity **before committing** state to a VM. Failed restore must not partially replace a running VM.
-- **Scheduler:** before claiming thread support, define instruction-budget fairness, monitor ownership/reentrancy, blocking/wakeup, time, interrupt, and checkpoint safepoints. Explicitly document nondeterministic input and host I/O.
-- **Save state vs rewind:** a VM-owned snapshot is **not** proof of complete game state preservation. External graphics/audio/files/network/time require a host contract; unknown or live non-rebindable resources must not be silently treated as restored.
-- **Rust safety:** `unsafe` is forbidden by crate policy. Do not remove the prohibition without a focused architectural decision, safety invariants, and explicit authorization. Prefer owned data and ordinary Rust lifetime discipline to clever aliasing.
+- Treat class files, bytecode, JAR/JAD data, snapshots, and guest-controlled inputs as hostile. Validate versions, indexes, sizes, arithmetic and bounds; fail explicitly on unsupported behavior. Parsing is **not** CLDC verification.
+- Follow targeted Java numeric, linking/initialization, reference, exception and bytecode semantics rather than Rust defaults. Distinguish CLDC `StackMap` from later `StackMapTable` and avoid guessing error timing.
+- VM-owned execution state must have clear lifetime and ownership. Never serialize raw pointers, host stacks, OS threads/locks, file descriptors, GPU/audio handles, or other unowned native resources as durable identities.
+- Snapshot/restore, when implemented, must be bounded, versioned, validated **before state mutation**, and proven in a **different process**. VM-state restoration alone does not prove a complete game save; external effects need explicit host policy.
+- `unsafe` is forbidden by current crate policy. A change requires explicit authorization, a focused architecture decision and reviewed safety invariants.
 
-## 5. Dependencies, licenses and security
+## Engineering and verification
 
-The repository is **GNU GPL v3.0 only** (`GPL-3.0-only`); see `LICENSE`. For each new crate, justify the feature, assess maintenance/security, inspect the **effective transitive license set** and required notices, and prefer widely maintained Rust crates with compatible **MIT, Apache-2.0, or GPLv3-compatible** terms. Do not assume every crate with `GPL` in its license expression is compatible (GPL-2.0-only is a known counterexample). Do not copy dependency source into our implementation as a clean-room shortcut.
+Choose the **lowest total conceptual complexity** satisfying the current contract. Fix root causes; reuse sound mechanisms; retire superseded layers and workarounds within scope. Avoid speculative crates, traits, fallbacks, compatibility flags, mocks, guards, and exhaustive edge-case analyses without a credible requirement. Safety-critical input and restore checks are **not** optional micro-details.
 
-Prefer the standard library when it adequately solves the problem. Pin the resolution with `Cargo.lock` for reproducible research; commit it when the toolchain generates it. Document dependencies and attributions as needed. Do not add `unsafe`, build-time downloads, networked telemetry, or binary blobs casually. Review security advisories and updates when dependencies change. A license scanner is an aid, not a legal guarantee.
+Scale investigation and testing to risk. Each new test should catch a plausible incorrect result, normative violation, or material regression not already covered. Test observable behavior; avoid test-volume targets and unhelpful CI expansion. Original public bytecode fixtures require rights, compiler recipe, version, expected result and hashes; private game/vendor corpus stays out of public repository, workflows and artifacts. See [testing](docs/testing.md) and [quality review](docs/engineering-quality.md).
 
-No redistributed copyrighted ROM, game JAR, proprietary Java libraries, TCK, reference implementation, or specification PDF in the repo without explicit verified rights. Validate release/legal questions separately from technical success.
+Use focused checks during iteration and the relevant existing validation before acceptance. Never weaken production behavior or tests just to turn CI green; state exact checks run, tested SHA, and important gaps. A green Rust workflow is not Java ME conformance.
 
-## 6. Test philosophy: evidence, not test volume
+## Git, documentation, and handoff
 
-Follow [testing.md](docs/testing.md). Each test must protect a normative behavior, a real invariant, or a credible failure mode; it should fail under a meaningful incorrect implementation. Prefer focused observable tests over mocks of internals. Use original, provenance-recorded bytecode fixtures; cover positive, malformed, unsupported, limits, and cross-process restore behavior at the appropriate gates.
+Use focused branches and PRs, preserve unrelated work, and review the **final effective diff** against the current base. Respect dependencies and the integration boundary; merging is not automatic authorization. Multiple agents are optional; use the [parallel-development rules](docs/parallel-development.md) only when tasks genuinely overlap or run concurrently.
 
-- A green scaffold does **not** prove a VM, compatibility, snapshot/restore, or rewind.
-- The **public CI corpus** uses authored, rights-cleared Java source and necessary reviewed `.class`/`.jar` fixtures, with specification provenance, expected results, compiler/preverification recipe, version and SHA-256. Start with raw/class fixtures; add executable JARs only when the VM can consume them. Never include third-party SDK/API class implementations in guest fixture artifacts.
-- The **private compatibility corpus** is separate: commercial games and vendor binaries are not committed, fetched from Archive.org/mirrors during public CI, or uploaded as public workflow artifacts. Private testing also requires a documented lawful storage/execution basis; public availability alone is not permission.
-- Private offline SDK/toolkit material is a **compilation/interface reference**, not a clean-room design source or public CI dependency. Its historical VM/runtime implementations and third-party sample source must not be inspected for VM algorithms or copied into fixtures. Its build self-tests do not validate this VM.
-- Compare results against the **applicable specification**; a modern JVM can be an auxiliary oracle only when its version/semantics genuinely match the test, and never overrides CLDC rules.
-- Test nondeterminism deliberately: control virtual clock, schedule, seed, and host events where necessary. Avoid flaky sleep/retry tests.
-- For G3, assert the old OS process really exited and a distinct process independently restored; same-process cloning is insufficient.
-- Do not create tests merely to increase counts, coverage, CI jobs, or AI output. Stop after enough distinct failure modes are protected. Record tests not run and limitations honestly.
+Update an **owning document** only when accepted behavior, a durable decision, or a material blocker changes. Keep research hypotheses separate from accepted contracts. Do not write activity diaries, duplicate PR histories, or create new policies for one-off problems. Keep public records free of private paths, session identifiers, secrets and unrelated personal details.
 
-## 7. Git, review, documentation and handoff
-
-- For multiple sessions, follow [parallel development](docs/parallel-development.md): one recorded owner per task, separate branches/workspaces, explicit contract dependencies, and one integrator at a time. Verify the current assignment before writing or publishing; a chat, GitHub login or stale status file is not a lock. Existing user assignments take precedence; do not invent new approval steps for authorized work.
-- Apply [engineering quality](docs/engineering-quality.md) to the combined result, not just each patch. AI output and prior reviews are hypotheses until checked against primary evidence. No speculative abstractions, accumulated workarounds, hidden failures, weakened tests or unsupported completion claims. Keep necessary safety checks and avoid unrelated cleanup.
-- Work in focused feature/experiment branches; keep `main` reviewable. **Do not create an initial commit, publish, merge, or alter JL-Mod Plus without explicit authority.** Local non-destructive checks are allowed.
-- Scope changes to the request; if unrelated debt appears, report evidence and impact without unsolicited refactoring. Preserve user work and attribution. No historical code porting.
-- Keep public documentation, repository metadata, issues and PRs neutral and project-focused. Do not publish private session/chat identifiers, personal filesystem paths, private storage inventories, credentials or unrelated personal details. Use public task labels and roles for coordination; retain necessary technical provenance and legitimate copyright attribution.
-- Update the *owning* contract when behavior or a decision changes. Use ADRs for consequential, durable architectural choices; keep experiments and evidence in the validation plan or a dedicated report, not a growing activity log in `AGENTS.md`.
-- Inspect the entire effective diff before requesting review. Check correctness, ownership, missing failure paths, licensing/provenance, stale decisions, duplicated abstractions, and regression risk. Retire superseded workarounds instead of stacking them.
-- Follow the [CI skip policy](docs/development.md#when-to-use-skip-ci). Never add `[skip ci]` to code, tests, fixtures, dependencies, workflow changes, or the final PR head needing required checks. Run relevant `cargo fmt --all -- --check`, `cargo clippy --locked --all-targets -- -D warnings`, and `cargo test --locked` when available. Report exact observed outcomes, the environment, and what **was not run**. Do not claim CI passed without a workflow result.
-- Handoff a concise statement of what changed, why it is correct under the cited contract, remaining hypotheses/risks, and evidence. An investigation with no justified findings is acceptable; never manufacture defects or improvements.
+A concise handoff is enough: **what now works, verification evidence, remaining blockers/limits, and next actionable step**. No manufactured findings or mandatory PR/test/document quota.
