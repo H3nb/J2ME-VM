@@ -47,6 +47,17 @@ Scale investigation and testing to risk. Each new test should catch a plausible 
 
 Use focused checks during iteration and the relevant existing validation before acceptance. Never weaken production behavior or tests just to turn CI green; state exact checks run, tested SHA, and important gaps. A green Rust workflow is not Java ME conformance.
 
+## Code clarity and comments
+
+Write cohesive Rust code with explicit ownership, understandable data flow and error paths. Prefer one clear source of truth and the least conceptual machinery that meets the contract; remove obsolete layers within scope rather than stacking workarounds. Do not trade away hostile-input checks, Java semantics or VM-state invariants for shorter code. Follow [engineering quality](docs/engineering-quality.md) for risk-proportional review.
+
+- Let names, types and structure explain **how** code works. Comment only when useful intent or constraints are not apparent: **why** a design exists, invariants, ownership/lifetime boundaries, non-obvious failure modes, or deliberate compatibility and resource limits. Do not narrate obvious operations or generate boilerplate comments.
+- Distinguish specification-mandated guest behavior from project-defined host policy and experimental limitations. For consequential JVM/CLDC behavior, identify the applicable version and normative clause when known; never copy or adapt another VM's implementation explanation.
+- Use Rust `///` and `//!` documentation when callers need API or module contracts, preconditions, errors, side effects or limitations that signatures do not convey. Trivial internal helpers need no obligatory rustdoc.
+- Keep comments concise and next to the behavior they qualify. Prefer simplifying genuinely confusing code, but do not introduce abstractions solely to remove useful comments.
+- Treat existing comments as claims to verify against source and applicable contracts, not authoritative proof. Update or remove stale comments with affected changes; leave unrelated bulk comment cleanup out of scope.
+- Write TODOs only for concrete, actionable gaps with enough context. During review, judge comments and code by correctness, clarity and maintenance value—not by comment coverage, line counts, stylistic quotas or test volume.
+
 ## Git, documentation, and handoff
 
 Use focused branches and PRs, preserve unrelated work, and review the **final effective diff** against the current base. Respect dependencies and the integration boundary; merging is not automatic authorization. Multiple agents are optional; use the [parallel-development rules](docs/parallel-development.md) only when tasks genuinely overlap or run concurrently.
