@@ -26,6 +26,21 @@ Can a purpose-built Rust VM execute relevant Java ME bytecode while owning **all
 
 A host adapter must not mutate VM internals through arbitrary shared pointers. The VM should use explicit events and host service calls. Section 10 defines the proposed pending-operation lifecycle; its representation and feasibility still require G3H evidence. Logical graphics/audio/storage state belongs to the recoverable runtime where supported; native devices and handles belong to the host. The diagram locates execution services, not permission to hide guest-visible state in the host.
 
+### Package bytes
+
+`archive::PackageArchive` indexes a caller-owned, single-volume classic ZIP
+from memory. It supports stored and raw DEFLATE entries, including streamed
+data descriptors. It validates local/central metadata, descriptor values and
+contiguous local record ranges before indexing case-sensitive UTF-8 names.
+Reading a named file verifies the exact expanded length and CRC-32. The host
+limits are 16 MiB input, 16 MiB per expanded entry, 64 MiB total declared
+expansion, 4,096 entries and 1,024 bytes per name.
+
+The accepted layout follows [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)
+§§4.3.7–4.3.9, 4.3.12, 4.3.16, and 4.4.4–4.4.5. Package policy excludes ZIP64,
+encryption, multi-volume archives, path normalization and filesystem extraction.
+Manifest attributes, class admission and guest execution remain separate.
+
 ## 3. Early target and exclusions
 
 - Target **CLDC 1.1 semantics** initially; investigate 1.1.1 before freezing affected core behavior. Deliver MIDP 1.0–2.1 compatibility before full MIDP 3.0. CLDC 1.0 behavior still requires a separate contract. See [profile evolution](profile-evolution.md) for sources, gaps and deadlines.
