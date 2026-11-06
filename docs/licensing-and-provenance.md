@@ -58,7 +58,27 @@ For every new direct dependency:
 4. Record nontrivial third-party attributions and preserve notices when redistributing. Lock dependencies with `Cargo.lock`, and scan/audit on updates when a tool is available.
 5. Do not import other VM/emulator implementation crates as a way around the clean-room restriction, even when technically license-compatible.
 
-**Initial dependency inventory:** none (Rust standard library only). No third-party attribution file is needed until a dependency or asset is admitted.
+The standard library has neither a ZIP reader nor a DEFLATE decoder. The
+package-byte reader uses [rawzip 0.5.2](https://docs.rs/rawzip/0.5.2/rawzip/)
+for ZIP records and CRC-32 and
+[miniz_oxide 0.9.1](https://docs.rs/miniz_oxide/0.9.1/miniz_oxide/) for
+bounded raw DEFLATE. Default features are disabled for both. The locked graph
+has one transitive dependency, [adler2 2.0.1](https://docs.rs/adler2/2.0.1/adler2/),
+and no dependency build scripts or native libraries.
+
+| Locked crate | Published license expression | Notice to preserve on redistribution |
+| --- | --- | --- |
+| rawzip | MIT | Upstream `LICENSE.txt` |
+| miniz_oxide | MIT OR Zlib OR Apache-2.0 | Upstream `LICENSE-MIT.md` when using the MIT grant |
+| adler2 | 0BSD OR MIT OR Apache-2.0 | Upstream `LICENSE-MIT` when using the MIT grant |
+
+All three offer GPL-3.0-compatible MIT terms. Package source and feature
+manifests were checked on 2026-11-06. The locked graph built with stable
+Rust 1.99.1, and the GitHub Advisory Database query returned no Rust matches
+for those package names on that date. Review advisories, features and notices
+again on upgrades. PKWARE APPNOTE 6.3.10 §1.4 permits use of ordinary ZIP
+format information for compatible products. This scope uses classic ZIP
+records, stored entries and DEFLATE. The APPNOTE text is not bundled.
 
 ## Release gate
 

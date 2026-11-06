@@ -11,6 +11,19 @@
 
 The class is built entirely from our Java source, not copied from an SDK or emulator. Do not regenerate this binary on CI; review binary, checksum and source changes together.
 
+## Original package-container fixture
+
+`package-archive.zip` combines the original `MinimalClass.class` with two
+original text resources and a directory marker. The generator and fixture
+contents are GPL-3.0-only. Rebuild with
+`python tests/fixtures/generate_package_archive.py`. The recorded build used
+Python 3.14.4 and zlib 1.3.1.zlib-ng. The 718-byte archive SHA-256 is
+`22f4a154b93571f28347a6699e2655a1ea7f78637a165171187e8f48c33899de`.
+The stored class must match the source fixture byte for byte and the
+DEFLATE text must match the generator's original payload. The streamed
+headers exercise data descriptors. Tests derive malformed variants in
+memory from this same archive.
+
 ## WP02-W2 source fixtures (Issue #6; not yet CLDC bytecode fixtures)
 
 Both new Java files are independently authored for this project and licensed
