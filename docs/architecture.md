@@ -39,6 +39,11 @@ expansion, 4,096 entries and 1,024 bytes per name.
 The accepted layout follows [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)
 §§4.3.7–4.3.9, 4.3.12, 4.3.16, and 4.4.4–4.4.5. Package policy excludes ZIP64,
 encryption, multi-volume archives, path normalization and filesystem extraction.
+For legacy packages with stored data, the reader accepts up to three trailing
+zero bytes in a local extra field when they align the data to four bytes.
+This package policy permits padding after complete extra records. Central
+extra records still follow APPNOTE §4.5.1 without that allowance.
+
 The package reader can return the main attributes from the canonical
 `META-INF/MANIFEST.MF` entry. It caps the expanded entry at 256 KiB,
 checks the entire entry's length and CRC, and reads up to the first blank

@@ -206,3 +206,52 @@ fn package_with_manifest(bytes: &[u8]) -> Vec<u8> {
     entry.finish(descriptor).unwrap();
     archive.finish().unwrap()
 }
+
+#[test]
+fn accepts_only_zero_alignment_padding_in_stored_local_extras() {
+    let manifest = b"Manifest-Version: 1.0\n\n";
+    let padded = manifest_with_local_extra_suffix(manifest, &[0, 0]);
+    let archive = PackageArchive::open(&padded).unwrap();
+    assert_eq!(
+        archive.read("META-INF/MANIFEST.MF"),
+        Ok(Some(Cow::Borrowed(manifest.as_slice())))
+    );
+
+    for suffix in [&[0, 1][..], &[0], &[0, 0, 0]] {
+        let invalid = manifest_with_local_extra_suffix(manifest, suffix);
+        assert_eq!(
+            PackageArchive::open(&invalid).unwrap_err(),
+            ArchiveError::Malformed
+        );
+    }
+
+    let mut central_padded = package_with_manifest(manifest);
+    let zip = rawzip::ZipArchive::from_slice(&central_padded).unwrap();
+    let eocd = zip.eocd_offset() as usize;
+    let directory = zip.directory_offset() as usize;
+    let directory_size = eocd - directory;
+    central_padded[directory + 30..directory + 32].copy_from_slice(&2u16.to_le_bytes());
+    central_padded[eocd + 12..eocd + 16]
+        .copy_from_slice(&((directory_size + 2) as u32).to_le_bytes());
+    central_padded.splice(eocd..eocd, [0, 0]);
+    assert_eq!(
+        PackageArchive::open(&central_padded).unwrap_err(),
+        ArchiveError::Malformed
+    );
+}
+
+fn manifest_with_local_extra_suffix(manifest: &[u8], suffix: &[u8]) -> Vec<u8> {
+    let mut bytes = package_with_manifest(manifest);
+    let zip = rawzip::ZipArchive::from_slice(&bytes).unwrap();
+    let eocd_offset = zip.eocd_offset() as usize;
+    let directory_offset = zip.directory_offset() as usize;
+    let data_offset = 30 + b"META-INF/MANIFEST.MF".len();
+    assert_eq!(&bytes[28..30], &[0, 0]);
+    assert_eq!(&bytes[data_offset..data_offset + manifest.len()], manifest);
+    assert_eq!(data_offset % 4, 2);
+    bytes[28..30].copy_from_slice(&(suffix.len() as u16).to_le_bytes());
+    bytes[eocd_offset + 16..eocd_offset + 20]
+        .copy_from_slice(&((directory_offset + suffix.len()) as u32).to_le_bytes());
+    bytes.splice(data_offset..data_offset, suffix.iter().copied());
+    bytes
+}
