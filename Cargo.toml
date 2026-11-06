@@ -9,3 +9,6 @@ publish = false
 [dependencies]
 miniz_oxide = { version = "0.9.1", default-features = false }
 rawzip = { version = "0.5.2", default-features = false }
+
+[dev-dependencies]
+rawzip = { version = "0.5.2", default-features = false, features = ["std"] }

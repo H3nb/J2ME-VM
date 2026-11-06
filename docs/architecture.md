@@ -39,7 +39,13 @@ expansion, 4,096 entries and 1,024 bytes per name.
 The accepted layout follows [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)
 §§4.3.7–4.3.9, 4.3.12, 4.3.16, and 4.4.4–4.4.5. Package policy excludes ZIP64,
 encryption, multi-volume archives, path normalization and filesystem extraction.
-Manifest attributes, class admission and guest execution remain separate.
+The package reader can return the main attributes from the canonical
+`META-INF/MANIFEST.MF` entry. It caps the expanded entry at 256 KiB,
+checks the entire entry's length and CRC, and reads up to the first blank
+line. It accepts CRLF, LF and CR line endings, unfolds continuations before
+decoding UTF-8, and rejects duplicate names case-insensitively. The reader
+exposes values as metadata. Class admission, JAD reconciliation, suite
+selection, and signature verification remain separate.
 
 ## 3. Early target and exclusions
 

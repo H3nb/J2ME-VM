@@ -132,3 +132,77 @@ fn name_offsets(name: &[u8]) -> [usize; 2] {
         .try_into()
         .unwrap()
 }
+
+#[test]
+fn reads_folded_utf8_main_attributes_without_named_section_overrides() {
+    let manifest = b"Manifest-Version: 1.0\r\nApp-Label: Caf\xc3\r\n \xa9\nEmpty: \r\n\r\nName: assets/logo.png\r\nApp-Label: Other\r\n";
+    let jar = package_with_manifest(manifest);
+    let archive = PackageArchive::open(&jar).unwrap();
+    let attrs = archive.manifest_main().unwrap().unwrap();
+    assert_eq!(attrs.get("APP-label"), Some("Caf\u{e9}"));
+    assert_eq!(attrs.get("empty"), Some(""));
+    assert_eq!(attrs.get("Name"), None);
+    assert!(PackageArchive::open(PACKAGE)
+        .unwrap()
+        .manifest_main()
+        .unwrap()
+        .is_none());
+}
+
+#[test]
+fn rejects_ambiguous_and_malformed_main_attributes() {
+    use j2me_vm::archive::ManifestError;
+
+    for (input, error) in [
+        (
+            b"App-Name: First\rapp-name: Second\r".as_slice(),
+            ManifestError::DuplicateAttribute,
+        ),
+        (b" continuation\n", ManifestError::InvalidAttribute),
+        (b"App-Name:No space\n", ManifestError::InvalidAttribute),
+        (b"App-Name: \xff\n", ManifestError::InvalidAttribute),
+        (b"App-Name: A\0B\n", ManifestError::InvalidAttribute),
+        (b"App-Name: unterminated", ManifestError::InvalidAttribute),
+    ] {
+        let jar = package_with_manifest(input);
+        let archive = PackageArchive::open(&jar).unwrap();
+        assert_eq!(archive.manifest_main(), Err(error));
+    }
+}
+
+#[test]
+fn applies_the_manifest_limit_and_checks_the_whole_entry_crc() {
+    use j2me_vm::archive::ManifestError;
+
+    let mut jar = package_with_manifest(&vec![b'x'; 256 * 1024 + 1]);
+    let archive = PackageArchive::open(&jar).unwrap();
+    assert_eq!(
+        archive.manifest_main(),
+        Err(ManifestError::Archive(ArchiveError::LimitExceeded))
+    );
+
+    let bytes = b"Manifest-Version: 1.0\n\nName: assets/logo.png\n";
+    jar = package_with_manifest(bytes);
+    let start = jar
+        .windows(bytes.len())
+        .position(|part| part == bytes)
+        .unwrap();
+    jar[start + bytes.len() - 2] ^= 1;
+    let archive = PackageArchive::open(&jar).unwrap();
+    assert_eq!(
+        archive.manifest_main(),
+        Err(ManifestError::Archive(ArchiveError::CorruptEntry))
+    );
+}
+
+fn package_with_manifest(bytes: &[u8]) -> Vec<u8> {
+    use std::io::Write;
+
+    let mut archive = rawzip::ZipArchiveWriter::new(Vec::new());
+    let (entry, config) = archive.new_file("META-INF/MANIFEST.MF").start().unwrap();
+    let mut writer = config.wrap(entry);
+    writer.write_all(bytes).unwrap();
+    let (entry, descriptor) = writer.finish().unwrap();
+    entry.finish(descriptor).unwrap();
+    archive.finish().unwrap()
+}
