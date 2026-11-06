@@ -78,12 +78,19 @@ impl<'a> PackageArchive<'a> {
         let mut entries = BTreeMap::new();
         let mut ranges = Vec::with_capacity(count);
         let mut expanded_total = 0usize;
+        let mut central_end = directory_start;
         for header in zip.entries() {
             if ranges.len() == count {
                 return Err(ArchiveError::Malformed);
             }
             let header = header.map_err(|_| ArchiveError::Malformed)?;
             let central_offset = header.central_directory_offset() as usize;
+            central_end = [28, 30, 32]
+                .into_iter()
+                .try_fold(central_offset + 46, |end, field| {
+                    read_u16(bytes, central_offset + field).map(|len| end + usize::from(len))
+                })
+                .ok_or(ArchiveError::Malformed)?;
             if read_u16(bytes, central_offset + 34) != Some(0)
                 || header
                     .extra_fields()
@@ -187,7 +194,7 @@ impl<'a> PackageArchive<'a> {
         let covered_end = ranges.iter().try_fold(0, |offset, range| {
             (range.start == offset).then_some(range.end)
         });
-        if ranges.len() != count || covered_end != Some(directory_start) {
+        if ranges.len() != count || central_end != eocd || covered_end != Some(directory_start) {
             return Err(ArchiveError::Malformed);
         }
         Ok(Self { bytes, entries })

@@ -92,6 +92,24 @@ fn rejects_bad_payload_crc_and_inexact_archive_boundary() {
     );
 }
 
+#[test]
+fn rejects_unindexed_bytes_claimed_as_central_directory() {
+    let mut changed = PACKAGE.to_vec();
+    let eocd = changed.len() - 22;
+    let signature_record = b"PK\x05\x05\0\0";
+    assert_eq!(&changed[eocd..eocd + 4], b"PK\x05\x06");
+    let size_offset = eocd + 12;
+    let directory_size =
+        u32::from_le_bytes(changed[size_offset..size_offset + 4].try_into().unwrap());
+    changed[size_offset..size_offset + 4]
+        .copy_from_slice(&(directory_size + signature_record.len() as u32).to_le_bytes());
+    changed.splice(eocd..eocd, signature_record.iter().copied());
+    assert_eq!(
+        PackageArchive::open(&changed).unwrap_err(),
+        ArchiveError::Malformed
+    );
+}
+
 fn name_offsets(name: &[u8]) -> [usize; 2] {
     PACKAGE
         .windows(name.len())
