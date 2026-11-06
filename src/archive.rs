@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //! Bounded, in-memory access to the ZIP container of an application package.
 
+mod manifest;
+pub use manifest::{ManifestError, ManifestMain};
+
 use miniz_oxide::inflate::core::{
     decompress, inflate_flags::TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF, DecompressorOxide,
 };
@@ -206,9 +209,32 @@ impl<'a> PackageArchive<'a> {
     /// Reads exactly one file and checks its length and CRC before returning it.
     /// Stored entries borrow the input. DEFLATE entries own a bounded buffer.
     pub fn read(&self, name: &str) -> Result<Option<Cow<'a, [u8]>>, ArchiveError> {
+        self.read_bounded(name, MAX_ENTRY_BYTES)
+    }
+
+    /// Reads only the main attributes of the canonical manifest entry.
+    ///
+    /// The entry is limited to 256 KiB before inflation. A missing entry
+    /// returns `None`. Named sections and signature metadata are not parsed.
+    pub fn manifest_main(&self) -> Result<Option<ManifestMain>, ManifestError> {
+        self.read_bounded(manifest::MANIFEST_PATH, manifest::MAX_MANIFEST_BYTES)
+            .map_err(ManifestError::Archive)?
+            .as_deref()
+            .map(ManifestMain::parse)
+            .transpose()
+    }
+
+    pub(crate) fn read_bounded(
+        &self,
+        name: &str,
+        limit: usize,
+    ) -> Result<Option<Cow<'a, [u8]>>, ArchiveError> {
         let Some(entry) = self.entries.get(name).filter(|_| !name.ends_with('/')) else {
             return Ok(None);
         };
+        if entry.expanded_size > limit {
+            return Err(ArchiveError::LimitExceeded);
+        }
         let input = &self.bytes[entry.data.clone()];
         let data = if entry.method == CompressionMethod::STORE {
             Cow::Borrowed(input)

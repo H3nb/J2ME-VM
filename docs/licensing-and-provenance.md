@@ -80,6 +80,15 @@ again on upgrades. PKWARE APPNOTE 6.3.10 §1.4 permits use of ordinary ZIP
 format information for compatible products. This scope uses classic ZIP
 records, stored entries and DEFLATE. The APPNOTE text is not bundled.
 
+The main manifest reader is a bounded package-data utility. Its inputs
+are independently authored package fixtures and the Apache Ant
+[Manifest task contract](https://ant.apache.org/manual/Tasks/manifest.html)
+and [license notice](https://ant.apache.org/license.html). The fixtures
+exercise header and section syntax without shipping Ant code or manual
+text. The parser does not select a MIDlet, interpret JAD attributes,
+or authorize signed content. The JSR 118 implementation-use question
+remains separate.
+
 ## Release gate
 
 Before first public code release or compatibility marketing, verify the source license and notices; specification/JSR implementation and trademark terms; binary fixture provenance; dependency obligations; packaging of corresponding source; and integration implications. Record open legal issues as blockers rather than declaring them resolved from technical tests.
