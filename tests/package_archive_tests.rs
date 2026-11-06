@@ -110,6 +110,19 @@ fn rejects_unindexed_bytes_claimed_as_central_directory() {
     );
 }
 
+#[test]
+fn rejects_truncated_local_and_central_extra_fields() {
+    let [local, central] = name_offsets(b"\x0f\xf0\x02\x00ab");
+    for offset in [local, central] {
+        let mut changed = PACKAGE.to_vec();
+        changed[offset + 2] = 3;
+        assert_eq!(
+            PackageArchive::open(&changed).unwrap_err(),
+            ArchiveError::Malformed
+        );
+    }
+}
+
 fn name_offsets(name: &[u8]) -> [usize; 2] {
     PACKAGE
         .windows(name.len())

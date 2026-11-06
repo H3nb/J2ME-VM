@@ -17,8 +17,8 @@ The class is built entirely from our Java source, not copied from an SDK or emul
 original text resources and a directory marker. The generator and fixture
 contents are GPL-3.0-only. Rebuild with
 `python tests/fixtures/generate_package_archive.py`. The recorded build used
-Python 3.14.4 and zlib 1.3.1.zlib-ng. The 718-byte archive SHA-256 is
-`22f4a154b93571f28347a6699e2655a1ea7f78637a165171187e8f48c33899de`.
+Python 3.14.4 and zlib 1.3.1.zlib-ng. The 730-byte archive SHA-256 is
+`79ea89088803eac651ccb3d27c53fe59c5e69fb836a6835a85a4ccf5122b5ac1`.
 The stored class must match the source fixture byte for byte and the
 DEFLATE text must match the generator's original payload. The streamed
 headers exercise data descriptors. Tests derive malformed variants in

@@ -22,5 +22,7 @@ with ZipFile(stream, "w", allowZip64=False) as archive:
     ):
         entry = ZipInfo(name)
         entry.create_system = 0
+        if name == "data/":
+            entry.extra = b"\x0f\xf0\x02\x00ab"
         archive.writestr(entry, data, compress_type=method, compresslevel=6)
 (root / "package-archive.zip").write_bytes(stream.getvalue())

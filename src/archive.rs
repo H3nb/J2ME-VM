@@ -5,7 +5,10 @@ use miniz_oxide::inflate::core::{
     decompress, inflate_flags::TINFL_FLAG_USING_NON_WRAPPING_OUTPUT_BUF, DecompressorOxide,
 };
 use miniz_oxide::inflate::TINFLStatus;
-use rawzip::{extra_fields::ExtraFieldId, CompressionMethod, ZipArchive};
+use rawzip::{
+    extra_fields::{ExtraFieldId, ExtraFields},
+    CompressionMethod, ZipArchive,
+};
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::ops::Range;
@@ -91,13 +94,10 @@ impl<'a> PackageArchive<'a> {
                     read_u16(bytes, central_offset + field).map(|len| end + usize::from(len))
                 })
                 .ok_or(ArchiveError::Malformed)?;
-            if read_u16(bytes, central_offset + 34) != Some(0)
-                || header
-                    .extra_fields()
-                    .any(|(id, _)| id == ExtraFieldId::ZIP64)
-            {
+            if read_u16(bytes, central_offset + 34) != Some(0) {
                 return Err(ArchiveError::UnsupportedFormat);
             }
+            validate_extra_fields(header.extra_fields())?;
             let flags = header.flags();
             let method = header.compression_method();
             if !matches!(
@@ -147,12 +147,7 @@ impl<'a> PackageArchive<'a> {
             {
                 return Err(ArchiveError::Malformed);
             }
-            if local
-                .extra_fields()
-                .any(|(id, _)| id == ExtraFieldId::ZIP64)
-            {
-                return Err(ArchiveError::UnsupportedFormat);
-            }
+            validate_extra_fields(local.extra_fields())?;
             let end = if flags.has_data_descriptor() {
                 if (local.crc32() != 0 && local.crc32() != crc)
                     || (local.compressed_size_hint() != 0
@@ -269,6 +264,16 @@ fn entry_name(path: &[u8]) -> Result<&str, ArchiveError> {
         return Err(ArchiveError::InvalidName);
     }
     Ok(name)
+}
+
+fn validate_extra_fields(mut fields: ExtraFields<'_>) -> Result<(), ArchiveError> {
+    if fields.any(|(id, _)| id == ExtraFieldId::ZIP64) {
+        return Err(ArchiveError::UnsupportedFormat);
+    }
+    if !fields.remaining_bytes().is_empty() {
+        return Err(ArchiveError::Malformed);
+    }
+    Ok(())
 }
 
 fn descriptor_end(bytes: &[u8], start: usize, expected: [u32; 3]) -> Option<usize> {
