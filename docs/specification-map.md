@@ -175,6 +175,27 @@ clauses and applicable use basis remain open in
 [#30](https://github.com/H3nb/J2ME-VM/issues/30). Do not accept a gated agreement,
 infer final clause wording, or claim rights clearance from public availability.
 
+### MIDP terms and compatibility test access
+
+The public terms pages identify distinct editions for the legacy profile scope.
+
+| Edition | Official source | Terms relevant to review |
+| --- | --- | --- |
+| MIDP 1.0 / JSR 37 | [Oracle download landing](https://download.oracle.com/otndocs/jcp/7580-j2me_midp-1.0a-fr-spec-oth-JSpec/) labels the archive 1.0a. Its [linked terms](https://download.oracle.com/otndocs/jcp/7580-j2me_midp-1.0a-fr-spec-oth-JSpec/7580-j2me_midp-1.0a-fr-spec-oth-JSpec-license.html) identify 1.0 FCS, September 2000. | The grant describes internal use to create a clean-room implementation subject to completeness, namespace and testing conditions. Review distribution rights separately. |
+| MIDP 2.0 / JSR 118 | [JCP final release](https://jcp.org/aboutJava/communityprocess/final/jsr118/) and [linked terms](https://jcp.org/aboutJava/communityprocess/final/jsr118/midp-2_0-fr-spec-license.html), 2.0 FCS, November 2002. | Separate evaluation and independent implementation grants. The creation and distribution grant conditions cover required functionality, namespace and passing the TCK. |
+| MIDP 2.1 / JSR 118 | [Oracle maintenance download landing](https://download.oracle.com/otndocs/jcp/midp-2.1-mrel-oth-JSpec/) and [linked terms](https://download.oracle.com/otndocs/jcp/midp-2.1-mrel-oth-JSpec/midp-2.1-mrel-oth-JSpec-license.html), 2.1 FCS, May 2006. | The maintenance edition also conditions its independent implementation grant on required functionality, namespace and passing the TCK. |
+
+The [CLDC 1.1.1 maintenance release](https://www.jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html)
+and the [MIDP 2.0 final release](https://jcp.org/aboutJava/communityprocess/final/jsr118/)
+identify a TCK scholarship route for qualified applicants. The current
+[Oracle scholarship page](https://www.oracle.com/java/scholarship-program.html)
+directs inquiries about other Oracle-led TCKs to the specification lead or JCP
+Program Management Office, separately from the OpenJDK-based Java SE process.
+For [#30](https://github.com/H3nb/J2ME-VM/issues/30), confirm which historical
+kits are available and under what terms, and establish the basis for developing
+and distributing the partial independent runtime before full compatibility.
+Availability, eligibility and implementation-use rights remain open.
+
 ### Clause-to-observable-behavior matrix
 
 The stage below means the *earliest applicable semantic boundary*, not a
