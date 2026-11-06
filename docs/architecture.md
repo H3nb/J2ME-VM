@@ -68,6 +68,15 @@ The VM must own, or explicitly reconstruct, the following (enumeration incomplet
 
 Use stable logical handles rather than serialized raw pointers. Consider an ID plus generation to detect stale handles, but benchmark overhead and correctness first. Object identity and `==` must remain stable over GC and restore. The exact heap and collector design is **not yet selected**.
 
+### Offscreen pixels
+
+`surface::Surface` owns up to 1,048,576 row-major ARGB words. It fills clipped
+rectangles and copies pixels between surfaces or within one surface. An
+overlapping copy reads the original source values. The stored dimensions
+and exact row-major words are sufficient to reconstruct a surface without
+host resources. LCDUI drawing state, image identity, aggregate session limits,
+presentation, and checkpoint encoding belong to the future runtime integration.
+
 ### Interpreter hypothesis
 
 Explicit VM-owned frames with PCs, typed locals/operand stacks, and Java exception propagation make checkpointing more tractable than borrowing the host's native call stack. Rust integer operations must reproduce Java semantics (overflow, signed shifts, divide-by-zero, conversions); double-slot long/double, float behavior, and type safety need targeted validation.
