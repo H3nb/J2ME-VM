@@ -100,7 +100,7 @@ impl<'a> PackageArchive<'a> {
             if read_u16(bytes, central_offset + 34) != Some(0) {
                 return Err(ArchiveError::UnsupportedFormat);
             }
-            validate_extra_fields(header.extra_fields())?;
+            validate_extra_fields(header.extra_fields(), false)?;
             let flags = header.flags();
             let method = header.compression_method();
             if !matches!(
@@ -150,7 +150,9 @@ impl<'a> PackageArchive<'a> {
             {
                 return Err(ArchiveError::Malformed);
             }
-            validate_extra_fields(local.extra_fields())?;
+            let stored_and_aligned =
+                method == CompressionMethod::STORE && data.start.is_multiple_of(4);
+            validate_extra_fields(local.extra_fields(), stored_and_aligned)?;
             let end = if flags.has_data_descriptor() {
                 if (local.crc32() != 0 && local.crc32() != crc)
                     || (local.compressed_size_hint() != 0
@@ -292,14 +294,23 @@ fn entry_name(path: &[u8]) -> Result<&str, ArchiveError> {
     Ok(name)
 }
 
-fn validate_extra_fields(mut fields: ExtraFields<'_>) -> Result<(), ArchiveError> {
+fn validate_extra_fields(
+    mut fields: ExtraFields<'_>,
+    allow_legacy_padding: bool,
+) -> Result<(), ArchiveError> {
     if fields.any(|(id, _)| id == ExtraFieldId::ZIP64) {
         return Err(ArchiveError::UnsupportedFormat);
     }
-    if !fields.remaining_bytes().is_empty() {
-        return Err(ArchiveError::Malformed);
+    let tail = fields.remaining_bytes();
+    // Some legacy packages align stored data by padding the local header
+    // after its complete extra fields.
+    if tail.is_empty()
+        || allow_legacy_padding && tail.len() < 4 && tail.iter().all(|&byte| byte == 0)
+    {
+        Ok(())
+    } else {
+        Err(ArchiveError::Malformed)
     }
-    Ok(())
 }
 
 fn descriptor_end(bytes: &[u8], start: usize, expected: [u32; 3]) -> Option<usize> {
