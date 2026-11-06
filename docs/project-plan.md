@@ -69,7 +69,7 @@ that any feature exists. Technical gate definitions live only in
 | R07 | Rewind within a declared deterministic envelope | Checkpoint plus recorded events reaches matching observable state; branching discards future events and does not repeat external writes | G6R |
 | R08 | Inspect and debug supported MIDlets | Bytecode-level stepping, frame/heap inspection and exception stops; thread/block inspection when concurrency exists | G2, G4, G6 |
 | R09 | Preserve a path to JIT without weakening semantics | Design review of safepoints, roots and reconstructable state now; execution equivalence and performance evidence before admitting JIT | G2 design, G7 decision |
-| R10 | Be embeddable without Android owning guest state | Headless tests have no Android dependency; future host can pause/stop/recreate resources via the defined boundary | G3H, G6, G7 |
+| R10 | Be embeddable without Android owning guest state | Headless tests exercise host pause/resume, adjustable execution rate, and resource teardown and recreation through the VM boundary | G3H, G6, G7 |
 | R11 | Maintain a reproducible, independent implementation | Normative clause and fixture provenance; public tests without private SDK/game access; bounded hostile input; clean-room and dependency policy | Every relevant increment |
 | R12 | Preserve legacy runtime contracts while enabling later MIDP 3 contexts | Profile/revision selection, per-context mutable state, correct linkage failure timing, lifecycle separation and explicit recovery scope; study E01–E07 as applicable | G2/G3H design and tests, G5/G6, G6C |
 

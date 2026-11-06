@@ -37,9 +37,14 @@ for the proposed recovery-focused baseline, not renumbered existing gates.
 
 The [profile study](profile-evolution.md) assigns E01–E07 experiments and N01–N05
 normative deadlines. G2 includes instance-ownership evidence when mutable state
-exists; G3H includes owner/timeline isolation. G6/G6C distinguish guest lifecycle
-from VM control pause and test confirmed legacy sharing. Preserve these tests
-when adding MIDP 3 later; two core instances are not MIDP 3 conformance.
+exists; G3H includes owner/timeline isolation. G6 verifies that host pause
+freezes guest execution, virtual time, and event delivery without triggering a
+guest lifecycle callback. Resume preserves pending work and excludes elapsed
+time spent paused. With a controlled clock and workload, test rates below and
+above normal against their expected virtual-time advances and instruction
+budgets. Exercise these controls with a fresh-process restore. G6C preserves
+this separation and tests confirmed legacy sharing. Preserve these tests when
+adding MIDP 3 later, including separate evidence for the MIDP 3 context model.
 
 
 Gate entry requires the preceding dependencies in the project plan, an explicit
