@@ -52,8 +52,10 @@ The opt-in expanded profile allows 256 object records and permits a byte
 array to use the existing 4 MiB aggregate array budget. An original fixture
 verifies the resource byte for byte across fresh-process restore. All three
 variants return from `startApp` and reach a Canvas under this profile. Their
-running code then reaches the 256-record cap. The interactive Form sample
-passes input, command dispatch and fresh-process recovery with both profiles.
+active Canvas state restores in a fresh process before the first visible
+frame. Continued execution reaches the 256-record cap. The interactive Form
+sample passes input, command dispatch and fresh-process recovery with both
+profiles.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
