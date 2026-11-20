@@ -1,10 +1,10 @@
 # Java ME standards and Rust dependency audit
 
-**Reviewed:** 2026-11-20. Public Kilox baseline `fa81687` (source, manifest and lockfile); proposed [capability checklist](capability-inventory.md) is a separate PR change. This is an **interface/architecture audit**, not a legal opinion, executed conformance test or claim of comprehensive signature-level verification. Recheck the live base before integration.
+**Reviewed:** 2026-11-20. Public Kilox baseline `fa81687` (source, manifest and lockfile); [capability checklist](capability-inventory.md) was merged in [#52](https://github.com/H3nb/Kilox/pull/52). This is an **interface/architecture audit**, not a legal opinion, executed conformance test or claim of comprehensive signature-level verification. Recheck the live base before integration.
 
 ## Decision summary
 
-- **Current critical path:** source-use/rights decision [#30](https://github.com/H3nb/Kilox/issues/30), reproducible baseline [#43](https://github.com/H3nb/Kilox/issues/43), legacy `StackMap` verification and the CLDC loader/exception/constructor semantics [#44](https://github.com/H3nb/Kilox/issues/44). Do not fill these gaps with third-party VM internals.
+- **Current critical path:** source-use/rights decision tracked in [M0 #43](https://github.com/H3nb/Kilox/issues/43), reproducible baseline [#43](https://github.com/H3nb/Kilox/issues/43), legacy `StackMap` verification and the CLDC loader/exception/constructor semantics [#44](https://github.com/H3nb/Kilox/issues/44). Do not fill these gaps with third-party VM internals.
 - **No additional Rust crates now.** The existing `rawzip` + `miniz_oxide` + `adler2` graph covers current archive parsing. Most missing functionality is guest semantics and class libraries, not host-side dependency infrastructure.
 - **Distinguish scope from delivery:** MIDP 1.0/2.0/2.1 is the declared legacy product target; optional JSRs/vendor behaviors need measured demand; MIDP 3.0 remains a future release. Offline MIDlet launching is a nearer engineering goal than claiming a standards-compliant phone.
 - **Audit boundary:** CLDC 1.1 public API *type names* and the MIDP 2.0 documented additional types are inventoried below. Complete member signatures, normative exceptions, overloads and versioned behavior must still be reconciled against appropriately accessed final specifications before any full-support claim. Neither `allclasses-noframe.html` nor an API jar establishes conformance.
@@ -82,7 +82,7 @@ Sources: [GCF](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr11
 | MIDP 2.1 / JSR 118 maintenance | Relevant MR2 change log and profile study | Exact accepted final 2.1 clauses and differences (including JPEG/image, property reporting, error timing). Do not import 2.2 changes |
 | MIDP 3.0 / JSR 271 | Architecture-awareness only | Separate future full API/behavior audit, not a legacy completion gate |
 
-Official entrypoints: [JSR 30](https://jcp.org/en/jsr/detail?id=30), [JSR 37](https://jcp.org/aboutJava/communityprocess/final/jsr037/), [JSR 139](https://jcp.org/aboutJava/communityprocess/final/jsr139/), [JSR 118](https://jcp.org/aboutJava/communityprocess/final/jsr118/), [JSR 118 maintenance](https://jcp.org/aboutJava/communityprocess/mrel/jsr118/index.html). Historical materials' access and implementation-use rights remain a separate unresolved decision [#30](https://github.com/H3nb/Kilox/issues/30).
+Official entrypoints: [JSR 30](https://jcp.org/en/jsr/detail?id=30), [JSR 37](https://jcp.org/aboutJava/communityprocess/final/jsr037/), [JSR 139](https://jcp.org/aboutJava/communityprocess/final/jsr139/), [JSR 118](https://jcp.org/aboutJava/communityprocess/final/jsr118/), [JSR 118 maintenance](https://jcp.org/aboutJava/communityprocess/mrel/jsr118/index.html). Historical materials' access and implementation-use rights remain unresolved; see [M0 #43](https://github.com/H3nb/Kilox/issues/43) and the [licensing record](licensing-and-provenance.md).
 
 ### Required member-level verification method
 
@@ -152,7 +152,7 @@ Metadata: [rawzip 0.5.2](https://docs.rs/crate/rawzip/0.5.2/source/Cargo.toml.or
 
 ## Evidence and next implementation order
 
-1. Close or explicitly scope [#30](https://github.com/H3nb/Kilox/issues/30) and the authentic final CLDC `StackMap`/linking requirements before publishing dependent runtime logic.
+1. Resolve or explicitly scope the implementation-use decision in [M0 #43](https://github.com/H3nb/Kilox/issues/43) and the authentic final CLDC `StackMap`/linking requirements before publishing dependent runtime logic.
 2. Keep public-original structural/bytecode fixtures and a permission-cleared corpus. Use `package_inventory` for admission counts **only**, then isolate one failing verifier/constructor/reference edge with an independently authored fixture.
 3. Verify loading, exceptions, object/class state and the CLDC library methods demanded by a minimal **authored** MIDlet; establish a headless guest execution path. Only then enlarge LCDUI, RMS, GCF and host services.
 4. Add dependency crates **when the feature first needs them**, with exact license, MSRV, audited feature flags, security notices and representative positive/negative tests recorded in that capability PR.
