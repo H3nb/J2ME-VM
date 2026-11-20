@@ -1,6 +1,6 @@
 # Current project status
 
-Public code baseline reviewed on 2026-11-20 at `e1f4076`. The
+Public code baseline reviewed on 2026-11-20 at `9d9f00b`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
 [GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
@@ -16,6 +16,12 @@ loader, CLDC runtime, MIDP environment or new-process save-state system.
 For current implementation tasks use the [milestone roadmap](project-plan.md)
 and its linked GitHub Issues; do not treat the inventory as a second task
 registry.
+
+The public [package inventory](../examples/package_inventory.rs) reports
+bounded structural archive, manifest and class-file results without exposing
+suite names. A local run completed for all 23 corpus JARs, each with methods
+carrying legacy `StackMap` attributes. This stage measures structural
+admission only. Runtime preparation and execution are reported below.
 
 ## Experimental evidence
 
