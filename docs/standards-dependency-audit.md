@@ -134,6 +134,20 @@ Metadata: [rawzip 0.5.2](https://docs.rs/crate/rawzip/0.5.2/source/Cargo.toml.or
 
 **Security review status:** inspect bounds and decompression limits at the archive boundary, but a current RustSec/OSV audit and source-level review of these exact crate versions were **not executed** in this documentation pass. No blanket claim of zero advisories, safety or current version is made. Prefer `cargo audit` when available for a targeted check, and only upgrade with tests/provenance review. Do not confuse advisories concerning the unrelated `zip` crate with `rawzip`.
 
+## Named optional graphics/media tracks
+
+The following are now **explicit planned compatibility targets**, not merely examples in an optional API list. Their *existence* in the roadmap is a product decision; supported versions, device capabilities, implementation sequence and release evidence remain subject to the relevant contracts and tests.
+
+| Track | Guest API / important boundary | Dependency and acceptance policy |
+| --- | --- | --- |
+| [JSR 135 MMAPI #55](https://github.com/H3nb/Kilox/issues/55) — M3 | Full selected-edition `javax.microedition.media`, `javax.microedition.media.control`, `javax.microedition.media.protocol`; includes media lifecycle, controls, optional formats and `DataSource` where specified. MIDP 2.0 has a **subset**, not full MMAPI. | Preserve guest `Player`/events/permission semantics independently of audio or video backends. Evaluate codec, MIDI, capture and device/audio output dependencies **per supported format** and platform. |
+| [JSR 184 M3G #56](https://github.com/H3nb/Kilox/issues/56) — M3 | Standard `javax.microedition.m3g`: 3D scene graph, loading, animation, transforms, texturing, immediate/retained rendering and MIDP graphics interoperation. | Select and verify host-neutral render contracts before considering software/GPU libraries. GPU resources cannot be serialized as stable snapshot handles. JSR 297/M3G 2.0 is a separate version decision. |
+| [Mascot Capsule Micro3D v3 #57](https://github.com/H3nb/Kilox/issues/57) — M4 | Proprietary HI Corporation `com.mascotcapsule.micro3d.v3` with separately evidenced API, asset/effect semantics and handset variants; **not** JSR 184. | Review allowed documentation/implementation rights and clean-room provenance. Share internal render primitives with M3G **only if equivalent behavior is proved**, never import another VM/emulator implementation. |
+ 
+Standards/reference entrypoints: [JCP JSR 135](https://jcp.org/en/jsr/detail?id=135), [Oracle full MMAPI API](https://docs.oracle.com/javame/config/cldc/opt-pkgs/api/mm/jsr135/overview-summary.html), [MIDP 2.0 media subset](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr118/javax/microedition/media/package-summary.html), [JCP JSR 184](https://jcp.org/aboutJava/communityprocess/final/jsr184/), [Oracle M3G explanation](https://www.oracle.com/technical-resources/articles/javame/3dgraphics.html). Mascot Capsule v3 is proprietary: historical Sony Ericsson documentation is supporting interface context, **not** a grant to copy engine sources or proprietary API libraries.
+
+**No new Cargo dependencies admitted by this planning change.** Required decoder, rendering or native-host components should be chosen when a concrete tested feature calls for them, with transitive license/security/MSRV review and a verified state/host boundary.
+
 ## Future dependency decisions (no additions authorized by this audit)
 
 | Need / owning milestone | First-choice approach | Consider an external crate **only when** |
@@ -146,7 +160,10 @@ Metadata: [rawzip 0.5.2](https://docs.rs/crate/rawzip/0.5.2/source/Cargo.toml.or
 | HTTP/HTTPS and certificates (M2) | Explicit host request boundary, permissions, timeouts and errors | Selected desktop/mobile transport and trust policy demand a TLS/HTTP backend; investigate host TLS or independently reviewed Rust libraries then |
 | Audio/media (M2) | Guest player/tone state + host PCM/event interface | A real mandatory format needs decoding; an audio output or MIDI crate does not automatically implement MMAPI semantics |
 | Android/iOS FFI and desktop UI (M2/M5) | Decide at actual host adapter boundary | ABI, safety, ownership, toolchain, platform policy and cross-platform maintenance are demonstrated |
-| Optional JSRs/vendor behavior (M3/M4) | Choose from observed corpus blockers, versioned API contracts | Required feature cannot be expressed with the core and supported host services; evaluate separately |
+| JSR 135 MMAPI (M3) | Implement selected guest media/control/protocol contracts separately from host playback/recording | Codec, MIDI, video, capture or audio backend is justified by a supported format and tested policy |
+| JSR 184 M3G (M3) | Independently verified guest scene graph and graphics semantics | Software or GPU rendering backend is needed for a supported behavior; inspect host/asset limits and licensing |
+| Mascot Capsule Micro3D v3 (M4) | Independent proprietary API contracts and versioned device semantics | A shared rendering primitive proves compatible; never import another VM/renderer implementation |
+| Other optional JSRs/vendor behavior (M3/M4) | Prioritize remaining gaps from observed corpus blockers and versioned API contracts | Required feature cannot be expressed with the existing core and supported host services; evaluate separately |
 
 **Rejected for now:** wholesale JVM/CLDC/MIDP implementation dependencies from other VMs (clean-room prohibition); Tokio/async executor merely to schedule guest threads; broad graphics/game engines; automatic Kotlin/Swift/FFI binding frameworks; a database or serializer before a proven format/state contract; release CI tools without a distinct current verification need.
 

@@ -31,8 +31,8 @@ certification or distribution claim.
 | [M0 · Reproducible baseline](https://github.com/H3nb/Kilox/milestone/1) | Review the candidate, resolve the applicable rights and document a second-machine handoff and repeatable corpus baseline. | [#43](https://github.com/H3nb/Kilox/issues/43) |
 | [M1 · CLDC execution and libraries](https://github.com/H3nb/Kilox/milestone/2) | Verify class loading and legacy StackMap, complete core execution, and bind the CLDC APIs exercised by the corpus. | [#44](https://github.com/H3nb/Kilox/issues/44) |
 | [M2 · Standard MIDP and desktop host](https://github.com/H3nb/Kilox/milestone/3) | Prove an interactive standard MIDlet on Windows and Linux with lifecycle, LCDUI, RMS, GCF, media and recovery. | [#45](https://github.com/H3nb/Kilox/issues/45) |
-| [M3 · Optional standard Java ME APIs](https://github.com/H3nb/Kilox/milestone/4) | Expand coverage using the highest-impact optional standard APIs and controlled host services. | [#46](https://github.com/H3nb/Kilox/issues/46) |
-| [M4 · Device and vendor compatibility](https://github.com/H3nb/Kilox/milestone/5) | Implement measured vendor and handset behavior behind versioned device profiles. | [#47](https://github.com/H3nb/Kilox/issues/47) |
+| [M3 · Optional standard Java ME APIs](https://github.com/H3nb/Kilox/milestone/4) | Add the named JSR 135 MMAPI and JSR 184 M3G tracks; expand other optional APIs based on measured compatibility impact and controlled host services. | [#46](https://github.com/H3nb/Kilox/issues/46), [#55](https://github.com/H3nb/Kilox/issues/55), [#56](https://github.com/H3nb/Kilox/issues/56) |
+| [M4 · Device and vendor compatibility](https://github.com/H3nb/Kilox/milestone/5) | Add Mascot Capsule Micro3D v3 and other measured vendor/handset behavior behind versioned device profiles. | [#47](https://github.com/H3nb/Kilox/issues/47), [#57](https://github.com/H3nb/Kilox/issues/57) |
 | [M5 · Mobile hosts and portability](https://github.com/H3nb/Kilox/milestone/6) | Use the same core on Android and iOS and verify lifecycle, input, effects and recovery on devices. | [#48](https://github.com/H3nb/Kilox/issues/48) |
 | [M6 · Measured compatibility release](https://github.com/H3nb/Kilox/milestone/7) | Measure a named release candidate against the defined population and report per-platform evidence and limitations. | [#49](https://github.com/H3nb/Kilox/issues/49) |
 
@@ -47,7 +47,7 @@ M0 is the immediate priority. While the implementation-use review recorded in
 [licensing and provenance](licensing-and-provenance.md) is unresolved, permitted
 work includes source and rights evidence, original fixtures, corpus design and
 review of local experiments. Review runtime changes in dependency order before any
-approved publication. M3 and M4 should follow the observed corpus blockers.
+approved publication. JSR 135, JSR 184 and Mascot Capsule v3 are explicitly planned for M3/M4; their edition coverage and implementation sequence still depend on prerequisite runtime capability and observed tests. Other M3/M4 features follow measured corpus blockers.
 M5 can start once M2 exercises the host contract. M6 evaluates a named
 candidate and its supported host matrix.
 

@@ -219,8 +219,13 @@
 *M3/M4 · On demand, not all mandatory*
 
 - [ ] Inventory optional JSR name/version/packages/members and blocked MIDlets before prioritizing
-- [ ] Decide scope of JSR 135 full MMAPI, JSR 75 FileConnection/PIM and JSR 120/205 WMA from measured demand
-- [ ] Decide scope of JSR 184 M3G, JSR 226 SVG and other image/3D APIs from measured demand
+- [ ] Implement [JSR 135 MMAPI #55](https://github.com/H3nb/Kilox/issues/55) beyond MIDP 2.0 base media: selected edition's full guest API surface, controls, protocol/DataSource behavior and resource lifecycle
+- [ ] Verify JSR 135 selected audio/video/MIDI/recording capabilities, formats, permission/error semantics, host interactions and checkpoint policy with original fixtures
+- [ ] Implement [JSR 184 M3G #56](https://github.com/H3nb/Kilox/issues/56) `javax.microedition.m3g`: required scene/animation/mesh/material/texture/loader API and exact guest object semantics
+- [ ] Verify M3G immediate/retained rendering, MIDP Graphics/Image interoperation, pixel output, resource errors and restore policy
+- [ ] Implement [Mascot Capsule Micro3D v3 #57](https://github.com/H3nb/Kilox/issues/57) `com.mascotcapsule.micro3d.v3` as a distinct vendor API, including evidenced model/texture/motion and rendering contracts
+- [ ] Verify Mascot Capsule v3 device/API variants, 2D/3D compositing, pixel/animation outcomes, bounded assets and restore behavior
+- [ ] Decide scope of remaining optional JSRs (e.g., JSR 75, JSR 120/205, JSR 226) from measured demand
 - [ ] Decide scope of JSR 82 Bluetooth, JSR 179 Location, JSR 211 CHAPI, SATSA and additional JSRs from measured demand
 - [ ] Inventory device/vendor packages and behaviors (Nokia, Sony Ericsson, Samsung, Siemens, Motorola, SoftBank, etc.)
 - [ ] Use versioned device profiles for fonts/keymap/graphics/media/timing/storage/quirks
