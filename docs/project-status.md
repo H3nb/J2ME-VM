@@ -44,7 +44,8 @@ character read. A separate fixture verifies that a guest reference published
 before a constructor throws remains usable after a catch and restore.
 
 The local CLDC binding now covers `String.replace`, `String.regionMatches`,
-and seven `String.valueOf` overloads, as well as `StringBuffer` array
+and eight `String.valueOf` overloads, including binary32 formatting through
+`Float.toString`, as well as `StringBuffer` array
 append, insertion, and copying. Original guest fixtures check UTF-16,
 mutation independence, invalid ranges, and fresh-process recovery.
 
@@ -52,6 +53,13 @@ The local default `InputStreamReader` converts ISO-8859-1 through virtual
 guest stream calls. An original fixture resumes a pending read in a fresh
 process. The named-encoding constructor remains open. All 69 package/profile
 outcomes and diagnostics match the earlier run after these library changes.
+
+Guest code can read the emulated configuration, profile, platform, and
+default encoding through `System.getProperty`. Its identity hashes survive
+collection and fresh-process restore. For untrusted MIDlets,
+`getAppProperty` reads JAD values before manifest fallback. A new process
+restores the fixture with the same JAD. A changed JAD is rejected before
+the target session changes.
 
 Three MIDP 2.0 variants pass their previous legacy `StackMap` and protected
 constructor limits. With the default heap, two still reach the 64-record cap
