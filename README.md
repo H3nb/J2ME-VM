@@ -9,13 +9,9 @@ Public `main` currently contains a bounded class-file reader, a restricted
 integer and static-call execution proof, JAR and manifest readers, and an
 offscreen pixel surface. The planned MIDlet runtime, host interfaces and
 compatibility target are tracked in the [roadmap](docs/project-plan.md).
-See [project status](docs/project-status.md) for the integrated baseline and
-the limits of experimental results.
-
-A clone of this repository contains the public baseline. Runtime experiments
-reported in the status document run from a separate, unpublished branch. Public
-integration of that branch's changes requires implementation and distribution
-rights review. See [licensing and provenance](docs/licensing-and-provenance.md).
+See [project status](docs/project-status.md) for the integrated baseline,
+the [capability inventory](docs/capability-inventory.md) for detailed
+implementation checkboxes, and the limits of experimental results.
 
 ## Build and collaborate
 

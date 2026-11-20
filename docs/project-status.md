@@ -1,22 +1,24 @@
 # Current project status
 
-Public baseline reviewed on 2026-11-20 at `fa81687`. The
+Public code baseline reviewed on 2026-11-20 at `fc89ce9`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
 [GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
-## Public main
+## Integrated public main
 
-- Bounded CLDC-era class-file structural parsing and a restricted integer,
-  locals, branch and same-class static-call execution proof with VM-owned
-  frames. [Execution contract](wp02-execution-contract.md)
-- Bounded ZIP package admission, manifest main attributes and offscreen pixel
-  surfaces. [Package archives](https://github.com/H3nb/Kilox/pull/36) ·
-  [Manifest](https://github.com/H3nb/Kilox/pull/38) ·
-  [Raster surfaces](https://github.com/H3nb/Kilox/pull/37)
-- Original test fixtures and dated technical evidence for legacy CLDC
-  verification and loading. Full legacy verification, general JVM execution,
-  MIDP and fresh-process recovery remain release milestones.
-  [CLDC evidence](https://github.com/H3nb/Kilox/pull/42)
+The [detailed capability inventory](capability-inventory.md) records checked
+behaviors and remaining JVM, CLDC, MIDP and host gaps. On the reviewed public
+`main`, verified bounded features include a structural classfile parser,
+integer and same-class static-call execution proofs, ZIP/manifest readers and
+an offscreen pixel surface. These are **foundations**, not a complete class
+loader, CLDC runtime, MIDP environment or new-process save-state system.
+
+For current implementation tasks use the [milestone roadmap](project-plan.md)
+and its linked GitHub Issues; do not treat the inventory as a second task
+registry. The [standards and dependency audit](standards-dependency-audit.md)
+records type-level API coverage, unresolved member-level requirements and crate
+admission decisions.
+
 
 The public [package inventory](../examples/package_inventory.rs) reports
 bounded structural archive, manifest and class-file results without exposing
