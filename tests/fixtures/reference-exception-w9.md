@@ -1,6 +1,6 @@
 # W9 original reference and exception fixture design
 
-**Scope:** [Issue #26](https://github.com/H3nb/J2ME-VM/issues/26), reviewed against
+**Scope:** [Issue #26](https://github.com/H3nb/Kilox/issues/26), reviewed against
 `37e32cd179223378fa6f271fd48fc9b33622a394`, 2026-10-29. Only original Java source
 is admitted here. Diagnostic binaries remain outside the repository; the current
 VM cannot execute either candidate. The [W8 research](../../docs/wp02-reference-exception-research.md)

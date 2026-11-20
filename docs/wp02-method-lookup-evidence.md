@@ -1,7 +1,7 @@
 # W7 preparation audit and method lookup correction
 
-**Scope:** [audit #24](https://github.com/H3nb/J2ME-VM/issues/24),
-[fix #28](https://github.com/H3nb/J2ME-VM/issues/28); baseline
+**Scope:** [audit #24](https://github.com/H3nb/Kilox/issues/24),
+[fix #28](https://github.com/H3nb/Kilox/issues/28); baseline
 `37e32cd179223378fa6f271fd48fc9b33622a394`, 2026-10-29.
 This is a host-input resource correction, not a new Java instruction or a G2 pass.
 

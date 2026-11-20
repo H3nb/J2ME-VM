@@ -1,6 +1,6 @@
-# J2ME-VM
+# Kilox
 
-J2ME-VM is an independent Java ME runtime project written in Rust. The goal is
+Kilox is an independent Java ME runtime project written in Rust. The goal is
 to run MIDlets through a shared VM core on Windows, Linux, Android, iOS and
 future hosts, with inspectable execution state and recovery in a new process.
 Its initial compatibility scope is CLDC 1.0/1.1 and MIDP 1.0/2.0/2.1.
@@ -22,8 +22,8 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo test --locked
 ```
 
-Start from [GitHub main](https://github.com/H3nb/J2ME-VM/tree/main), choose
-a tracked task in the [milestones](https://github.com/H3nb/J2ME-VM/milestones),
+Start from [GitHub main](https://github.com/H3nb/Kilox/tree/main), choose
+a tracked task in the [milestones](https://github.com/H3nb/Kilox/milestones),
 and link the PR to its Issue. A contributor should be able to resume using a
 Git ref, the Issue and reproducible commands. See the
 [documentation map](docs/README.md) and [development guide](docs/development.md).

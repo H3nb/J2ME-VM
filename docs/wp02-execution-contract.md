@@ -1,8 +1,8 @@
 # WP02: bounded integer execution proof
 
-**Status:** [PR #3](https://github.com/H3nb/J2ME-VM/pull/3),
-[PR #16](https://github.com/H3nb/J2ME-VM/pull/16), and bounded invocation
-[PR #23](https://github.com/H3nb/J2ME-VM/pull/23) integrated; **partial G2
+**Status:** [PR #3](https://github.com/H3nb/Kilox/pull/3),
+[PR #16](https://github.com/H3nb/Kilox/pull/16), and bounded invocation
+[PR #23](https://github.com/H3nb/Kilox/pull/23) integrated; **partial G2
 proof only**. The relevant technical baseline is the
 [JVMS Second Edition](https://docs.oracle.com/javase/specs/jvms/se6/html/ClassFile.doc.html)
 (§§3.6, 4.7.3, 4.9 and chapter 6 instruction definitions).
@@ -75,9 +75,9 @@ Positive and negative regression cases cover corrupt targets, invalid
 stack/local state, all six signed comparison branches, step PC, independent
 frames, bounded loops and resume.
 
-[Final W4 PR CI](https://github.com/H3nb/J2ME-VM/actions/runs/40816652770),
-[W3+W4 combined-tree CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817525937)
-and [post-merge main CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817648432)
+[Final W4 PR CI](https://github.com/H3nb/Kilox/actions/runs/40816652770),
+[W3+W4 combined-tree CI](https://github.com/H3nb/Kilox/actions/runs/40817525937)
+and [post-merge main CI](https://github.com/H3nb/Kilox/actions/runs/40817648432)
 each succeeded. The resulting main Git tree exactly matches the validated
 combined candidate; **22 Rust tests pass**. These tests do not include a
 CLDC TCK, preverified class, external VM oracle comparison of CLDC behavior,
@@ -98,7 +98,7 @@ a MIDP compatibility, Java certification or JL-Mod Plus integration claim.
 
 ## WP02-W7 bounded same-class invocation — experimental contract
 
-This experimental increment was developed under [Issue #22](https://github.com/H3nb/J2ME-VM/issues/22) using the original fixtures from [W6 PR #20](https://github.com/H3nb/J2ME-VM/pull/20). It changes no general CLDC verifier, loader, or G2 gate claim.
+This experimental increment was developed under [Issue #22](https://github.com/H3nb/Kilox/issues/22) using the original fixtures from [W6 PR #20](https://github.com/H3nb/Kilox/pull/20). It changes no general CLDC verifier, loader, or G2 gate claim.
 
 A caller explicitly requests `IntProgram::prepare_with_calls(class, name, descriptor)`. The old `prepare(class, name)` remains a single-method compatibility path and still rejects invocation. This new entry must match **both** name and descriptor, and explicitly rejects special method entry names such as `<init>` and `<clinit>` (including other names starting with `<` in the experimental admission policy). It prepares the statically reachable same-class `CONSTANT_Methodref` calls, with only `()I` and `(I)I` descriptors; unused compiler-generated constructors are ignored. Unsupported or malformed reachable callees, invalid constant-pool kind/index, truncated `invokestatic` operands, stack-underflow at invoke, invalid return/CFG, and external calls are rejected before an `IntMachine` exists. Calls do not guess CLDC linkage errors or their timing.
 

@@ -1,6 +1,6 @@
 # WP02-W6 — original invocation fixture contract and test recipes
 
-**Assignment:** [Issue #19](https://github.com/H3nb/J2ME-VM/issues/19).
+**Assignment:** [Issue #19](https://github.com/H3nb/Kilox/issues/19).
 **Baseline:** `4fa0cbf381fc9635870e5f6b5dd78f12ae46787c` (`main` when the work began).
 **Scope:** guest-fixture evidence, **not** a change to the VM execution
 contract or a claim of JVM/CLDC conformance.

@@ -1,4 +1,4 @@
-# J2ME-VM — contributor and coding-agent guidance
+# Kilox — contributor and coding-agent guidance
 
 This file is the short, always-applicable contract. Use the [documentation map](docs/README.md) to find task-specific details; do **not** read every document for every change. Instructions guide judgment rather than impose a ritual.
 

@@ -85,16 +85,16 @@ No branch or code modification in JL-Mod Plus until G3 has been independently re
 
 ## G1 execution record
 
-A separate `feature/g1-classfile-parser` branch adds an original compiler-produced 48.0 class-file fixture, a byte reader, typed constant-pool references, Code attribute structure reading, and format rejection tests. It intentionally leaves verifier semantics for the next reviewed scope. The temporary Rust runner validated formatting, Clippy and **7 passing G1 tests** ([workflow run](https://github.com/H3nb/J2ME-VM/actions/runs/40800353347)). This is evidence for the bounded structural reader, **not** class-file semantic verification or CLDC conformance. The permanent workflow must also pass on the reviewed final commit; a pre-merge review then added normative `Code` cardinality tests and exact constant-pool reference error offsets. The 16 MiB input cap is a host security policy, not a claim about the JVM specification. Source/fixture provenance is documented in `tests/fixtures/README.md`.
+A separate `feature/g1-classfile-parser` branch adds an original compiler-produced 48.0 class-file fixture, a byte reader, typed constant-pool references, Code attribute structure reading, and format rejection tests. It intentionally leaves verifier semantics for the next reviewed scope. The temporary Rust runner validated formatting, Clippy and **7 passing G1 tests** ([workflow run](https://github.com/H3nb/Kilox/actions/runs/40800353347)). This is evidence for the bounded structural reader, **not** class-file semantic verification or CLDC conformance. The permanent workflow must also pass on the reviewed final commit; a pre-merge review then added normative `Code` cardinality tests and exact constant-pool reference error offsets. The 16 MiB input cap is a host security policy, not a claim about the JVM specification. Source/fixture provenance is documented in `tests/fixtures/README.md`.
 
 ## WP02 proof boundary (partial G2, not a passed gate)
 
 The accepted bounded proof now steps original Java 1.4 static `()I` and
 `(I)I` methods with integer locals, signed branching and backward loops under
 [the WP02 contract](wp02-execution-contract.md). The method is decoded and
-subset-validated before creating a machine. [W4 head CI](https://github.com/H3nb/J2ME-VM/actions/runs/40816652770),
-[combined-tree CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817525937) and
-[main CI](https://github.com/H3nb/J2ME-VM/actions/runs/40817648432) passed
+subset-validated before creating a machine. [W4 head CI](https://github.com/H3nb/Kilox/actions/runs/40816652770),
+[combined-tree CI](https://github.com/H3nb/Kilox/actions/runs/40817525937) and
+[main CI](https://github.com/H3nb/Kilox/actions/runs/40817648432) passed
 with 22 Rust tests; **G2 is not passed**. Before G2 acceptance, provide
 remaining general type/CLDC verifier contracts, loading/linking, calls and
 return frames, exception paths, debugger stops and specification-correct
