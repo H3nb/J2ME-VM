@@ -8,7 +8,7 @@ Build an independent, host-neutral Java ME VM in Rust, with correct execution an
 
 Prioritize, in order: **correct useful capability**, preserved safety/clean-room boundaries, maintainability, and efficient delivery. A working increment or a decision-changing experiment is more valuable than extra plans, test counts, or procedural output. Failure of a bounded experiment is an acceptable result.
 
-Use the [compatibility roadmap](docs/project-plan.md) for development order, [project status](docs/project-status.md) for the integrated baseline, and [capability inventory](docs/capability-inventory.md) when a capability changes. A capability PR may propose checking an item with tested evidence, but it counts as public support only once merged into `main`; local experiments do not count. Claims about supported behavior require relevant executable evidence.
+Use the [compatibility roadmap](docs/project-plan.md) for development order, [project status](docs/project-status.md) for the integrated baseline, and [capability inventory](docs/capability-inventory.md) when a capability changes. A capability PR may propose checking an item with evidence appropriate to its scope, but runtime behavior counts as public support only once merged into `main`; local experiments do not count. Claims about supported behavior require relevant executable evidence.
 
 ## Authority and autonomous work
 
