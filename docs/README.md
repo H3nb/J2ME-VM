@@ -6,6 +6,7 @@ Start with [AGENTS.md](../AGENTS.md), the relevant source/tests and [current sta
 | --- | --- |
 | Project mission, actual features and basic build | [Root README](../README.md) |
 | Current integrated capabilities, major blockers and next step | [Project status](project-status.md); verify against live GitHub |
+| Detailed JVM/CLDC/MIDP/host capability checklist | [Capability inventory](capability-inventory.md); check only verified public-main behavior |
 | Compatibility target, milestone order, host portability and release evidence | [Compatibility roadmap](project-plan.md) |
 | Accepted VM/host boundaries and architecture hypotheses | [Architecture](architecture.md) and accepted [ADRs](adr/) |
 | Version-specific Java ME/JVMS source evidence and unresolved gaps | [Specification map](specification-map.md) |
