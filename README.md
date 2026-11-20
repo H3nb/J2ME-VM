@@ -12,6 +12,11 @@ compatibility target are tracked in the [roadmap](docs/project-plan.md).
 See [project status](docs/project-status.md) for the integrated baseline and
 the limits of experimental results.
 
+A clone of this repository contains the public baseline. Runtime experiments
+reported in the status document run from a separate, unpublished branch. Public
+integration of that branch's changes requires implementation and distribution
+rights review. See [licensing and provenance](docs/licensing-and-provenance.md).
+
 ## Build and collaborate
 
 Use stable Rust with rustfmt and Clippy. Keep `Cargo.lock` in the checkout.
