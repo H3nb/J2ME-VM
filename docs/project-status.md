@@ -33,8 +33,11 @@ MIDP 2.0 package reached an interactive Form, paused, resumed and was destroyed.
 Both CLDC `String.indexOf` overloads and the abstract `Reader` binding are
 now present in the local integration candidate. A fresh process resumed the
 original Reader fixture while its virtual character read was suspended.
-Three MIDP 2.0 variants pass substring linkage and now share a legacy
-`StackMap` type mismatch.
+Three MIDP 2.0 variants now pass their previous legacy `StackMap` check
+with the verifier using instruction-entry locals on exception edges.
+They now reach a separate preparation limit on guest constructor calls
+inside exception-handler ranges. The interactive Form sample still passes
+input, command dispatch and fresh-process recovery.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
