@@ -123,6 +123,20 @@ and lock field, UTF-16 convenience writes, and dispatch to a guest subclass.
 An original fixture resumes the guest override in a fresh process while it
 holds its configured lock. The concrete `OutputStreamWriter` remains open.
 
+At local runtime commit `1c1d844`, virtual `Object.equals` and `hashCode`
+reach guest overrides and the String, Integer and Long implementations.
+Inherited defaults preserve object identity for ordinary and array receivers.
+Commit `b89340a` adds CLDC 1.1 weak references. The collector clears
+weak-only referents together and keeps ordinary subclass fields strongly
+reachable. Fixtures recover live and cleared references in a separate
+process. The combined candidate passed 714 locked offline Cargo tests and
+strict all-target Clippy on Windows MSVC.
+
+Commit `6b17efd` adds `Vector` search and removal through virtual guest
+equality. The original fixture restores while equality is pending and
+verifies that an exception releases the Vector monitor. Enumeration and
+text conversion remain open.
+
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
 
