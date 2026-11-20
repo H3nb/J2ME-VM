@@ -1,12 +1,12 @@
 # Kilox capability inventory
 
-**Purpose:** This is a checklist of **implemented behavior**, not another issue/task registry. [Project roadmap](project-plan.md) owns milestones and priorities; [GitHub Issues](https://github.com/H3nb/Kilox/issues) own work and acceptance; [validation gates](validation-plan.md) own experiments; [project status](project-status.md) owns the headline public baseline.
+**Purpose:** This is a **capability and readiness checklist**, not another issue/task registry. It covers runtime features, engineering evidence and decisions; their acceptance criteria differ. [Project roadmap](project-plan.md) owns milestones and priorities; [GitHub Issues](https://github.com/H3nb/Kilox/issues) own work and acceptance; [validation gates](validation-plan.md) own experiments; [project status](project-status.md) owns the headline public baseline.
 
-**Baseline:** public `main` at `6aa0c86`, reviewed 2026-11-20. A checked box means only the *precisely worded, bounded* capability is already integrated and covered by original tests. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not integrated, even if preparatory code or unpublished experiments exist.
+**Baseline:** public `main` at `e1f4076`, reviewed 2026-11-20. A checked box means the *precisely worded, bounded outcome* is integrated or accepted with appropriate evidence: original executable tests for runtime behavior, reproducible checks for tooling, and recorded source/decision evidence for research or rights work. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not complete on public `main`, even if preparatory code or unpublished experiments exist; optional and future unchecked items are **not** mandatory release blockers.
 
 **Scope:** CLDC 1.0/1.1 with tracked 1.1.1 deltas, MIDP 1.0/2.0/2.1, optional JSRs and vendor APIs prioritized by evidence, shared Rust VM on desktop/mobile, and Kilox-specific fresh-process recovery. MIDP 3.0 is deferred. Do not assume modern Java SE semantics or that all optional device protocols are mandatory.
 
-**How to update:** A capability PR may propose checking a box once final-head original guest-visible positive/negative tests justify it; the check counts as supported only after that PR is accepted into public `main`. Keep evidence in the owning PR/Issue and update the [project status](project-status.md). If a broad line requires subdivisions, split the work in its owning Issue, not by creating one Issue per checkbox. Revise categories when a new normative requirement is discovered, with source and version. Unchecked lines may have partial support.
+**How to update:** A PR may propose checking a box when final-head evidence appropriate to the item supports it; runtime behavior ordinarily needs original positive/negative guest-visible tests, while documented decisions and toolchain checks need their own reproducible evidence. A proposed check counts as completed only after acceptance into public `main`. Keep evidence in the owning PR/Issue and update [project status](project-status.md). Split broad tasks in their owning Issue when necessary, not into an Issue for every checkbox. Add new normative requirements with their source and exact edition. Unchecked lines may have partial support.
 
 **Primary entrypoints:** [CLDC 1.1 API](https://docs.oracle.com/javame/config/cldc/ref-impl/cldc1.1/jsr139/overview-summary.html), [MIDP 1.0 API](https://docs.oracle.com/javame/config/cldc/ref-impl/midp1.0/jsr037/overview-summary.html), [MIDP 2.0 API](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr118/overview-summary.html), [CLDC 1.1.1 maintenance](https://jcp.org/aboutJava/communityprocess/mrel/jsr139/index.html), [MIDP 2.1 maintenance](https://jcp.org/aboutJava/communityprocess/mrel/jsr118/index.html), [MIDP 3 JSR 271](https://jcp.org/aboutJava/communityprocess/final/jsr271/index.html), [version/rights map](specification-map.md), [profile study](profile-evolution.md) and [provenance policy](licensing-and-provenance.md). Follow edition-specific terms before implementation; API documentation is not an implementation-use license.
 
@@ -15,7 +15,7 @@
 
 *M0 / G0*
 
-- [x] Buildable Rust core, checked-in Cargo.lock, standard fmt/Clippy/test workflow
+- [x] Buildable Rust crate, checked-in Cargo.lock and documented fmt/Clippy/test commands
 - [x] Original test fixtures and bounded public parser/execution regressions
 - [ ] Resolve exact specification implementation-use and distribution rights (#30)
 - [ ] Authenticate final versioned JVM/CLDC/MIDP clauses and outstanding N01/N03 differences
@@ -85,7 +85,7 @@
 *M1 / G5*
 
 - [ ] Audit **every required API class and member** for CLDC 1.0, 1.1 and relevant 1.1.1 deltas
-- [ ] Implement java.lang Object, Class, String/StringBuffer, System, Runtime and wrapper types
+- [ ] Implement java.lang Object, Class, String/StringBuffer, Character, System, Runtime and wrapper types
 - [ ] Implement java.lang Math and edition-correct floating-point and numeric APIs
 - [ ] Implement Java Throwable/Error/Exception hierarchy and exception messages/identities
 - [ ] Implement Thread/Runnable and required runtime utilities without importing Java SE-only APIs
@@ -108,6 +108,7 @@
 - [ ] Implement install/update/uninstall, suite identity, protected namespaces and invalid-package errors
 - [ ] Implement applicable OTA provisioning and notification behavior with controlled test services
 - [ ] Implement startApp/pauseApp/destroyApp, notifyPaused/notifyDestroyed/resumeRequest and failures
+- [ ] Implement MIDlet.checkPermission and platformRequest, including versioned AMS and host effects
 - [ ] Preserve versioned suite sharing versus cross-suite isolation and correct AMS concurrency
 - [ ] Separate guest lifecycle, VM debugger pause and host OS background/foreground transitions
 - [ ] Report supported guest-visible profile and configuration only, never advertise unavailable APIs
@@ -117,14 +118,15 @@
 
 *M2 / G6–G6C*
 
-- [ ] Implement Display, Displayable, Screen, foreground/visibility, setCurrent and Alerts
+- [ ] Implement Display, Displayable, Screen, foreground/visibility, setCurrent, callSerially and Alerts
 - [ ] Implement Form, List, TextBox and command navigation
 - [ ] Implement StringItem, ImageItem, ChoiceGroup, TextField, DateField, Gauge
-- [ ] Implement version-required CustomItem, Spacer, Ticker and specialized item behaviors
+- [ ] Implement Ticker and version-specific CustomItem/Spacer and specialized item behaviors
 - [ ] Implement Command/CommandListener, ItemCommandListener, ItemStateListener and ordering
 - [ ] Implement text editing, constraints, focus, selection, item changes and softkeys
 - [ ] Implement form layout, alignment, scrolling, font measurement and resize policies
 - [ ] Implement key, pointer and device input mapping without violating guest-visible semantics
+- [ ] Implement versioned Display vibration/backlight capabilities and appropriate unsupported behavior
 
 
 ### Canvas, graphics and Game API
@@ -135,7 +137,7 @@
 - [ ] Implement Canvas/GameCanvas painting, repaint/serviceRepaints, flush and key states
 - [ ] Implement Graphics geometry, text, fonts, clip, translation, anchor and compositing
 - [ ] Implement immutable/mutable Images, RGB data, regions, transforms and resource decoding
-- [ ] Implement mandatory PNG/JPEG rules by exact edition and declared optional image formats
+- [ ] Implement mandatory PNG support, edition-specific JPEG requirements and explicitly optional image formats
 - [ ] Implement Sprite, LayerManager, TiledLayer collisions, frames, transforms and rendering
 - [ ] Implement screen size, pixel properties, input capabilities, font metrics and repaint timing
 - [ ] Add original pixel-accurate regressions for clipping, signed coords, alpha and region copies
@@ -214,9 +216,9 @@
 *M3/M4 · On demand, not all mandatory*
 
 - [ ] Inventory optional JSR name/version/packages/members and blocked MIDlets before prioritizing
-- [ ] Evaluate JSR 135 full MMAPI, JSR 75 FileConnection/PIM and JSR 120/205 WMA
-- [ ] Evaluate JSR 184 M3G, JSR 226 SVG and other image/3D APIs by measured demand
-- [ ] Evaluate JSR 82 Bluetooth, JSR 179 Location, JSR 211 CHAPI, SATSA and additional JSRs
+- [ ] Decide scope of JSR 135 full MMAPI, JSR 75 FileConnection/PIM and JSR 120/205 WMA from measured demand
+- [ ] Decide scope of JSR 184 M3G, JSR 226 SVG and other image/3D APIs from measured demand
+- [ ] Decide scope of JSR 82 Bluetooth, JSR 179 Location, JSR 211 CHAPI, SATSA and additional JSRs from measured demand
 - [ ] Inventory device/vendor packages and behaviors (Nokia, Sony Ericsson, Samsung, Siemens, Motorola, SoftBank, etc.)
 - [ ] Use versioned device profiles for fonts/keymap/graphics/media/timing/storage/quirks
 - [ ] Keep unsupported optional APIs and unavailable external services visible to users/test reports
@@ -254,6 +256,6 @@
 
 This inventory deliberately does **not** claim a complete list of every Java ME method, operand, security rule, or device obligation. Before claiming an entire edition supported, reconcile its authentic final **normative clauses** and required **classes/interfaces/members** against a separate version-aware audit, including allowed classfile/opcode/verifier behavior, errors, packaging/AMS, security, lifecycle, media, networking, and host capabilities. The same required function can have different semantics in MIDP 1.0, 2.0, 2.1 and 3.0. Keep unresolved clauses as blockers, not inferred requirements.
 
-A green Rust CI proves only tested Rust contracts. A checklist percentage is **not** a compatibility score or a conformance claim. A completed broad subsystem requires relevant guest-observable tests on the accepted `main` commit, negative cases, documented limitations and profile-specific evidence. Use [validation gates](validation-plan.md) and the [roadmap measurement contract](project-plan.md#compatibility-measurement), not arbitrary issue counts, for release decisions.
+Passing Rust checks prove only the tested Rust contracts. The repository's automated Rust workflow was removed from `main` at `e1f4076`; do not assume a passing historical PR workflow is a current merge/release gate. A checklist percentage is **not** a compatibility score or a conformance claim. A completed broad subsystem requires relevant guest-observable tests on the accepted `main` commit, negative cases, documented limitations and profile-specific evidence. Use [validation gates](validation-plan.md) and the [roadmap measurement contract](project-plan.md#compatibility-measurement), not arbitrary issue counts, for release decisions.
 
 Current dependencies: [M0 #43](https://github.com/H3nb/Kilox/issues/43), [M1 #44](https://github.com/H3nb/Kilox/issues/44), [rights #30](https://github.com/H3nb/Kilox/issues/30), and [object experiment #33](https://github.com/H3nb/Kilox/issues/33). Any privately demonstrated capability stays unchecked until approved public integration.
