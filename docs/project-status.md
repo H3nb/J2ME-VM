@@ -43,15 +43,17 @@ the original fixture while inherited `read` or `skip` has a pending guest
 character read. A separate fixture verifies that a guest reference published
 before a constructor throws remains usable after a catch and restore.
 
-Three MIDP 2.0 variants now pass their previous legacy `StackMap` and protected
-constructor limits. They complete preparation and construction, enter
-`startApp`, and fault during startup. Two reach the 64-object heap cap after
-collection. The third now opens a 1,738,360-byte JAR resource through
-`Class.getResourceAsStream`. Its own `new byte[]` of that size exceeds the
-current 1 MiB element limit. An original fixture reads a DEFLATE entry of
-the same size and restores two independent streams in a fresh process. The
-interactive Form sample still passes input, command dispatch and fresh-process
-recovery.
+Three MIDP 2.0 variants pass their previous legacy `StackMap` and protected
+constructor limits. With the default heap, two still reach the 64-record cap
+during `startApp`. The third opens a 1,738,360-byte DEFLATE resource but
+exceeds the default limit when allocating a byte array of the same size.
+
+The opt-in expanded profile allows 256 object records and permits a byte
+array to use the existing 4 MiB aggregate array budget. An original fixture
+verifies the resource byte for byte across fresh-process restore. All three
+variants return from `startApp` and reach a Canvas under this profile. Their
+running code then reaches the 256-record cap. The interactive Form sample
+passes input, command dispatch and fresh-process recovery with both profiles.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
