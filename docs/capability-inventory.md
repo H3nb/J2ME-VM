@@ -19,7 +19,7 @@
 
 - [x] Buildable Rust crate, checked-in Cargo.lock and documented fmt/Clippy/test commands
 - [x] Original test fixtures and bounded public parser/execution regressions
-- [ ] Resolve exact specification implementation-use and distribution rights (#30)
+- [ ] Resolve the applicable specification implementation-use and distribution rights; record the decision in the licensing/specification documents under [M0 #43](https://github.com/H3nb/Kilox/issues/43)
 - [ ] Authenticate final versioned JVM/CLDC/MIDP clauses and outstanding N01/N03 differences
 - [ ] Reproduce a fresh-checkout baseline on a second machine without proprietary inputs
 - [ ] Freeze permission-cleared public fixtures and separately governed private MIDlet corpus
@@ -261,4 +261,4 @@ This inventory deliberately does **not** claim a complete list of every Java ME 
 
 Passing Rust checks prove only the tested Rust contracts. The repository's automated Rust workflow was removed from `main` at `e1f4076`; do not assume a passing historical PR workflow is a current merge/release gate. A checklist percentage is **not** a compatibility score or a conformance claim. A completed broad subsystem requires relevant guest-observable tests on the accepted `main` commit, negative cases, documented limitations and profile-specific evidence. Use [validation gates](validation-plan.md) and the [roadmap measurement contract](project-plan.md#compatibility-measurement), not arbitrary issue counts, for release decisions.
 
-Current dependencies: [M0 #43](https://github.com/H3nb/Kilox/issues/43), [M1 #44](https://github.com/H3nb/Kilox/issues/44), [rights #30](https://github.com/H3nb/Kilox/issues/30), and [object experiment #33](https://github.com/H3nb/Kilox/issues/33). Any privately demonstrated capability stays unchecked until approved public integration.
+Current dependencies: [M0 #43](https://github.com/H3nb/Kilox/issues/43) (including unresolved implementation-use rights), [M1 #44](https://github.com/H3nb/Kilox/issues/44), and [object experiment #33](https://github.com/H3nb/Kilox/issues/33). Any privately demonstrated capability stays unchecked until approved public integration.
