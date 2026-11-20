@@ -1,6 +1,6 @@
 # Current project status
 
-Public code baseline reviewed on 2026-11-20 at `3b43c43`. The
+Public code baseline reviewed on 2026-11-20 at `6aa0c86`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
 [GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
@@ -23,10 +23,19 @@ A separate experimental runtime has demonstrated bounded object execution,
 virtual scheduling, portions of CLDC and MIDP, and several guest-state
 checkpoints restored in a new process. In a local 23-package smoke run, one
 MIDP 2.0 package reached an interactive Form, paused, resumed and was destroyed.
-Three variants advanced through additional bindings to a shared legacy
-`StackMap` type mismatch. All 11 MIDP 2.1 packages stopped during preparation.
-The run measured a specific local candidate and corpus, with public
-integration and broad compatibility still pending.
+Both CLDC `String.indexOf` overloads and the abstract `Reader` binding are
+now present in the local integration candidate. A fresh process resumed the
+original Reader fixture while its virtual character read was suspended.
+Three MIDP 2.0 variants pass substring linkage and now share a legacy
+`StackMap` type mismatch.
+
+All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
+outside the current bundle. Seven of those first need interfaces from Payment,
+AMMS, Content Handler, Location, SIP or RMI. The other three packages stop on
+unsupported field descriptors. These results describe the local corpus and
+candidate. Public runtime integration remains subject to the rights review.
+The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
+shared verification and library work.
 
 ## Active dependencies
 
