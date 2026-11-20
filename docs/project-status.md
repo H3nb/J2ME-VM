@@ -28,10 +28,11 @@ admission only. Runtime preparation and execution are reported below.
 
 ## Local runtime experiments
 
-A separate, unpublished runtime branch contains the implementation used for
-these experiments. A fresh clone of public `main` can reproduce the structural
-inventory above. Reproducing the runtime results requires the experimental
-branch and a permitted local corpus.
+The implementation used for these experiments is on the local
+`codex/cldc-midp-runtime` branch. A fresh clone of public `main` can reproduce
+the structural inventory above. Reproducing the runtime results requires
+access to the local implementation and a permitted corpus. Public integration
+is tracked in the [baseline milestone](https://github.com/H3nb/Kilox/issues/43).
 
 The experimental branch has demonstrated bounded object execution, virtual
 scheduling, portions of CLDC and MIDP, and several guest-state checkpoints
@@ -103,11 +104,24 @@ These results describe the local corpus and candidate. Public runtime
 integration remains subject to the rights review.
 
 A separate test of 94 additional JARs declaring CLDC 1.1 and MIDP 2.1 in the
-manifest stopped at preparation. The first missing field types were
-`Vector` in 34 archives, `Sprite` or its array form in 29, `Hashtable` in
-15, `Stack` in one, and `TextBox` in one. Two other archives first need
-String `ConstantValue`. Skipping opaque Code metadata let one archive advance
-to method resolution. All other outcomes stayed the same.
+manifest stopped at preparation. Skipping opaque Code metadata let one
+archive reach method resolution. Two archives first need String
+`ConstantValue`.
+
+At local runtime commit `4b4d9db`, original guest tests cover `Vector`
+constructors, protected storage fields, positional operations, and
+fresh-process restore while an insertion holds the monitor. Equality-based
+search and removal, enumeration, and text conversion remain open.
+All 94 archives still stopped at preparation. A temporary diagnostic at the
+same commit showed that all 34 originally blocked on a `Vector` field reached
+the next field check. Across the 94, the first unsupported field types are
+now `Sprite` or `Sprite[]` in 58, `Hashtable` in 20, `Stack` in one, and
+`TextBox` in one.
+
+Local runtime commit `0bac52a` adds the protected `Writer` constructors
+and lock field, UTF-16 convenience writes, and dispatch to a guest subclass.
+An original fixture resumes the guest override in a fresh process while it
+holds its configured lock. The concrete `OutputStreamWriter` remains open.
 
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
