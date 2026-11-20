@@ -90,6 +90,21 @@ For **each selected edition** maintain an independently derived, version-aware e
 
 This audit has **not** enumerated or verified all member signatures. A whole-edition checkbox remains open until that separate audit is completed. Avoid producing thousands of unreviewed placeholder Issues or automatic claims from compiler symbol resolution.
 
+### Member-level spot checks (non-exhaustive)
+
+These representative signatures were checked against the published Oracle API pages. They demonstrate the **kind of exact contract** required by the full member audit. Their guest implementations are **not integrated** on public `main`; the separate local experiment reported for `String` and `Reader` is not a checked public capability.
+
+| Guest owner / examples | Required observable distinction | Current public-main result |
+| --- | --- | --- |
+| [`java.lang.String`](https://docs.oracle.com/javame/config/cldc/ref-impl/cldc1.1/jsr139/java/lang/String.html): `indexOf(String)`, `indexOf(String,int)` | Overloads, null argument, start offset and empty-substring behavior are distinct from the `int` character overloads | Not integrated |
+| [`java.io.Reader`](https://docs.oracle.com/javame/config/cldc/ref-impl/cldc1.1/jsr139/java/io/Reader.html): `Reader()`, `Reader(Object)`, `read()`, `read(char[],int,int)`, `close()` | Abstract methods, blocking/error semantics, synchronization lock, character count and EOF | Not integrated |
+| [`java.lang.Thread`](https://docs.oracle.com/javame/config/cldc/ref-impl/cldc1.1/jsr139/java/lang/Thread.html): `start()`, `run()`, `join()`, `interrupt()`, `sleep(long)` | Lifecycle, scheduling, interruption and monitor interaction rather than host OS thread substitution | Not integrated |
+| [`MIDlet`](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr118/javax/microedition/midlet/MIDlet.html): `startApp()`, `pauseApp()`, `destroyApp(boolean)`, `getAppProperty(String)`, `checkPermission(String)`, `platformRequest(String)` | Lifecycle error paths, trusted/untrusted JAD-manifest precedence, permission states and host request results | Not integrated |
+| [`Display`](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr118/javax/microedition/lcdui/Display.html): `getDisplay(MIDlet)`, `callSerially(Runnable)`, `flashBacklight(int)`, `vibrate(int)` | One Display per MIDlet, serialized callback ordering, capability-based behavior and background restrictions | Not integrated |
+| [`RecordStore`](https://docs.oracle.com/javame/config/cldc/ref-impl/midp2.0/jsr118/javax/microedition/rms/RecordStore.html): `openRecordStore(String,boolean)` and MIDP 2.0 shared-store overloads | Suite identity, exceptions, authorization, record-name limits, object reuse and durability | Not integrated |
+
+This is a **spot check**, not a six-class conformance certificate; all inherited members, overloads and normative errors must still be audited for the selected edition.
+
 ## Core execution and verifier coverage (group-level)
 
 | Required family / contract | Public main observation | Next proof |
