@@ -4,51 +4,18 @@ Public code baseline reviewed on 2026-11-20 at `3b43c43`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
 [GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
-## Capability checklist — integrated public main
+## Integrated public main
 
-A checked item means the **bounded behavior named in that item** is implemented
-and exercised by original tests on public `main`. It does not imply full JVM,
-CLDC or MIDP compliance. An unchecked item means the *complete* capability is
-not yet integrated, even when supporting pieces or local experiments exist.
+The [detailed capability inventory](capability-inventory.md) records checked
+behaviors and remaining JVM, CLDC, MIDP and host gaps. On the reviewed public
+`main`, verified bounded features include a structural classfile parser,
+integer and same-class static-call execution proofs, ZIP/manifest readers and
+an offscreen pixel surface. These are **foundations**, not a complete class
+loader, CLDC runtime, MIDP environment or new-process save-state system.
 
-### Class files and execution
-
-- [x] Parse bounded CLDC-era class-file structures (45.x–48.0), including
-  structural reference and input validation.
-- [x] Execute an explicit integer subset (constants, locals, addition,
-  subtraction, branches and return) with VM-owned state and step budgets.
-- [x] Execute bounded same-class `invokestatic` calls with nested/recursive
-  VM-owned frames.
-- [ ] Load, link, initialize and verify guest classes, including legacy CLDC
-  `StackMap` semantics.
-- [ ] Support general JVM execution: references/heap, fields, arrays, method
-  dispatch and exceptions.
-- [ ] Support garbage collection, virtual threads, monitors and scheduling.
-
-### Packages and graphics
-
-- [x] Read bounded ZIP/JAR entries (stored and DEFLATE), checking package
-  structure, content length and CRC.
-- [x] Read the main attributes of a package manifest.
-- [x] Allocate bounded offscreen ARGB surfaces and perform clipped fills/copies.
-- [ ] Resolve JAD/JAR metadata, load classes and launch a MIDlet suite.
-- [ ] Implement MIDP display, graphics, commands and input with host presentation.
-
-### Runtime and portability
-
-- [ ] Implement the targeted CLDC 1.0/1.1 class libraries.
-- [ ] Implement MIDP 1.0/2.0/2.1 lifecycle, RMS, GCF and media behavior.
-- [ ] Save and validate versioned VM checkpoints; restore execution in a
-  different process.
-- [ ] Run the integrated MIDlet runtime on Windows/Linux and Android/iOS hosts.
-
-Implementation and test evidence: [execution contract](wp02-execution-contract.md),
-[package archives](https://github.com/H3nb/Kilox/pull/36),
-[manifest](https://github.com/H3nb/Kilox/pull/38),
-[raster surfaces](https://github.com/H3nb/Kilox/pull/37), and
-[CLDC research/fixture evidence](https://github.com/H3nb/Kilox/pull/42).
-For *next work*, use the [roadmap](project-plan.md) and its linked GitHub
-Issues rather than copying task checklists here.
+For current implementation tasks use the [milestone roadmap](project-plan.md)
+and its linked GitHub Issues; do not treat the inventory as a second task
+registry.
 
 ## Experimental evidence
 
