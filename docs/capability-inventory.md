@@ -2,7 +2,7 @@
 
 **Purpose:** This is a checklist of **implemented behavior**, not another issue/task registry. [Project roadmap](project-plan.md) owns milestones and priorities; [GitHub Issues](https://github.com/H3nb/Kilox/issues) own work and acceptance; [validation gates](validation-plan.md) own experiments; [project status](project-status.md) owns the headline public baseline.
 
-**Baseline:** public `main` at `3b43c43`, reviewed 2026-11-20. A checked box means only the *precisely worded, bounded* capability is already integrated and covered by original tests. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not integrated, even if preparatory code or unpublished experiments exist.
+**Baseline:** public `main` at `6aa0c86`, reviewed 2026-11-20. A checked box means only the *precisely worded, bounded* capability is already integrated and covered by original tests. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not integrated, even if preparatory code or unpublished experiments exist.
 
 **Scope:** CLDC 1.0/1.1 with tracked 1.1.1 deltas, MIDP 1.0/2.0/2.1, optional JSRs and vendor APIs prioritized by evidence, shared Rust VM on desktop/mobile, and Kilox-specific fresh-process recovery. MIDP 3.0 is deferred. Do not assume modern Java SE semantics or that all optional device protocols are mandatory.
 
