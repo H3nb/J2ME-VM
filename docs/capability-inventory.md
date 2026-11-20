@@ -2,7 +2,7 @@
 
 **Purpose:** This is a **capability and readiness checklist**, not another issue/task registry. It covers runtime features, engineering evidence and decisions; their acceptance criteria differ. [Project roadmap](project-plan.md) owns milestones and priorities; [GitHub Issues](https://github.com/H3nb/Kilox/issues) own work and acceptance; [validation gates](validation-plan.md) own experiments; [project status](project-status.md) owns the headline public baseline.
 
-**Baseline:** public `main` at `e1f4076`, reviewed 2026-11-20. A checked box means the *precisely worded, bounded outcome* is integrated or accepted with appropriate evidence: original executable tests for runtime behavior, reproducible checks for tooling, and recorded source/decision evidence for research or rights work. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not complete on public `main`, even if preparatory code or unpublished experiments exist; optional and future unchecked items are **not** mandatory release blockers.
+**Baseline:** public `main` at `9d9f00b`, reviewed 2026-11-20. A checked box means the *precisely worded, bounded outcome* is integrated or accepted with appropriate evidence: original executable tests for runtime behavior, reproducible checks for tooling, and recorded source/decision evidence for research or rights work. It does **not** imply full JVM/CLDC/MIDP support. Unchecked means the whole stated outcome is not complete on public `main`, even if preparatory code or unpublished experiments exist; optional and future unchecked items are **not** mandatory release blockers.
 
 **Scope:** CLDC 1.0/1.1 with tracked 1.1.1 deltas, MIDP 1.0/2.0/2.1, optional JSRs and vendor APIs prioritized by evidence, shared Rust VM on desktop/mobile, and Kilox-specific fresh-process recovery. MIDP 3.0 is deferred. Do not assume modern Java SE semantics or that all optional device protocols are mandatory.
 
@@ -103,6 +103,7 @@
 
 - [x] Read bounded ZIP/JAR stored and DEFLATE entries, validation and CRC
 - [x] Read main JAR manifest attributes and folded UTF-8
+- [x] Run the public package inventory CLI to count bounded JAR/class structures and presence of legacy `StackMap` attributes (not verification)
 - [ ] Parse JAD attributes, validate JAR size/version/vendor, conflicts and manifest reconciliation
 - [ ] Select MIDlet-N entrypoints, configuration/profile requirements, classpath and resources
 - [ ] Implement install/update/uninstall, suite identity, protected namespaces and invalid-package errors
