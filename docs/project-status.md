@@ -46,10 +46,12 @@ before a constructor throws remains usable after a catch and restore.
 Three MIDP 2.0 variants now pass their previous legacy `StackMap` and protected
 constructor limits. They complete preparation and construction, enter
 `startApp`, and fault during startup. Two reach the 64-object heap cap after
-collection. The other tries to open a 1,738,360-byte JAR resource through
-`Class.getResourceAsStream`, which currently uses a guest byte array capped at
-1 MiB. The interactive Form sample still passes input, command dispatch and
-fresh-process recovery.
+collection. The third now opens a 1,738,360-byte JAR resource through
+`Class.getResourceAsStream`. Its own `new byte[]` of that size exceeds the
+current 1 MiB element limit. An original fixture reads a DEFLATE entry of
+the same size and restores two independent streams in a fresh process. The
+interactive Form sample still passes input, command dispatch and fresh-process
+recovery.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
