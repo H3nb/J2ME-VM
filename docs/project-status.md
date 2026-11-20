@@ -1,6 +1,6 @@
 # Current project status
 
-Public code baseline reviewed on 2026-11-20 at `6aa0c86`. The
+Public code baseline reviewed on 2026-11-20 at `e1f4076`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
 [GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
