@@ -38,13 +38,18 @@ scheduling, portions of CLDC and MIDP, and several guest-state checkpoints
 restored in a new process. In a local 23-package smoke run, one MIDP 2.0
 package reached an interactive Form, paused, resumed and was destroyed.
 Both CLDC `String.indexOf` overloads and the abstract `Reader` binding are
-now present in the local integration candidate. A fresh process resumed the
-original Reader fixture while its virtual character read was suspended.
-Three MIDP 2.0 variants now pass their previous legacy `StackMap` check
-with the verifier using instruction-entry locals on exception edges.
-They now reach a separate preparation limit on guest constructor calls
-inside exception-handler ranges. The interactive Form sample still passes
-input, command dispatch and fresh-process recovery.
+present in the local integration candidate. Fresh-process restore resumes
+the original fixture while inherited `read` or `skip` has a pending guest
+character read. A separate fixture verifies that a guest reference published
+before a constructor throws remains usable after a catch and restore.
+
+Three MIDP 2.0 variants now pass their previous legacy `StackMap` and protected
+constructor limits. They complete preparation and construction, enter
+`startApp`, and fault during startup. Two reach the 64-object heap cap after
+collection. The other tries to open a 1,738,360-byte JAR resource through
+`Class.getResourceAsStream`, which currently uses a guest byte array capped at
+1 MiB. The interactive Form sample still passes input, command dispatch and
+fresh-process recovery.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
