@@ -118,10 +118,10 @@ locations and inventories out of public documentation.
 - A toolkit's own build self-test checks its compilation path, not
   VM correctness. It must never be counted as a passing `j2me-vm` test.
 
-No private storage credential or third-party binary should be required
-by an external contributor or the public CI to reproduce core project tests.
+Core project tests must be reproducible without private storage credentials or
+third-party binaries.
 
-## Snapshot proof and CI growth
+## Snapshot proof and regression checks
 
 Distinguish (1) pause/resume in one VM, (2) restoration into another VM in one
 process, and (3) restoration in a **new OS process after the original ended**.
@@ -130,14 +130,11 @@ restored VM-visible traces, including frame/PC, object identity, static data and
 exceptions. Reject corrupt, oversized or incompatible snapshots *without
 mutating* the running target VM.
 
-The default GitHub Actions job remains a fast `fmt` + `clippy` + `cargo test`
-gate with `--locked`. When a milestone introduces meaningful Rust tests or
-original checked-in fixtures, include them through ordinary `cargo test` so
-regressions fail the same job. Do not add a Java SDK install, Archive.org
-network step or proprietary JSR JAR download to the default workflow. Add an
-independent optional job only when a distinct needed boundary cannot be tested
-faithfully with the existing gate. Run expensive fuzzing or measured benchmarks
-separately when their value and reproducibility are demonstrated.
+Include Rust regression tests and original checked-in fixtures in ordinary
+`cargo test --locked`. Keep the [local Rust checks](development.md#local-rust-validation)
+independent of Java SDK installs, Archive.org downloads and proprietary JSR
+JARs. Run expensive fuzzing or measured benchmarks separately when their value
+and reproducibility are demonstrated.
 
 Always report exact tests **actually run**, which contract they covered, and
-what remains unverified. A green scaffold CI proves no VM functionality.
+what remains unverified.

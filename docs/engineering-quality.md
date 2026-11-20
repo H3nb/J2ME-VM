@@ -7,7 +7,7 @@ This document owns focused quality review for human- and AI-authored work. Apply
 | Risk | Examples | Proportionate evidence |
 | --- | --- | --- |
 | Low | Names, isolated documentation, local simplification without behavior change | Inspect affected content/diff; focused checks if applicable |
-| Medium | Supported opcode, parser behavior, bounded optimization, API contract | Trace relevant semantics, meaningful positive/negative checks, existing Rust CI |
+| Medium | Supported opcode, parser behavior, bounded optimization, API contract | Trace relevant semantics, meaningful positive/negative checks, local Rust validation |
 | High | Untrusted-input boundary, CLDC verification, object identity, class initialization, concurrency, snapshot/restore, legal or clean-room rules | Inspect primary contract and ownership, bounded adversarial/restore evidence where applicable, independent review if practical |
 
 Risk is determined by consequences, **not diff size**. High-risk cases justify careful analysis; rare hypotheticals without a credible trigger do not justify prolonged investigation. Do not bypass input-validation, state-integrity or license boundaries merely to be faster.

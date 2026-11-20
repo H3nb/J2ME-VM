@@ -16,7 +16,8 @@ use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::ops::Range;
 
-const MAX_ARCHIVE_BYTES: usize = 16 * 1024 * 1024;
+/// Maximum compressed package input admitted by the archive reader.
+pub const MAX_ARCHIVE_BYTES: usize = 16 * 1024 * 1024;
 const MAX_ENTRY_BYTES: usize = 16 * 1024 * 1024;
 const MAX_EXPANDED_BYTES: usize = 64 * 1024 * 1024;
 const MAX_ENTRIES: usize = 4096;
