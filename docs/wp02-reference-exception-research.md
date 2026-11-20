@@ -2,8 +2,8 @@
 
 **Research reviewed:** 2026-10-29 against
 `37e32cd179223378fa6f271fd48fc9b33622a394`;
-[W8 #25](https://github.com/H3nb/J2ME-VM/issues/25) and
-[W9 #26](https://github.com/H3nb/J2ME-VM/issues/26).
+[W8 #25](https://github.com/H3nb/Kilox/issues/25) and
+[W9 #26](https://github.com/H3nb/Kilox/issues/26).
 This report prepares a later contract; it does not expand the executable
 [WP02 subset](wp02-execution-contract.md) or pass G2.
 

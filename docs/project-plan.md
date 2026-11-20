@@ -2,7 +2,7 @@
 
 This document owns milestone order, dependencies and release evidence.
 [Project status](project-status.md) records implemented behavior.
-[GitHub milestones](https://github.com/H3nb/J2ME-VM/milestones) own assignments and
+[GitHub milestones](https://github.com/H3nb/Kilox/milestones) own assignments and
 live checklists. [Validation gates](validation-plan.md) retain the detailed
 execution and recovery experiments from the original work packages.
 
@@ -28,13 +28,13 @@ certification or distribution claim.
 
 | Milestone | Acceptance outcome | Checklist |
 | --- | --- | --- |
-| [M0 · Reproducible baseline](https://github.com/H3nb/J2ME-VM/milestone/1) | Review the candidate, resolve the applicable rights and document a second-machine handoff and repeatable corpus baseline. | [#43](https://github.com/H3nb/J2ME-VM/issues/43) |
-| [M1 · CLDC execution and libraries](https://github.com/H3nb/J2ME-VM/milestone/2) | Verify class loading and legacy StackMap, complete core execution, and bind the CLDC APIs exercised by the corpus. | [#44](https://github.com/H3nb/J2ME-VM/issues/44) |
-| [M2 · Standard MIDP and desktop host](https://github.com/H3nb/J2ME-VM/milestone/3) | Prove an interactive standard MIDlet on Windows and Linux with lifecycle, LCDUI, RMS, GCF, media and recovery. | [#45](https://github.com/H3nb/J2ME-VM/issues/45) |
-| [M3 · Optional standard Java ME APIs](https://github.com/H3nb/J2ME-VM/milestone/4) | Expand coverage using the highest-impact optional standard APIs and controlled host services. | [#46](https://github.com/H3nb/J2ME-VM/issues/46) |
-| [M4 · Device and vendor compatibility](https://github.com/H3nb/J2ME-VM/milestone/5) | Implement measured vendor and handset behavior behind versioned device profiles. | [#47](https://github.com/H3nb/J2ME-VM/issues/47) |
-| [M5 · Mobile hosts and portability](https://github.com/H3nb/J2ME-VM/milestone/6) | Use the same core on Android and iOS and verify lifecycle, input, effects and recovery on devices. | [#48](https://github.com/H3nb/J2ME-VM/issues/48) |
-| [M6 · Measured compatibility release](https://github.com/H3nb/J2ME-VM/milestone/7) | Measure a named release candidate against the defined population and report per-platform evidence and limitations. | [#49](https://github.com/H3nb/J2ME-VM/issues/49) |
+| [M0 · Reproducible baseline](https://github.com/H3nb/Kilox/milestone/1) | Review the candidate, resolve the applicable rights and document a second-machine handoff and repeatable corpus baseline. | [#43](https://github.com/H3nb/Kilox/issues/43) |
+| [M1 · CLDC execution and libraries](https://github.com/H3nb/Kilox/milestone/2) | Verify class loading and legacy StackMap, complete core execution, and bind the CLDC APIs exercised by the corpus. | [#44](https://github.com/H3nb/Kilox/issues/44) |
+| [M2 · Standard MIDP and desktop host](https://github.com/H3nb/Kilox/milestone/3) | Prove an interactive standard MIDlet on Windows and Linux with lifecycle, LCDUI, RMS, GCF, media and recovery. | [#45](https://github.com/H3nb/Kilox/issues/45) |
+| [M3 · Optional standard Java ME APIs](https://github.com/H3nb/Kilox/milestone/4) | Expand coverage using the highest-impact optional standard APIs and controlled host services. | [#46](https://github.com/H3nb/Kilox/issues/46) |
+| [M4 · Device and vendor compatibility](https://github.com/H3nb/Kilox/milestone/5) | Implement measured vendor and handset behavior behind versioned device profiles. | [#47](https://github.com/H3nb/Kilox/issues/47) |
+| [M5 · Mobile hosts and portability](https://github.com/H3nb/Kilox/milestone/6) | Use the same core on Android and iOS and verify lifecycle, input, effects and recovery on devices. | [#48](https://github.com/H3nb/Kilox/issues/48) |
+| [M6 · Measured compatibility release](https://github.com/H3nb/Kilox/milestone/7) | Measure a named release candidate against the defined population and report per-platform evidence and limitations. | [#49](https://github.com/H3nb/Kilox/issues/49) |
 
 Prioritize a proven blocker shared by many distinct MIDlets, then the smallest
 semantically complete change that removes it. Resolve shared loader, verifier,
@@ -44,7 +44,7 @@ corpus before choosing the next task. Preserve rights and prerequisites as
 constraints on each work item.
 
 M0 is the immediate priority. While the implementation-use decision in
-[#30](https://github.com/H3nb/J2ME-VM/issues/30) is open, permitted work includes
+[#30](https://github.com/H3nb/Kilox/issues/30) is open, permitted work includes
 source and rights evidence, original fixtures, corpus design and review of
 local experiments. Review runtime changes in dependency order before any
 approved publication. M3 and M4 should follow the observed corpus blockers.

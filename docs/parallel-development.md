@@ -1,6 +1,6 @@
 # Development across machines and agents
 
-Use the public J2ME-VM repository as the upstream for accepted code, Issues,
+Use the public Kilox repository as the upstream for accepted code, Issues,
 milestones and PRs. Start from the current GitHub Issue and fetch the upstream
 before selecting a base. The [roadmap](project-plan.md) owns scope and priority.
 [AGENTS.md](../AGENTS.md) owns authority and clean-room boundaries.

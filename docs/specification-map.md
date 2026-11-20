@@ -184,8 +184,8 @@ storage location or inventory is needed for this evidence.
 
 This narrows the acquisition-route uncertainty only. The final verifier/linking
 clauses and applicable use basis remain open in
-[#12](https://github.com/H3nb/J2ME-VM/issues/12) and
-[#30](https://github.com/H3nb/J2ME-VM/issues/30). Do not accept a gated agreement,
+[#12](https://github.com/H3nb/Kilox/issues/12) and
+[#30](https://github.com/H3nb/Kilox/issues/30). Do not accept a gated agreement,
 infer final clause wording, or claim rights clearance from public availability.
 
 ### MIDP terms and compatibility test access
@@ -204,7 +204,7 @@ identify a TCK scholarship route for qualified applicants. The current
 [Oracle scholarship page](https://www.oracle.com/java/scholarship-program.html)
 directs inquiries about other Oracle-led TCKs to the specification lead or JCP
 Program Management Office, separately from the OpenJDK-based Java SE process.
-For [#30](https://github.com/H3nb/J2ME-VM/issues/30), confirm which historical
+For [#30](https://github.com/H3nb/Kilox/issues/30), confirm which historical
 kits are available and under what terms, and establish the basis for developing
 and distributing the partial independent runtime before full compatibility.
 Availability, eligibility and implementation-use rights remain open.

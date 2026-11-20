@@ -2,7 +2,7 @@
 
 Public baseline reviewed on 2026-11-20 at `8b14b82`. The
 [roadmap](project-plan.md) owns development order and compatibility criteria.
-[GitHub Issues](https://github.com/H3nb/J2ME-VM/issues) own active assignments.
+[GitHub Issues](https://github.com/H3nb/Kilox/issues) own active assignments.
 
 ## Public main
 
@@ -10,13 +10,13 @@ Public baseline reviewed on 2026-11-20 at `8b14b82`. The
   locals, branch and same-class static-call execution proof with VM-owned
   frames. [Execution contract](wp02-execution-contract.md)
 - Bounded ZIP package admission, manifest main attributes and offscreen pixel
-  surfaces. [Package archives](https://github.com/H3nb/J2ME-VM/pull/36) ·
-  [Manifest](https://github.com/H3nb/J2ME-VM/pull/38) ·
-  [Raster surfaces](https://github.com/H3nb/J2ME-VM/pull/37)
+  surfaces. [Package archives](https://github.com/H3nb/Kilox/pull/36) ·
+  [Manifest](https://github.com/H3nb/Kilox/pull/38) ·
+  [Raster surfaces](https://github.com/H3nb/Kilox/pull/37)
 - Original test fixtures and dated technical evidence for legacy CLDC
   verification and loading. Full legacy verification, general JVM execution,
   MIDP and fresh-process recovery remain release milestones.
-  [CLDC evidence](https://github.com/H3nb/J2ME-VM/pull/42)
+  [CLDC evidence](https://github.com/H3nb/Kilox/pull/42)
 
 ## Experimental evidence
 
@@ -31,11 +31,11 @@ integration and broad compatibility still pending.
 
 ## Active dependencies
 
-- [#30](https://github.com/H3nb/J2ME-VM/issues/30) tracks the implementation-use
+- [#30](https://github.com/H3nb/Kilox/issues/30) tracks the implementation-use
   and distribution basis. Keep final CLDC technical evidence and legal rights
   traceable independently. See the [specification map](specification-map.md)
   and [licensing policy](licensing-and-provenance.md).
-- [#33](https://github.com/H3nb/J2ME-VM/issues/33) tracks the original local
+- [#33](https://github.com/H3nb/Kilox/issues/33) tracks the original local
   typed-reference feasibility experiment. Review it in the CLDC milestone
   alongside other independently authored candidate changes.
 - Establish the reproducible baseline first. Then diagnose the first shared
