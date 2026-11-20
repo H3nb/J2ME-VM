@@ -57,12 +57,14 @@ frame. Continued execution reaches the 256-record cap. The interactive Form
 sample passes input, command dispatch and fresh-process recovery with both
 profiles.
 
-An isolated 4,096-record diagnostic build produces visible Canvas pixels for
-all three variants. After four seconds of simulated host time they remain
-Active with 1,174–1,438 records and a quiescent scheduler. The 1,024-record
-diagnostic runs exhaust their heap before drawing a visible frame.
-A fresh process restores one visible Canvas from the 4,096-record diagnostic
-and writes back an identical checkpoint.
+The local runtime now has an opt-in `Large` profile with 4,096 object records
+and a shared budget of 262,144 user-instance field slots. All three Canvas
+variants draw visible frames. For each variant, a fresh process restores its
+first visible frame and runs another six seconds of simulated time with the
+same timed keypad events. The frame-sequence checksums and final checkpoints
+match uninterrupted execution. The interactive Form also passes its lifecycle
+and input checks with `Large`. The 46 legacy and expanded package/profile
+outcomes and diagnostics are unchanged.
 
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
