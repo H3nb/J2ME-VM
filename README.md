@@ -28,6 +28,19 @@ and link the PR to its Issue. A contributor should be able to resume using a
 Git ref, the Issue and reproducible commands. See the
 [documentation map](docs/README.md) and [development guide](docs/development.md).
 
+## Inspect a package locally
+
+```sh
+cargo run --locked --example package_inventory -- path/to/application.jar
+```
+
+The report counts archive files, structurally readable classes grouped by
+class-file version, and methods carrying a legacy `StackMap` attribute. It
+also checks the main manifest when present. An unsuccessful run reports the
+first failing stage. Keep suite files in the permitted local corpus. The
+output omits package paths, entry names, and guest data. Use a runtime probe
+to establish linkage, verification, lifecycle, and restore outcomes.
+
 ## AI-assisted development
 
 This project is developed with help from AI coding agents. Agents assist with

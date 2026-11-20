@@ -18,6 +18,12 @@ Public baseline reviewed on 2026-11-20 at `8b14b82`. The
   MIDP and fresh-process recovery remain release milestones.
   [CLDC evidence](https://github.com/H3nb/Kilox/pull/42)
 
+The public [package inventory](../examples/package_inventory.rs) reports
+bounded structural archive, manifest and class-file results without exposing
+suite names. A local run completed for all 23 corpus JARs, each with methods
+carrying legacy `StackMap` attributes. This stage measures structural
+admission only. Runtime preparation and execution are reported below.
+
 ## Experimental evidence
 
 A separate experimental runtime has demonstrated bounded object execution,
