@@ -14,7 +14,7 @@ The target remains CLDC 1.1 and MIDP 1.0–2.1, with versioned profile
 contracts; JSR 271 / MIDP 3 behavior is not inferred. CLDC 1.1.1
 maintenance changes and CLDC amendments take precedence over inherited JVM
 rules. The applicable final JSR 139 text and implementation-use rights remain
-unresolved; this contract does not close N01 or issue #30. Public API pages are
+unresolved; this contract does not close N01 or the rights review in [M0 #43](https://github.com/H3nb/Kilox/issues/43). Public API pages are
 useful interface evidence, not permission to implement, certify, or distribute
 a compatible VM.
 
