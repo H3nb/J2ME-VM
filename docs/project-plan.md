@@ -43,10 +43,10 @@ regressions to confirm the cause. Compare results against the same frozen
 corpus before choosing the next task. Preserve rights and prerequisites as
 constraints on each work item.
 
-M0 is the immediate priority. While the implementation-use decision in
-[#30](https://github.com/H3nb/Kilox/issues/30) is open, permitted work includes
-source and rights evidence, original fixtures, corpus design and review of
-local experiments. Review runtime changes in dependency order before any
+M0 is the immediate priority. While the implementation-use review recorded in
+[licensing and provenance](licensing-and-provenance.md) is unresolved, permitted
+work includes source and rights evidence, original fixtures, corpus design and
+review of local experiments. Review runtime changes in dependency order before any
 approved publication. M3 and M4 should follow the observed corpus blockers.
 M5 can start once M2 exercises the host contract. M6 evaluates a named
 candidate and its supported host matrix.

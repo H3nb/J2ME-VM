@@ -182,11 +182,12 @@ CLDC 1.1.1 / 2007 and corroborates associated terms. It is not the complete fina
 VM specification and does not replace primary-source authentication. No private
 storage location or inventory is needed for this evidence.
 
-This narrows the acquisition-route uncertainty only. The final verifier/linking
-clauses and applicable use basis remain open in
-[#12](https://github.com/H3nb/Kilox/issues/12) and
-[#30](https://github.com/H3nb/Kilox/issues/30). Do not accept a gated agreement,
-infer final clause wording, or claim rights clearance from public availability.
+This evidence identifies the acquisition routes. The final verifier and
+linking clauses remain under review in [#12](https://github.com/H3nb/Kilox/issues/12).
+The applicable use basis remains unresolved in
+[licensing and provenance](licensing-and-provenance.md). Do not accept a gated
+agreement, infer final clause wording, or claim rights clearance from public
+availability.
 
 ### MIDP terms and compatibility test access
 
@@ -204,10 +205,11 @@ identify a TCK scholarship route for qualified applicants. The current
 [Oracle scholarship page](https://www.oracle.com/java/scholarship-program.html)
 directs inquiries about other Oracle-led TCKs to the specification lead or JCP
 Program Management Office, separately from the OpenJDK-based Java SE process.
-For [#30](https://github.com/H3nb/Kilox/issues/30), confirm which historical
-kits are available and under what terms, and establish the basis for developing
-and distributing the partial independent runtime before full compatibility.
-Availability, eligibility and implementation-use rights remain open.
+The [licensing and provenance review](licensing-and-provenance.md) still needs
+to confirm which historical kits are available and under what terms, and to
+establish the basis for developing and distributing the partial independent
+runtime before full compatibility. Availability, eligibility and
+implementation-use rights remain open.
 
 ### Clause-to-observable-behavior matrix
 
