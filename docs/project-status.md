@@ -101,6 +101,14 @@ first missing field types at preparation.
 
 These results describe the local corpus and candidate. Public runtime
 integration remains subject to the rights review.
+
+A separate test of 94 additional JARs declaring CLDC 1.1 and MIDP 2.1 in the
+manifest stopped at preparation. The first missing field types were
+`Vector` in 34 archives, `Sprite` or its array form in 29, `Hashtable` in
+15, `Stack` in one, and `TextBox` in one. Two other archives first need
+String `ConstantValue`. Skipping opaque Code metadata let one archive advance
+to method resolution. All other outcomes stayed the same.
+
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
 
