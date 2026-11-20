@@ -4,7 +4,7 @@
 public/private corpus boundary. [Development](development.md) owns commands and
 CI wiring; [validation gates](validation-plan.md) own acceptance criteria; the
 [specification map](specification-map.md) owns normative references. A passing
-test is evidence for its declared contract, **not** Java ME certification.
+test is evidence for its declared contract. The [roadmap's measurement rules](project-plan.md#compatibility-measurement) define compatibility scores and release evidence.
 
 ## Select tests for failure modes, not volume
 

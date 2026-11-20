@@ -6,14 +6,14 @@ Start with [AGENTS.md](../AGENTS.md), the relevant source/tests and [current sta
 | --- | --- |
 | Project mission, actual features and basic build | [Root README](../README.md) |
 | Current integrated capabilities, major blockers and next step | [Project status](project-status.md); verify against live GitHub |
-| Requirements, work packages, dependency order and scope changes | [Project plan](project-plan.md) |
+| Compatibility target, milestone order, host portability and release evidence | [Compatibility roadmap](project-plan.md) |
 | Accepted VM/host boundaries and architecture hypotheses | [Architecture](architecture.md) and accepted [ADRs](adr/) |
 | Version-specific Java ME/JVMS source evidence and unresolved gaps | [Specification map](specification-map.md) |
 | License, clean-room boundaries, permitted source use | [Licensing and provenance](licensing-and-provenance.md) |
 | Tests, original fixtures, public/private corpus rules | [Testing](testing.md) |
 | Build, CI, PR and integration checks | [Development](development.md) |
 | Risk-proportional implementation/review quality | [Engineering quality](engineering-quality.md) |
-| Autonomous task continuity and optional multi-agent assignments | [Parallel development](parallel-development.md) |
+| Cross-machine handoff, isolated work and cleanup | [Parallel development](parallel-development.md) |
 | Experiment gates and acceptance conditions | [Validation plan](validation-plan.md) |
 | MIDP-version differences and future evolution | [Profile evolution](profile-evolution.md); [ADR-0005](adr/0005-legacy-midp-first-with-profile-aware-contexts.md) |
 

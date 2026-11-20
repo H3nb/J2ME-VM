@@ -8,7 +8,7 @@ Build an independent, host-neutral Java ME VM in Rust, with correct execution an
 
 Prioritize, in order: **correct useful capability**, preserved safety/clean-room boundaries, maintainability, and efficient delivery. A working increment or a decision-changing experiment is more valuable than extra plans, test counts, or procedural output. Failure of a bounded experiment is an acceptable result.
 
-This repository currently has a **class-file structural parser and bounded integer/static-call execution proof**, not a general VM, full CLDC verifier, MIDlet runtime, checkpoint/restore, or rewind. Never promote planned behavior to implemented capability.
+Use the [compatibility roadmap](docs/project-plan.md) for the development order and [project status](docs/project-status.md) for the integrated baseline. Claims about supported behavior require relevant executable evidence.
 
 ## Authority and autonomous work
 

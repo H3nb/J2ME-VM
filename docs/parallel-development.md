@@ -1,48 +1,45 @@
-# Autonomous work and parallel-session coordination
+# Development across machines and agents
 
-This document owns **task selection, continuity and multi-session coordination**. [AGENTS.md](../AGENTS.md) owns engineering boundaries; [project plan](project-plan.md) owns dependencies; [development](development.md) owns CI and merge checks. The default is **one capable implementer**, not a standing hierarchy of coordinators.
+Use the public J2ME-VM repository as the upstream for accepted code, Issues,
+milestones and PRs. Start from the current GitHub Issue and fetch the upstream
+before selecting a base. The [roadmap](project-plan.md) owns scope and priority.
+[AGENTS.md](../AGENTS.md) owns authority and clean-room boundaries.
 
-## Default: one bounded engineering loop
+## One handoff per task
 
-1. **Resume:** inspect current `main`, open PRs/issues, and the short [project status](project-status.md). Continue an existing authorized task before starting a duplicate. Prefer a ready item that advances executable VM capability or removes a real blocker.
-2. **Define:** record the observable outcome, essential contract/dependency, scope exclusions and the smallest credible verification. A GitHub Issue is useful for multi-session or nontrivial work; an existing PR or a direct, clear assignment is enough for small work. No mandatory planning document.
-3. **Implement:** work on a task branch, choose routine technical solutions autonomously, make focused changes and validate incrementally. Avoid parallel work on shared state ownership/contracts unless coordination is explicit.
-4. **Accept:** inspect the complete effective diff and relevant checks. Resolve introduced correctness, safety and contract failures. Prepare a PR with a short result, tests actually run, and limitations; do not create an extra PR solely for routine coordination or evidence.
-5. **Continue:** after **authorized** integration, check the resulting `main` and CI once where relevant. Update the owning status/contract only when materially changed, then choose the next ready task. An external runner/scheduler is necessary for unattended recurrence; this document does not by itself execute jobs.
+1. Choose the next ready checklist item. Record the writer and the intended
+   outcome in the owning Issue when coordination is needed.
+2. Use one short-lived branch from the current authorized base. An isolated
+   worktree is useful for genuinely parallel writers or to preserve unrelated
+   local changes. A single writer owns each branch and shared runtime contract.
+3. Review the effective diff against the current base. Run the smallest checks
+   that prove the behavior and the applicable integration checks. Link a
+   permitted Git ref or draft PR to its Issue before handing work to another
+   machine.
+4. Record the base and head SHAs, exact reproduction commands, verified
+   result, remaining limit and next dependency. A fresh clone should be able
+   to recover the work with those inputs. Keep private corpus setup references
+   sanitized and stored in the permitted location.
+5. After accepted integration, check the resulting main and CI where relevant.
+   Remove obsolete branches and worktrees after verifying the merge or
+   preserving unique work. Keep dirty or still-assigned work until its owner
+   transfers or retires it.
 
-Do not optimize for the number of sessions, commits, tests, or PRs. One substantive result is better than repeated documentation-only handoffs.
+Use the same flow for human contributors and AI agents. Prefer one implementer
+for a cohesive change and parallelize work with distinct dependencies, tests or
+ownership. A single integrator reviews any shared state, error or snapshot
+contract and accepts changes in dependency order.
 
-## Prioritization and blocked work
+## Restricted work and recovery
 
-Prefer work by dependency readiness, value toward a runnable/recoverable VM, risk reduction and implementation cost. Useful preparatory refactoring is allowed when it removes a demonstrated obstacle; avoid speculative infrastructure.
+Follow the [licensing policy](licensing-and-provenance.md) for experimental
+implementation, restricted specifications, hosted execution and publication.
+If a change cannot enter upstream, record a sanitized status and blocker in the
+Issue. Preserve the exact commits through an approved access-controlled
+handoff or a verified Git bundle, with a documented restore command and
+expected ref. Keep unpublished work recoverable before pruning a branch
+or removing a checkout. Store protected corpus data independently.
 
-Distinguish:
-- **Local blocker:** one behavior lacks a spec, legal basis, ownership decision or reliable test; record it and pursue independent authorized work.
-- **Global blocker:** every useful next increment genuinely depends on the unresolved matter; report the concrete missing decision/evidence instead of looping.
-- **Exploratory result:** a bounded local experiment may disprove a design. Record only the conclusion and reproducible evidence needed for subsequent decisions; do not publish restricted implementation material.
-
-For foundational JVM/CLDC behavior, missing normative evidence or unresolved implementation-use rights cannot be solved by assumption or renamed as a harmless edge case. Relevant restrictions in [licensing](licensing-and-provenance.md) remain in force.
-
-Repeated failed attempts without new evidence trigger a smaller experiment, a revised design, or a recorded blocker—not endless retries. Do not chase extremely unlikely scenarios unless they threaten correctness, input security, recovery integrity or a documented compatibility requirement.
-
-## When parallel agents are useful
-
-Use parallel sessions **only** for independent, ready tasks whose benefit outweighs review and integration cost. Start small. Assign a distinct current writer for each task and a single integrator for shared changes. Coordination uses the existing GitHub Issue/PR; do not invent another task registry.
-
-A bounded parallel assignment needs only:
-- Public task/Issue or PR, expected result and explicit authorizations.
-- Starting base/branch, dependent contract and owned boundaries (including shared files).
-- Verifiable acceptance criteria, unresolved assumptions and current writer.
-- Integrator/reviewer when relevant, and next handoff.
-
-Each writer uses an isolated branch/worktree; never share a mutable checkout, overwrite another writer's work, or silently change a shared contract. Separate files may still share semantics (state ownership, errors, formats, caller/callee assumptions). Resolve those dependencies before concurrent implementation. The maintainer need not approve routine steps already authorized.
-
-If a writer is interrupted or replaced, preserve the branch and transfer responsibility explicitly through the canonical Issue/PR. Old sessions must recheck ownership before writing. A chat session or GitHub login is **not** an ownership lock.
-
-## Review, integration and handoff
-
-Review against the current target, actual contracts, final diff, and relevant executable evidence—not the implementer's claims or historical commit count. An independent reviewer is valuable for high-risk state, verification, security and snapshot changes, but **not mandatory for every small PR**. Label self-review honestly; resolve blockers with evidence, not votes among agents. See [engineering quality](engineering-quality.md).
-
-One integrator acts at a time. Confirm dependencies, up-to-date target/head, permissions and required checks before a permitted merge. If the base changed, reassess the affected diff and checks instead of reflexively rerunning everything. After a squash merge, downstream branches must reconcile against the accepted main tree. Never force-push another worker's branch or infer merge authority from a task assignment.
-
-Handoff in the existing Issue/PR (or final report when publication is unavailable): **result, current head, checks and limitations, blocker, next action**. Use links for evidence rather than copying long logs. Update [project status](project-status.md) only for material integrated capability, important blockers or priorities. Do not copy private session identifiers/paths into public records.
+Keep product decisions in the repository's owning documents and tracked work
+in GitHub. Use chat for discussion and agent coordination. Resolve ownership
+and dependencies from the current Issue, ref and PR before editing.
