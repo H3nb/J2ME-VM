@@ -57,11 +57,30 @@ frame. Continued execution reaches the 256-record cap. The interactive Form
 sample passes input, command dispatch and fresh-process recovery with both
 profiles.
 
+An isolated 4,096-record diagnostic build produces visible Canvas pixels for
+all three variants. After four seconds of simulated host time they remain
+Active with 1,174–1,438 records and a quiescent scheduler. The 1,024-record
+diagnostic runs exhaust their heap before drawing a visible frame.
+A fresh process restores one visible Canvas from the 4,096-record diagnostic
+and writes back an identical checkpoint.
+
 All 11 MIDP 2.1 packages stopped during preparation. Eight need interfaces
 outside the current bundle. Seven of those first need interfaces from Payment,
-AMMS, Content Handler, Location, SIP or RMI. The other three packages stop on
-unsupported field descriptors. These results describe the local corpus and
-candidate. Public runtime integration remains subject to the rights review.
+AMMS, Content Handler, Location, SIP or RMI. The other three first declare
+fields typed as `Formatter`, `EGL10`, or `APDUConnection`.
+[JSR 238](https://www.jcp.org/en/jsr/detail?id=238) ·
+[JSR 239](https://www.jcp.org/en/jsr/detail?id=239) ·
+[JSR 177](https://www.jcp.org/en/jsr/detail?id=177)
+
+Four MIDP 2.0 packages first stop on fields typed as `SensorConnection`,
+`VideoControl`, `Graphics3D`, or `World`. Both heap profiles report the same
+first missing field types at preparation.
+[JSR 256](https://www.jcp.org/en/jsr/detail?id=256) ·
+[JSR 135](https://www.jcp.org/en/jsr/detail?id=135) ·
+[JSR 184](https://www.jcp.org/en/jsr/detail?id=184)
+
+These results describe the local corpus and candidate. Public runtime
+integration remains subject to the rights review.
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
 
