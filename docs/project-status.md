@@ -43,6 +43,16 @@ the original fixture while inherited `read` or `skip` has a pending guest
 character read. A separate fixture verifies that a guest reference published
 before a constructor throws remains usable after a catch and restore.
 
+The local CLDC binding now covers `String.replace`, `String.regionMatches`,
+and seven `String.valueOf` overloads, as well as `StringBuffer` array
+append, insertion, and copying. Original guest fixtures check UTF-16,
+mutation independence, invalid ranges, and fresh-process recovery.
+
+The local default `InputStreamReader` converts ISO-8859-1 through virtual
+guest stream calls. An original fixture resumes a pending read in a fresh
+process. The named-encoding constructor remains open. All 69 package/profile
+outcomes and diagnostics match the earlier run after these library changes.
+
 Three MIDP 2.0 variants pass their previous legacy `StackMap` and protected
 constructor limits. With the default heap, two still reach the 64-record cap
 during `startApp`. The third opens a 1,738,360-byte DEFLATE resource but
