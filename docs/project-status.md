@@ -157,6 +157,19 @@ independent cursor positions, live growth, null elements, exhaustion, and
 fresh-process recovery after collection. Vector text conversion remains
 open.
 
+Local runtime commit `6549304` binds MIDP Layer and Sprite position,
+visibility, frame sequences, transforms, reference pixels and painting. An
+original fixture verifies rendered pixels and resumes Sprite and Sprite array
+state in a fresh process. Formatting, strict all-target Clippy and 725 locked
+offline Cargo tests passed on Windows MSVC. Sprite collision, image
+replacement and copy construction remain open.
+
+All 58 additional MIDP 2.1 JARs that first failed on a Sprite or Sprite array
+field advanced in preparation. Of those, 46 now first fail on a Hashtable
+field, three on TiledLayer, one on LayerManager, and eight advance beyond the
+field descriptor check. Across all 94 JARs, Hashtable is the first field
+blocker in 67. All 94 still stop during preparation.
+
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
 
