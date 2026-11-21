@@ -135,7 +135,16 @@ strict all-target Clippy on Windows MSVC.
 Commit `6b17efd` adds `Vector` search and removal through virtual guest
 equality. The original fixture restores while equality is pending and
 verifies that an exception releases the Vector monitor. Enumeration and
-text conversion remain open.
+text conversion remain open. This candidate matched all 69 prior
+package/profile diagnostics and reproduced three Canvas runs through
+fresh-process recovery, plus interactive Form input and lifecycle recovery.
+
+Local commit `48f6fc3` binds the five declared Stack methods and
+`EmptyStackException`. An original fixture restores a pending search through
+the inherited Vector implementation. In the additional MIDP 2.1 corpus, the
+one archive previously stopped by a Stack field now reaches method admission,
+where it needs support for a private synchronized method. All 94 archives
+still stop during preparation.
 
 The [CLDC milestone](https://github.com/H3nb/Kilox/issues/44) tracks the
 shared verification and library work.
